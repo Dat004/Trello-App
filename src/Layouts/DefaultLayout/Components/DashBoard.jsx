@@ -1,11 +1,12 @@
 import { Search, Plus, Bell } from "lucide-react";
 
+import CreateBoardDialog from "@/Components/CreateBoardDialog";
 import {
   Button,
   Input,
   Avatar,
-  AvatarFallback,
   AvatarImage,
+  AvatarFallback,
 } from "@/Components/UI";
 
 function DashBoard() {
@@ -13,7 +14,7 @@ function DashBoard() {
     <main className="flex-1">
       <section>
         <header className="sticky top-0 z-100 flex items-center border-b h-16 w-full bg-background/95 backdrop-blur">
-          <section className="container flex items-center px-4">
+          <section className="container mx-auto flex items-center px-4">
             {/* Logo và Navigation */}
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-2">
@@ -49,10 +50,14 @@ function DashBoard() {
               </div>
 
               {/* Create Button */}
-              <Button size="sm" className="gap-2">
-                <Plus className="h-4 w-4" />
-                <span className="hidden sm:inline">Tạo mới</span>
-              </Button>
+              <CreateBoardDialog
+                trigger={
+                  <Button size="sm" className="leading-1.5 gap-2">
+                    <Plus className="h-4 w-4" />
+                    <span className="hidden sm:inline">Tạo mới</span>
+                  </Button>
+                }
+              />
 
               {/* Notifications */}
               <Button variant="ghost" size="sm">

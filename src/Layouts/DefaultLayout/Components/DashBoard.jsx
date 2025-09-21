@@ -1,4 +1,4 @@
-import { Search, Plus, Bell } from "lucide-react";
+import { Search, Plus, Bell, User, LogOut, Settings } from "lucide-react";
 
 import CreateBoardDialog from "@/Components/CreateBoardDialog";
 import {
@@ -7,6 +7,11 @@ import {
   Avatar,
   AvatarImage,
   AvatarFallback,
+  DropdownMenu,
+  DropdownMenuItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/Components/UI";
 
 function DashBoard() {
@@ -64,13 +69,36 @@ function DashBoard() {
                 <Bell className="h-4 w-4" />
               </Button>
 
-              {/* Avatar */}
-              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src="/diverse-user-avatars.png" alt="User" />
-                  <AvatarFallback>U</AvatarFallback>
-                </Avatar>
-              </Button>
+              {/* User Menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="relative h-8 w-8 rounded-full"
+                  >
+                    {/* Avatar */}
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src="/diverse-user-avatars.png" alt="User" />
+                      <AvatarFallback>U</AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuItem>
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Hồ sơ</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Cài đặt</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Đăng xuất</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </section>
         </header>

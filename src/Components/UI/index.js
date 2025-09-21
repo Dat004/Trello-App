@@ -1,6 +1,23 @@
 export { Avatar, AvatarImage, AvatarFallback } from "./Avatar";
 export { ScrollArea } from "./ScrollArea";
 export {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuCheckboxItem,
+  DropdownMenuRadioItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuGroup,
+  DropdownMenuPortal,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuRadioGroup,
+} from "./DropDownMenu";
+export {
   Dialog,
   DialogTrigger,
   DialogPortal,

@@ -1,5 +1,9 @@
+import { BoardLayout } from "@/Layouts";
+
 function Board() {
-  return <></>;
+  return <BoardLayout>
+    <h1>Board</h1>
+  </BoardLayout>;
 }
 
 export default Board;

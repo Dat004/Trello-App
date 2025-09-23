@@ -10,9 +10,7 @@ function App({ children }) {
           <Route
             path={route.path}
             element={
-              <route.layout>
-                <route.page>{children}</route.page>
-              </route.layout>
+              <route.page>{children}</route.page>
             }
           />
         ))}

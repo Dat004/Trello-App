@@ -1,5 +1,7 @@
+import { DefaultLayout } from "@/Layouts";
+
 function Home() {
-  return <></>;
+  return <DefaultLayout></DefaultLayout>;
 }
 
 export default Home;

@@ -29,9 +29,16 @@ export {
   DialogTitle,
   DialogDescription,
 } from "./Dialog";
+export {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  PopoverAnchor,
+} from "./Popover";
 
 export { default as Separator } from "./Separator";
 export { default as TextArea } from "./TextArea";
 export { default as Button } from "./Button";
+export { default as Badge } from "./Badge";
 export { default as Input } from "./Input";
 export { default as Label } from "./Label";

@@ -1,5 +1,6 @@
 import { Search, Plus, Bell, User, LogOut, Settings } from "lucide-react";
 
+import NotificationsPanel from "@/Components/NotificationsPanel";
 import CreateBoardDialog from "@/Components/CreateBoardDialog";
 import {
   Button,
@@ -65,9 +66,7 @@ function DashBoard() {
               />
 
               {/* Notifications */}
-              <Button variant="ghost" size="sm">
-                <Bell className="h-4 w-4" />
-              </Button>
+              <NotificationsPanel />
 
               {/* User Menu */}
               <DropdownMenu>

@@ -7,12 +7,14 @@ function DefaultLayout({ children }) {
       <section className="flex flex-nowrap h-full">
         {/* ASIDE */}
         <Sidebar />
-        
+
         {/* DASHBOARD CONTENT */}
-        <main className="flex-1">
+        <main className="flex-1 overflow-auto">
           <section>
             <Header />
-            {children}
+            <section className="container mx-auto p-4 md:p-6 animate-fade-in">
+              {children}
+            </section>
           </section>
         </main>
       </section>

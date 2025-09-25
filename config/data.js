@@ -1,3 +1,5 @@
+import paths from "./paths";
+
 export const boardColors = [
   "bg-blue-500",
   "bg-green-500",
@@ -7,4 +9,22 @@ export const boardColors = [
   "bg-pink-500",
   "bg-indigo-500",
   "bg-teal-500",
+];
+
+export const headerMenuData = [
+  {
+    id: 1,
+    name: "Không gian làm việc",
+    path: paths.workspaces,
+  },
+  {
+    id: 2,
+    name: "Mẫu",
+    path: paths.templates,
+  },
+  {
+    id: 1,
+    name: "Thành viên",
+    path: paths.members,
+  },
 ];

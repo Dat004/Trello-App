@@ -1,7 +1,9 @@
+import { Link } from "react-router-dom";
 import { Search, Plus, User, LogOut, Settings } from "lucide-react";
 
 import NotificationsPanel from "@/Components/NotificationsPanel";
 import CreateBoardDialog from "@/Components/CreateBoardDialog";
+import { headerMenuData } from "../../../../config/data";
 import {
   Button,
   Input,
@@ -21,22 +23,32 @@ function Header() {
       <section className="container mx-auto flex items-center px-4">
         {/* Logo và Navigation */}
         <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">
-                T
-              </span>
+          <Link to="/">
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded bg-primary flex items-center justify-center">
+                <span className="text-primary-foreground font-bold text-lg">
+                  T
+                </span>
+              </div>
+              <h1 className="text-xl font-bold text-foreground">
+                Trello Clone
+              </h1>
             </div>
-            <h1 className="text-xl font-bold text-foreground">Trello Clone</h1>
-          </div>
+          </Link>
 
           <nav className="hidden md:flex items-center gap-4">
-            <Button className="leading-[1.35]" variant="ghost" size="sm">
-              Bảng làm việc
-            </Button>
-            <Button className="leading-[1.35]" variant="ghost" size="sm">
-              Mẫu
-            </Button>
+            {headerMenuData.map((menu) => (
+              <Button
+                isLink
+                size="sm"
+                key={menu.id}
+                to={menu.path}
+                className="text-xs leading-[1.35]"
+                variant="ghost"
+              >
+                {menu.name}
+              </Button>
+            ))}
           </nav>
         </div>
 

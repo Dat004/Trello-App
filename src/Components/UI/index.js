@@ -1,3 +1,4 @@
+export { Tabs, TabsList, TabsTrigger, TabsContent } from "./Tabs";
 export { Avatar, AvatarImage, AvatarFallback } from "./Avatar";
 export { ScrollArea } from "./ScrollArea";
 export {
@@ -43,7 +44,11 @@ export {
   CardDescription,
   CardFooter,
 } from "./Card";
-export { BoardSkeleton } from "./LoadingSkeleton";
+export {
+  BoardSkeleton,
+  StatsSkeleton,
+  WorkspacesSkeleton,
+} from "./LoadingSkeleton";
 
 export { default as Separator } from "./Separator";
 export { default as TextArea } from "./TextArea";

@@ -64,3 +64,70 @@ export function WorkspacesSkeleton() {
     </div>
   );
 }
+
+export function PopularTemplatesSkeleton() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {Array.from({ length: 3 }).map((_, i) => (
+        <div key={i} className="animate-pulse">
+          <div className="bg-card rounded-lg p-6 shadow-sm space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 bg-muted rounded-md"></div>
+              <div>
+                <div className="h-6 w-22 bg-muted rounded-md mb-2"></div>
+                <div className="h-5 w-16 bg-muted rounded-md"></div>
+              </div>
+            </div>
+            <div className="h-4 bg-muted rounded-md"></div>
+            <div className="flex items-center gap-2">
+              <div className="w-full max-w-26 h-8 bg-muted rounded-md"></div>
+              <div className="flex-1 h-8 bg-muted rounded-md"></div>
+            </div>
+            <div className="flex items-center gap-1">
+              {Array.from({ length: Math.random() * (5 - 2) + 2 }).map(
+                (_, i) => (
+                  <div className="w-16 h-4 bg-muted rounded-md"></div>
+                )
+              )}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function TemplatesSkeleton() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      {Array.from({ length: 9 }).map((_, i) => (
+        <div key={i} className="animate-pulse">
+          <div className="bg-card rounded-lg p-6 shadow-sm space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 bg-muted rounded-md"></div>
+              <div>
+                <div className="h-5 w-22 bg-muted rounded-md mb-2"></div>
+                <div className="h-4 w-16 bg-muted rounded-md"></div>
+              </div>
+            </div>
+            <div className="h-4 w-full bg-muted rounded-md"></div>
+            <div>
+              <div className="h-3 max-w-12 bg-muted rounded-md mb-3"></div>
+              <div className="flex items-center gap-1">
+                {Array.from({ length: Math.random() * (5 - 2) + 2 }).map(
+                  (_, i) => (
+                    <div className="w-16 h-4 bg-muted rounded-md"></div>
+                  )
+                )}
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="flex-1 h-8 bg-muted rounded-md"></div>
+              <div className="flex-1 h-8 bg-muted rounded-md"></div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}

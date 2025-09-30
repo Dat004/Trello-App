@@ -23,7 +23,7 @@ export const headerMenuData = [
     path: paths.templates,
   },
   {
-    id: 1,
+    id: 3,
     name: "Thành viên",
     path: paths.members,
   },

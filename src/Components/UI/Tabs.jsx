@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 
 const Tabs = TabsPrimitive.Root;
 
-const TabsList = forwardRef(({}, ref) => (
+const TabsList = forwardRef(({ className, ...props }, ref) => (
   <TabsPrimitive.List
     ref={ref}
     className={cn(
@@ -16,7 +16,7 @@ const TabsList = forwardRef(({}, ref) => (
   />
 ));
 
-const TabsTrigger = forwardRef(({}, ref) => (
+const TabsTrigger = forwardRef(({ className, ...props }, ref) => (
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
@@ -27,7 +27,7 @@ const TabsTrigger = forwardRef(({}, ref) => (
   />
 ));
 
-const TabsContent = forwardRef(({}, ref) => (
+const TabsContent = forwardRef(({ className, ...props }, ref) => (
   <TabsPrimitive.Content
     ref={ref}
     className={cn(

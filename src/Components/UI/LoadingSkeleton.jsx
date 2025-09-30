@@ -131,3 +131,38 @@ export function TemplatesSkeleton() {
     </div>
   );
 }
+
+export function MembersSkeleton() {
+  return (
+    <div className="space-y-4">
+      {Array.from({ length: 7 }).map((_, i) => (
+        <div key={i} className="animate-pulse">
+          <div className="bg-card rounded-lg p-6 shadow-sm space-y-4">
+            <div className="flex items-center">
+              <div className="flex-1 flex items-center">
+                <div className="h-12 w-12 rounded-full bg-muted mr-3"></div>
+                <div className="flex-1 space-y-3">
+                  <div className="h-4 max-w-60 bg-muted rounded-md"></div>
+                  <div className="h-3 max-w-24 bg-muted rounded-md"></div>
+                  <div className="h-3 max-w-2xs bg-muted rounded-md"></div>
+                </div>
+              </div>
+              <div className="ml-auto">
+                <div className="flex items-center gap-x-4">
+                  <div className="space-y-2">
+                    <div>
+                      <div className="h-4 w-16 bg-muted rounded-md ml-auto"></div>
+                    </div>
+                    <div className="h-3 w-28 bg-muted rounded-md"></div>
+                  </div>
+                  <div className="h-8 w-16 rounded-md bg-muted"></div>
+                  <div className="h-8 w-8 rounded-md bg-muted"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}

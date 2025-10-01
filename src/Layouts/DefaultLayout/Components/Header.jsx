@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Search, Plus, User, LogOut, Settings } from "lucide-react";
 
 import NotificationsPanel from "@/Components/NotificationsPanel";
@@ -18,6 +19,8 @@ import {
 } from "@/Components/UI";
 
 function Header() {
+  const navigate = useNavigate();
+
   return (
     <header className="sticky top-0 z-100 flex items-center border-b h-16 w-full bg-background/95 backdrop-blur">
       <section className="container mx-auto flex items-center px-4">
@@ -85,11 +88,11 @@ function Header() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end" forceMount>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/settings/")}>
                 <User className="mr-2 h-4 w-4" />
                 <span>Hồ sơ</span>
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/settings/")}>
                 <Settings className="mr-2 h-4 w-4" />
                 <span>Cài đặt</span>
               </DropdownMenuItem>

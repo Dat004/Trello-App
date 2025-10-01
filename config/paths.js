@@ -1,8 +1,8 @@
 const paths = {
   home: "/",
+  settings: "/settings/:step?",
   workspaces: "/workspaces",
   templates: "/templates",
-  settings: "/settings",
   members: "/members",
   board: "/board/:id",
 };

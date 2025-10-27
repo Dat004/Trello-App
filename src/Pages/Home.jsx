@@ -3,59 +3,9 @@ import { Plus, Search, Filter, Users } from "lucide-react";
 
 import CreateBoardDialog from "@/Components/CreateBoardDialog";
 import { Button, Input, BoardSkeleton } from "@/Components/UI";
+import { initialBoards } from "../../config/data";
 import BoardCard from "@/Components/BoardCard";
 import { DefaultLayout } from "@/Layouts";
-
-const initialBoards = [
-  {
-    id: "1",
-    name: "Dự án Website",
-    description: "Phát triển website công ty",
-    color: "bg-blue-500",
-    starred: true,
-    members: 5,
-    lastActivity: "2 giờ trước",
-    lists: [],
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: "2",
-    name: "Marketing Q4",
-    description: "Chiến lược marketing quý 4",
-    color: "bg-green-500",
-    starred: false,
-    members: 3,
-    lastActivity: "1 ngày trước",
-    lists: [],
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: "3",
-    name: "Phát triển App",
-    description: "Ứng dụng mobile mới",
-    color: "bg-purple-500",
-    starred: true,
-    members: 8,
-    lastActivity: "3 giờ trước",
-    lists: [],
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: "4",
-    name: "Thiết kế UI/UX",
-    description: "Cải thiện trải nghiệm người dùng",
-    color: "bg-orange-500",
-    starred: false,
-    members: 4,
-    lastActivity: "5 giờ trước",
-    lists: [],
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-];
 
 function Home() {
   const [isLoading, setIsLoading] = useState(true);

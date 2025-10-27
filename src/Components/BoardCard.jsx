@@ -22,6 +22,7 @@ import {
   CardHeader,
   CardTitle,
 } from "./UI";
+import { Link } from "react-router-dom";
 
 function BoardCard({ board }) {
   const [isLoading, setIsLoading] = useState(false);
@@ -72,7 +73,7 @@ function BoardCard({ board }) {
         </div>
         <div className="flex items-start justify-between">
           <CardTitle className="text-lg font-semibold text-card-foreground group-hover:text-primary transition-colors line-clamp-2">
-            {board.name}
+            <Link to={`/board/${board.id}`}>{board.name}</Link>
           </CardTitle>
           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             <Button

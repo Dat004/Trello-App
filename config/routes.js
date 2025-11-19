@@ -38,6 +38,18 @@ const routes = [
     path: paths.board,
     page: pages.Board,
   },
+  {
+    id: 7,
+    name: "Đăng nhập",
+    path: paths.login,
+    page: pages.Login,
+  },
+  {
+    id: 8,
+    name: "Đăng ký",
+    path: paths.register,
+    page: pages.Register,
+  },
 ];
 
 export default routes;

@@ -199,16 +199,16 @@ function Members() {
   return (
     <DefaultLayout>
       {/* Welcome Section */}
-      <div className="flex items-center mb-6 md:mb-8">
+      <div className="flex flex-col mb-6 md:mb-8 sm:flex-row sm:items-center sm:justify-between gap-4">
         <section>
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1 sm:mb-2">
             Thành viên
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm sm:text-base md:text-base text-muted-foreground">
             Quản lý thành viên và quyền truy cập trong workspace
           </p>
         </section>
-        <section className="ml-auto">
+        <section className="sm:ml-auto">
           <InviteMemberDialog />
         </section>
       </div>
@@ -288,39 +288,41 @@ function Members() {
 
       {/* Search and Filter */}
       <section className="mb-6">
-        <section className="flex flex-col sm:flex-row gap-4">
+        <section className="flex flex-col sm:items-center sm:flex-row gap-4 gap-y-2">
           <section className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Tìm kiếm thành viên..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-10 text-sm"
             />
           </section>
-          <Select value={roleFilter} onValueChange={setRoleFilter}>
-            <SelectTrigger className="w-full sm:w-[150px]">
-              <SelectValue placeholder="Vai trò" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tất cả vai trò</SelectItem>
-              <SelectItem value="owner">Chủ sở hữu</SelectItem>
-              <SelectItem value="admin">Quản trị</SelectItem>
-              <SelectItem value="member">Thành viên</SelectItem>
-              <SelectItem value="viewer">Xem</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-full sm:w-[150px]">
-              <SelectValue placeholder="Trạng thái" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tất cả</SelectItem>
-              <SelectItem value="active">Hoạt động</SelectItem>
-              <SelectItem value="pending">Chờ xác nhận</SelectItem>
-              <SelectItem value="inactive">Không hoạt động</SelectItem>
-            </SelectContent>
-          </Select>
+          <section className="flex items-center gap-2">
+            <Select value={roleFilter} onValueChange={setRoleFilter}>
+              <SelectTrigger className="w-full sm:w-[150px]">
+                <SelectValue placeholder="Vai trò" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tất cả vai trò</SelectItem>
+                <SelectItem value="owner">Chủ sở hữu</SelectItem>
+                <SelectItem value="admin">Quản trị</SelectItem>
+                <SelectItem value="member">Thành viên</SelectItem>
+                <SelectItem value="viewer">Xem</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full sm:w-[150px]">
+                <SelectValue placeholder="Trạng thái" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tất cả</SelectItem>
+                <SelectItem value="active">Hoạt động</SelectItem>
+                <SelectItem value="pending">Chờ xác nhận</SelectItem>
+                <SelectItem value="inactive">Không hoạt động</SelectItem>
+              </SelectContent>
+            </Select>
+          </section>
         </section>
       </section>
 
@@ -345,17 +347,17 @@ function Members() {
               <InviteMemberDialog />
             </section>
           ) : (
-            <section className="divide-y">
+            <section>
               {isLoading ? (
                 <MembersSkeleton />
               ) : (
-                <section>
+                <section className="divide-y">
                   {filteredMembers.map((member) => (
                     <section
                       key={member.id}
                       className="p-4 hover:bg-muted/50 transition-colors"
                     >
-                      <section className="flex items-center justify-between">
+                      <section className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                         <section className="flex items-center gap-4">
                           <Avatar className="h-12 w-12">
                             <AvatarImage
@@ -370,26 +372,33 @@ function Members() {
                             <section className="flex items-center gap-2 mb-1">
                               <h3 className="font-medium">{member.name}</h3>
                               {getRoleIcon(member.role)}
-                              {getStatusBadge(member.status)}
+                              <span className="ml-auto sm:ml-0">
+                                {getStatusBadge(member.status)}
+                              </span>
                             </section>
                             <p className="text-sm text-muted-foreground">
                               {member.email}
                             </p>
-                            <section className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                              <section className="flex items-center gap-1">
-                                <Calendar className="h-3 w-3" />
-                                <span>Tham gia {member.joinedAt}</span>
-                              </section>
-                              <section className="flex items-center gap-1">
-                                <Activity className="h-3 w-3" />
-                                <span>Hoạt động {member.lastActive}</span>
-                              </section>
-                            </section>
+                            <span className="mt-2 whitespace-pre-wrap text-xs text-muted-foreground">
+                              <div className="inline-flex h-4 items-end">
+                                <Calendar className="inline-block h-3 w-3" />
+                              </div>
+                              <span className="ml-1">
+                                Tham gia {member.joinedAt}
+                              </span>
+                              <span className="mx-1"></span>
+                              <div className="inline-flex h-4 items-end">
+                                <Activity className="inline-block h-3 w-3" />
+                              </div>
+                              <span className="ml-1">
+                                Hoạt động {member.lastActive}
+                              </span>
+                            </span>
                           </section>
                         </section>
 
-                        <section className="flex items-center gap-4">
-                          <section className="text-right text-sm">
+                        <section className="flex items-center justify-between gap-4">
+                          <section className="sm:text-right text-sm">
                             <p className="font-medium">
                               {getRoleText(member.role)}
                             </p>

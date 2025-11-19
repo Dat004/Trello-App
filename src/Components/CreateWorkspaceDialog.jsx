@@ -43,7 +43,7 @@ function CreateWorkSpaceDialog({ trigger, onCreateWorkspace }) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger || (
-          <Button className="leading-1.5 gap-2">
+          <Button className="w-full leading-1.5 gap-2">
             <Plus />
             Tạo workspace
           </Button>

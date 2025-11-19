@@ -69,7 +69,7 @@ function InviteMemberDialog({ trigger }) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger || (
-          <Button className="gap-2 leading-1.5">
+          <Button className="w-full gap-2 leading-1.5">
             <UserPlus className="h-4 w-4" />
             Mời thành viên
           </Button>

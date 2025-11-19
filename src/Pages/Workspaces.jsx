@@ -150,16 +150,16 @@ function Workspaces() {
   return (
     <DefaultLayout>
       {/* Welcome Section */}
-      <div className="flex items-center mb-6 md:mb-8">
+      <div className="flex mb-6 md:mb-8 flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <section>
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1 sm:mb-2">
             Không gian làm việc
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm sm:text-base md:text-base text-muted-foreground">
             Quản lý và tổ chức các không gian làm việc của bạn
           </p>
         </section>
-        <section className="ml-auto">
+        <section className="sm:ml-auto">
           <CreateWorkspaceDialog onCreateWorkspace={handleCreateWorkspace} />
         </section>
       </div>
@@ -272,7 +272,7 @@ function Workspaces() {
                         <div className="flex items-center gap-2 mt-1">
                           <Badge
                             variant={getRoleBadgeVariant(workspace.role)}
-                            className="text-xs"
+                            className="text-xs leading-[1.15]"
                           >
                             {getRoleText(workspace.role)}
                           </Badge>
@@ -353,8 +353,8 @@ function Workspaces() {
                       <span>Hoạt động {workspace.lastActivity}</span>
                     </div>
 
-                    <div className="flex gap-2 pt-2">
-                      <Button size="sm" className="flex-1">
+                    <div className="flex items-center gap-2 pt-2">
+                      <Button size="sm" className="flex-1 h-8 sm:h-9 font-normal sm:font-medium">
                         Xem bảng
                       </Button>
                       <Button variant="outline" size="sm">

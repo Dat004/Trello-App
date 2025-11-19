@@ -29,9 +29,9 @@ function CreateBoardDialog({ trigger }) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger || (
-          <Button className="leading-1.5 gap-2">
+          <Button className="w-full leading-1.5 gap-2">
             <Plus className="h-4 w-4" />
-            Tạo bảng mới
+            <span className="hidden sm:inline">Tạo bảng mới</span>
           </Button>
         )}
       </DialogTrigger>

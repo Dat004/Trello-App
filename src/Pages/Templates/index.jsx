@@ -77,17 +77,17 @@ function Templates() {
   return (
     <DefaultLayout>
       {/* Welcome Section */}
-      <div className="flex items-center mb-6 md:mb-8">
+      <div className="flex flex-col mb-6 md:mb-8 sm:flex-row sm:items-center sm:justify-between gap-4">
         <section>
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1 sm:mb-2">
             Mẫu bảng
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm sm:text-base md:text-base text-muted-foreground">
             Bắt đầu nhanh chóng với các mẫu bảng được thiết kế sẵn cho nhiều mục
             đích khác nhau
           </p>
         </section>
-        <section className="ml-auto flex items-center gap-2 text-sm text-muted-foreground">
+        <section className="sm:ml-auto flex items-center gap-2 text-sm text-muted-foreground">
           <TrendingUp className="h-4 w-4" />
           <span>{totalUsage.toLocaleString()} lượt sử dụng</span>
         </section>
@@ -128,7 +128,7 @@ function Templates() {
                           {template.name}
                         </CardTitle>
                         <section className="flex items-center gap-2 mt-1">
-                          <Badge variant="secondary" className="text-xs">
+                          <Badge variant="secondary" className="text-xs leading-[1.15]">
                             {template.popularity}% phổ biến
                           </Badge>
                           <span className="text-xs text-muted-foreground">
@@ -149,7 +149,7 @@ function Templates() {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="leading-1.5 gap-2 text-xs bg-transparent"
+                            className="leading-1.5 gap-2 text-xs bg-transparent h-8 sm:h-9"
                           >
                             <Eye className="h-4 w-4" />
                             Xem trước
@@ -162,7 +162,7 @@ function Templates() {
                       >
                         <Button
                           size="sm"
-                          className="leading-1.5 gap-2 text-xs flex-1"
+                          className="leading-1.5 gap-2 text-xs flex-1 h-8 sm:h-9"
                         >
                           <Copy className="h-4 w-4" />
                           Sử dụng mẫu
@@ -171,7 +171,7 @@ function Templates() {
                     </section>
                     <div className="flex flex-wrap gap-1">
                       {template.tags.slice(0, 3).map((tag) => (
-                        <Badge key={tag} variant="outline" className="text-xs">
+                        <Badge key={tag} variant="outline" className="text-xs leading-[1.15]">
                           {tag}
                         </Badge>
                       ))}
@@ -304,13 +304,13 @@ function Templates() {
                             <Badge
                               key={list.id}
                               variant="outline"
-                              className="text-xs"
+                              className="text-xs leading-[1.15]"
                             >
                               {list.name}
                             </Badge>
                           ))}
                           {template.lists.length > 3 && (
-                            <Badge variant="outline" className="text-xs">
+                            <Badge variant="outline" className="text-xs leading-[1.15]">
                               +{template.lists.length - 3}
                             </Badge>
                           )}
@@ -324,7 +324,7 @@ function Templates() {
                             <Button
                               size="sm"
                               variant="outline"
-                              className="leading-1.5 gap-1 text-xs flex-1 bg-transparent"
+                              className="leading-1.5 gap-1 text-xs flex-1 bg-transparent h-8 sm:h-9"
                             >
                               <Eye className="h-3 w-3" />
                               Xem
@@ -337,7 +337,7 @@ function Templates() {
                         >
                           <Button
                             size="sm"
-                            className="leading-1.5 text-xs gap-1 flex-1"
+                            className="leading-1.5 text-xs gap-1 flex-1 h-8 sm:h-9"
                           >
                             <Copy className="h-3 w-3" />
                             Dùng

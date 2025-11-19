@@ -6,7 +6,9 @@ function DefaultLayout({ children }) {
     <div className="h-screen bg-background">
       <section className="flex flex-nowrap h-full">
         {/* ASIDE */}
-        <Sidebar />
+        <section className="fixed hidden">
+          <Sidebar />
+        </section>
 
         {/* DASHBOARD CONTENT */}
         <main className="flex-1 overflow-auto">

@@ -99,10 +99,10 @@ function Settings() {
       <section className="container max-w-4xl mx-auto">
         <div className="flex items-center mb-6 md:mb-8">
           <section>
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1 sm:mb-2">
               Cài đặt
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-sm sm:text-base md:text-base text-muted-foreground">
               Quản lý tài khoản và tùy chỉnh trải nghiệm của bạn
             </p>
           </section>
@@ -161,6 +161,9 @@ function Settings() {
                   Cập nhật thông tin hồ sơ của bạn
                 </CardDescription>
               </CardHeader>
+              <section className="px-4 sm:px-6">
+                <Separator />
+              </section>
               <CardContent className="space-y-6">
                 <div className="flex items-center gap-6">
                   <Avatar className="h-20 w-20">
@@ -173,11 +176,11 @@ function Settings() {
                     </AvatarFallback>
                   </Avatar>
                   <div className="space-y-2">
-                    <Button size="sm" className="gap-2 leading-1.5 text-xs">
+                    <Button size="sm" className="gap-2 leading-1.5 text-xs h-8">
                       <Camera className="h-4 w-4" />
                       Thay đổi ảnh
                     </Button>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs sm:text-sm text-muted-foreground">
                       JPG, PNG tối đa 2MB
                     </p>
                   </div>
@@ -220,7 +223,7 @@ function Settings() {
                   />
                 </div>
 
-                <Button className="leading-1.5">Lưu thay đổi</Button>
+                <Button className="leading-1.5 h-9">Lưu thay đổi</Button>
               </CardContent>
             </Card>
           </TabsContent>
@@ -234,11 +237,14 @@ function Settings() {
                   Chọn loại thông báo bạn muốn nhận
                 </CardDescription>
               </CardHeader>
+              <section className="px-4 sm:px-6">
+                <Separator />
+              </section>
               <CardContent className="space-y-6">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h4 className="font-medium">Email thông báo</h4>
+                      <h4 className="text-sm md:text-base font-medium">Email thông báo</h4>
                       <p className="text-sm text-muted-foreground">
                         Nhận thông báo qua email
                       </p>
@@ -256,7 +262,7 @@ function Settings() {
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <h4 className="font-medium">Push notifications</h4>
+                      <h4 className="text-sm md:text-base font-medium">Push notifications</h4>
                       <p className="text-sm text-muted-foreground">
                         Nhận thông báo trên trình duyệt
                       </p>
@@ -276,7 +282,7 @@ function Settings() {
                 <Separator />
 
                 <div className="space-y-4">
-                  <h4 className="font-medium">Loại thông báo</h4>
+                  <h4 className="text-sm md:text-base font-medium">Loại thông báo</h4>
 
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
@@ -371,7 +377,7 @@ function Settings() {
                   </div>
                 </div>
 
-                <Button>Lưu cài đặt</Button>
+                <Button className="h-9">Lưu cài đặt</Button>
               </CardContent>
             </Card>
           </TabsContent>
@@ -385,8 +391,11 @@ function Settings() {
                   Cá nhân hóa trải nghiệm sử dụng
                 </CardDescription>
               </CardHeader>
+              <section className="px-4 sm:px-6">
+                <Separator />
+              </section>
               <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
                   <div className="space-y-2">
                     <Label>Chủ đề</Label>
                     <Select
@@ -485,7 +494,7 @@ function Settings() {
                   </div>
                 </div>
 
-                <Button>Lưu tùy chỉnh</Button>
+                <Button className="h-9">Lưu tùy chỉnh</Button>
               </CardContent>
             </Card>
           </TabsContent>
@@ -499,6 +508,9 @@ function Settings() {
                   Kiểm soát ai có thể xem thông tin của bạn
                 </CardDescription>
               </CardHeader>
+              <section className="px-4 sm:px-6">
+                <Separator />
+              </section>
               <CardContent className="space-y-6">
                 <div className="space-y-4">
                   <div className="space-y-2">
@@ -559,7 +571,7 @@ function Settings() {
                   </div>
                 </div>
 
-                <Button>Lưu cài đặt</Button>
+                <Button className="h-9">Lưu cài đặt</Button>
               </CardContent>
             </Card>
           </TabsContent>
@@ -571,16 +583,19 @@ function Settings() {
                 <CardTitle>Bảo mật tài khoản</CardTitle>
                 <CardDescription>Quản lý mật khẩu và bảo mật</CardDescription>
               </CardHeader>
+              <section className="px-4 sm:px-6">
+                <Separator />
+              </section>
               <CardContent className="space-y-6">
                 <div className="space-y-4">
-                  <Button className="gap-2">
+                  <Button className="gap-2 h-9">
                     <Lock className="h-4 w-4" />
                     Đổi mật khẩu
                   </Button>
 
                   <div className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
-                      <h4 className="font-medium">Xác thực 2 bước</h4>
+                      <h4 className="text-sm md:text-base font-medium">Xác thực 2 bước</h4>
                       <p className="text-sm text-muted-foreground">
                         Tăng cường bảo mật tài khoản
                       </p>
@@ -590,7 +605,7 @@ function Settings() {
 
                   <div className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
-                      <h4 className="font-medium">Phiên đăng nhập</h4>
+                      <h4 className="text-sm md:text-base font-medium">Phiên đăng nhập</h4>
                       <p className="text-sm text-muted-foreground">
                         Quản lý các thiết bị đã đăng nhập
                       </p>
@@ -615,7 +630,7 @@ function Settings() {
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between p-4 border border-destructive/20 rounded-lg">
                   <div>
-                    <h4 className="font-medium">Xóa tài khoản</h4>
+                    <h4 className="text-sm md:text-base font-medium">Xóa tài khoản</h4>
                     <p className="text-sm text-muted-foreground">
                       Xóa vĩnh viễn tài khoản và tất cả dữ liệu
                     </p>

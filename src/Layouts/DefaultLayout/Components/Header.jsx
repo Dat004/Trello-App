@@ -5,6 +5,7 @@ import { Search, Plus, User, LogOut, Settings } from "lucide-react";
 import NotificationsPanel from "@/Components/NotificationsPanel";
 import CreateBoardDialog from "@/Components/CreateBoardDialog";
 import { headerMenuData } from "../../../../config/data";
+import { logout } from "@/lib/auth";
 import {
   Button,
   Input,
@@ -18,7 +19,7 @@ import {
   DropdownMenuSeparator,
 } from "@/Components/UI";
 
-function Header() {
+function Header({ userData = {} }) {
   const navigate = useNavigate();
 
   return (
@@ -82,7 +83,7 @@ function Header() {
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                 {/* Avatar */}
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src="/diverse-user-avatars.png" alt="User" />
+                  <AvatarImage src={userData?.photoURL} alt={userData?.displayName} />
                   <AvatarFallback>U</AvatarFallback>
                 </Avatar>
               </Button>
@@ -97,7 +98,7 @@ function Header() {
                 <span>Cài đặt</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={logout}>
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Đăng xuất</span>
               </DropdownMenuItem>

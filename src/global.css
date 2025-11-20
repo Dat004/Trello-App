@@ -294,7 +294,12 @@
 
 /* Loading states */
 .loading-shimmer {
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
@@ -305,5 +310,26 @@
   }
   100% {
     background-position: 200% 0;
+  }
+}
+
+/* Background */
+.login-bg {
+  background-image: url(./assets/trello-left.svg), url(./assets/trello-right.svg);
+  background-repeat: no-repeat, no-repeat;
+  background-attachment: fixed, fixed;
+  background-size: 432px, 432px;
+  background-position: left bottom, right bottom;
+}
+
+@media screen and (max-width: 1199px) {
+  .login-bg {
+    background-size: 300px, 300px;
+  }
+}
+
+@media screen and (max-width: 948px) {
+  .login-bg {
+    background-image: none;
   }
 }

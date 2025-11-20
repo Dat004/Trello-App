@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 
 import { Button, Input, Label } from "@/Components/UI";
+import { registerWithEmail } from "@/lib/auth";
 
 function Register() {
   const [displayName, setDisplayName] = useState("");
@@ -20,10 +21,21 @@ function Register() {
       return;
     }
 
+    const userValue = {
+      displayName,
+      email,
+      password,
+      photoUrl: null,
+      providerId: null,
+      providerId: "email/password",
+    };
+
     setLoading(true);
 
     try {
-      await authService.signUp(email, password, displayName);
+      const data = await registerWithEmail(userValue);
+
+      console.log(data);
     } catch (err) {
       const message = err ? err.message : "Lỗi đăng ký";
       setError(message);

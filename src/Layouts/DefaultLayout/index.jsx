@@ -1,7 +1,18 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+
+import { UserAuth } from "@/context/AuthContext";
 import Sidebar from "./Components/Sidebar";
 import Header from "./Components/Header";
 
 function DefaultLayout({ children }) {
+  const navigate = useNavigate();
+  const { isLogged, loading, user } = UserAuth();
+
+  useEffect(() => {
+    if (!isLogged && !loading) navigate("/login");
+  }, [isLogged, loading]);
+
   return (
     <div className="h-screen bg-background">
       <section className="flex flex-nowrap h-full">
@@ -13,7 +24,7 @@ function DefaultLayout({ children }) {
         {/* DASHBOARD CONTENT */}
         <main className="flex-1 overflow-auto">
           <section>
-            <Header />
+            <Header userData={user} />
             <section className="container mx-auto p-4 md:p-6 animate-fade-in">
               {children}
             </section>

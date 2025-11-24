@@ -1,50 +1,142 @@
 import {
-  collection,
   doc,
+  getDoc,
   addDoc,
   setDoc,
   deleteDoc,
   updateDoc,
+  collection,
+  onSnapshot,
+  serverTimestamp,
 } from "firebase/firestore";
 
 import { db } from "../../config/firebase";
 
 // Helper
-const collectionRef = (collectionId) => collection(db, collectionId);
-const docRef = (collectionId, id) => doc(db, collectionId, id);
+export const collectionRef = (collectionId) => collection(db, collectionId);
+export const docRef = (collectionId, id) => doc(db, collectionId, id);
+export const timestampFS = serverTimestamp;
 
-export const create = async (collectionId, data) => {
+// Tạo một tài liệu mới trong Firestore với dữ liệu được cung cấp
+export const createFS = async (collectionId, data) => {
   try {
-    const docRef = await addDoc(collectionRef(collectionId), data);
-    return { success: true, id: docRef.id };
+    const results = await addDoc(collectionRef(collectionId), {
+      ...data,
+      created_at: serverTimestamp(),
+      updated_at: serverTimestamp(),
+    });
+    return { success: true, id: results.id };
   } catch (error) {
     return { success: false, error: error.message || error };
   }
 };
 
-export const insert = async (collectionId, id, data) => {
+// Chèn hoặc ghi đè dữ liệu tại tài liệu Firestore cụ thể
+export const insertFS = async (collectionId, id, data, options) => {
   try {
-    await setDoc(docRef(collectionId, id), data);
+    await setDoc(
+      docRef(collectionId, id),
+      {
+        ...data,
+        created_at: serverTimestamp(),
+        updated_at: serverTimestamp(),
+      },
+      options
+    );
     return { success: true, id };
   } catch (error) {
     return { success: false, error: error.message || error };
   }
 };
 
-export const update = async (collectionId, id, data) => {
+// Cập nhật dữ liệu tại tài liệu Firestore cụ thể
+export const updateFS = async (collectionId, id, data) => {
   try {
-    await updateDoc(docRef(collectionId, id), data);
+    await updateDoc(docRef(collectionId, id), {
+      ...data,
+      updated_at: serverTimestamp(),
+    });
     return { success: true, id };
   } catch (error) {
     return { success: false, error: error.message || error };
   }
 };
 
-export const remove = async (collectionId, id) => {
+// Xóa tài liệu Firestore cụ thể
+export const removeFS = async (collectionId, id) => {
   try {
     await deleteDoc(docRef(collectionId, id));
     return { success: true, id };
   } catch (error) {
     return { success: false, error: error.message || error };
   }
+};
+
+// Lấy một tài liệu Firestore cụ thể
+export const getOneFS = async (collectionId, id) => {
+  try {
+    const snap = await getDoc(docRef(collectionId, id));
+    return {
+      success: true,
+      data: snap.exists() ? { ...snap.data() } : null,
+    };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+};
+
+// Lắng nghe các thay đổi trong một tập hợp Firestore với các ràng buộc tùy chọn
+export const listenCollection = (collectionId, callback, constraints = []) => {
+  let q = collectionRef(collectionId);
+
+  constraints.forEach((constraint) => {
+    q = constraint(q);
+  });
+  
+  const unsubscribe = onSnapshot(
+    q,
+    (querySnapshot) => {
+      const results = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      callback(results);
+    },
+    (error) => {
+      console.error("listenCollection error:", error);
+      callback([]);
+    }
+  );
+
+  return unsubscribe;
+};
+
+// Lắng nghe các thay đổi trong một tài liệu Firestore cụ thể
+export const listenDocument = (collectionId, id, callback) => {
+  if (!id) {
+    callback(null);
+
+    return () => {};
+  }
+
+  const documentRef = docRef(collectionId, id);
+  const unsubscribe = onSnapshot(
+    documentRef,
+    (docSnap) => {
+      if (docSnap.exists()) {
+        callback({
+          id: docSnap.id,
+          ...docSnap.data(),
+        });
+      } else {
+        callback(null);
+      }
+    },
+    (error) => {
+      console.error("listenDocument error:", error);
+      callback(null);
+    }
+  );
+
+  return unsubscribe;
 };

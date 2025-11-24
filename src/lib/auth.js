@@ -2,19 +2,39 @@ import {
   signInWithEmailAndPassword,
   signInWithPopup,
   createUserWithEmailAndPassword,
-  signOut
+  signOut,
 } from "firebase/auth";
 
 import { auth, provider } from "../../config/firebase";
+import { insertRTDB, timestampRTDB } from "./rtdb";
 
 export const logout = async () => {
+  const currentUser = auth.currentUser; // Lấy người dùng hiện tại TRƯỚC KHI đăng xuất
+
   try {
-    await signOut(auth);
+    if (currentUser) {
+      const uid = currentUser.uid;
+      const userPresencePath = `users/presence_status/${uid}`;
+
+      // Cập nhật trạng thái offline TRƯỚC KHI đăng xuất
+      await insertRTDB(userPresencePath, {
+        is_online: false,
+        last_active: timestampRTDB(),
+      });
+
+      // Sau khi cập nhật trạng thái, tiến hành đăng xuất
+      await signOut(auth);
+    } else {
+      // Nếu không có người dùng nào đang đăng nhập, chỉ cần gọi signOut
+      await signOut(auth);
+    }
+
     return {
       success: true,
       message: "Đăng xuất thành công",
     };
   } catch (err) {
+    console.error("Lỗi khi đăng xuất:", err);
     return {
       success: false,
       error: err,

@@ -10,7 +10,7 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 
-import { db } from "../../config/firebase";
+import { db } from "@/config/firebase";
 
 // Helper
 export const collectionRef = (collectionId) => collection(db, collectionId);

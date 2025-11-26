@@ -9,7 +9,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Star, Users, MoreHorizontal } from "lucide-react";
 
 import AddListButton from "@/Components/AddListButton";
-import { initialBoards } from "../../config/data";
+import { initialBoards } from "@/config/data";
 import BoardList from "@/Components/BoardList";
 import { Button } from "@/Components/UI";
 

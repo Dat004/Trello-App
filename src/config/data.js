@@ -1,4 +1,4 @@
-import { Sun, Moon, Monitor } from "lucide-react";
+import { Sun, Moon, Monitor, Lock, LockOpen, User } from "lucide-react";
 import paths from "./paths";
 
 export const boardColors = [
@@ -441,14 +441,17 @@ export const settingsData = {
         {
           value: "light",
           text_value: "Sáng",
+          icon: Sun,
         },
         {
           value: "dark",
           text_value: "Tối",
+          icon: Moon,
         },
         {
           value: "system",
           text_value: "Theo hệ thống",
+          icon: Monitor,
         },
       ],
     },
@@ -495,14 +498,17 @@ export const settingsData = {
         {
           value: "public",
           text_value: "Công khai",
+          icon: LockOpen,
         },
         {
           value: "members",
           text_value: "Thành viên",
+          icon: User,
         },
         {
           value: "private",
           text_value: "Riêng tư",
+          icon: Lock,
         },
       ],
     },
@@ -514,14 +520,17 @@ export const settingsData = {
         {
           value: "public",
           text_value: "Công khai",
+          icon: LockOpen,
         },
         {
           value: "members",
           text_value: "Thành viên",
+          icon: User,
         },
         {
           value: "private",
           text_value: "Riêng tư",
+          icon: Lock,
         },
       ],
     },
@@ -533,14 +542,17 @@ export const settingsData = {
         {
           value: "public",
           text_value: "Công khai",
+          icon: LockOpen,
         },
         {
           value: "members",
           text_value: "Thành viên",
+          icon: User,
         },
         {
           value: "private",
           text_value: "Riêng tư",
+          icon: Lock,
         },
       ],
     },

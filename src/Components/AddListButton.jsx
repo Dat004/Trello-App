@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Plus, X, Palette } from "lucide-react";
 
 import { Button, Input, Card, CardContent } from "./UI";
-import { listColors } from "../../config/data";
+import { listColors } from "@/config/data";
 import { cn } from "@/lib/utils";
 
 function AddListButton() {

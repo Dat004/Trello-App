@@ -9,7 +9,7 @@ import {
   serverTimestamp,
 } from "firebase/database";
 
-import { rtdb } from "../../config/firebase";
+import { rtdb } from "@/config/firebase";
 
 export const dbRef = (path) => ref(rtdb, path);
 export const timestampRTDB = serverTimestamp;

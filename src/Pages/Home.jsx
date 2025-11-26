@@ -3,7 +3,7 @@ import { Plus, Search, Filter, Users } from "lucide-react";
 
 import CreateBoardDialog from "@/Components/CreateBoardDialog";
 import { Button, Input, BoardSkeleton } from "@/Components/UI";
-import { initialBoards } from "../../config/data";
+import { initialBoards } from "@/config/data";
 import BoardCard from "@/Components/BoardCard";
 
 function Home() {

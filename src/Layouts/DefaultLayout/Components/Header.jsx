@@ -4,8 +4,8 @@ import { Search, Plus, User, LogOut, Settings } from "lucide-react";
 
 import NotificationsPanel from "@/Components/NotificationsPanel";
 import CreateBoardDialog from "@/Components/CreateBoardDialog";
-import { headerMenuData } from "../../../../config/data";
 import { UserAuth } from "@/context/AuthContext";
+import { headerMenuData } from "@/config/data";
 import { logout } from "@/lib/auth";
 import {
   Button,

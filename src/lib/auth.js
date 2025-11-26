@@ -5,7 +5,7 @@ import {
   signOut,
 } from "firebase/auth";
 
-import { auth, provider } from "../../config/firebase";
+import { auth, provider } from "@/config/firebase";
 import { insertRTDB, timestampRTDB } from "./rtdb";
 
 export const logout = async () => {

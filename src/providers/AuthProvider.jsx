@@ -10,7 +10,7 @@ import {
 } from "@/lib/firestore";
 import { insertRTDB, listenRTDB, timestampRTDB, dbRef } from "@/lib/rtdb";
 import AuthContext from "@/context/AuthContext";
-import { auth } from "../../config/firebase";
+import { auth } from "@/config/firebase";
 
 function AuthProvider({ children }) {
   const [user, setUser] = useState(null);

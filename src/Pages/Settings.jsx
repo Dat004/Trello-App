@@ -10,7 +10,7 @@ import {
   Lock,
 } from "lucide-react";
 
-import { settingsData } from "../../config/data";
+import { settingsData } from "@/config/data";
 import { UserAuth } from "@/context/AuthContext";
 import {
   Card,
@@ -353,6 +353,7 @@ function Settings() {
                           {app.items.map((item) => (
                             <SelectItem key={item.value} value={item.value}>
                               <div className="flex items-center gap-2">
+                                {item.icon && <item.icon className="h-4 w-4" />}
                                 {item.text_value}
                               </div>
                             </SelectItem>
@@ -397,7 +398,10 @@ function Settings() {
                         <SelectContent>
                           {pr.items.map((item) => (
                             <SelectItem key={item.value} value={item.value}>
-                              {item.text_value}
+                              <div className="flex items-center gap-2">
+                                {item.icon && <item.icon className="h-4 w-4" />}
+                                {item.text_value}
+                              </div>
                             </SelectItem>
                           ))}
                         </SelectContent>

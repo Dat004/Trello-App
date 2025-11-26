@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Plus, Building2 } from "lucide-react";
 
-import { boardColors } from "../../config/data";
+import { boardColors } from "@/config/data";
 import {
   Input,
   Label,

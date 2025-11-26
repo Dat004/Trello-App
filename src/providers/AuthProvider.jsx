@@ -22,25 +22,25 @@ function AuthProvider({ children }) {
       email: true, // Thông báo qua email
       push: true, // Thông báo đẩy
       mentions: true, // Thông báo khi được nhắc đến
-      cardAssignments: true, // Thông báo khi được giao thẻ
+      card_assignments: true, // Thông báo khi được giao thẻ
       comments: false, // Thông báo bình luận
-      dueReminders: true, // Nhắc nhở hạn chót
-      boardUpdates: false, // Cập nhật bảng
+      due_reminders: true, // Nhắc nhở hạn chót
+      board_updates: false, // Cập nhật bảng
     },
     appearance: {
       theme: "system", // Giao diện: light, dark, system
       language: "vi", // Ngôn ngữ
       timezone: "Asia/Ho_Chi_Minh", // Múi giờ
-      dateFormat: "DD/MM/YYYY", // Định dạng ngày
+      date_format: "DD/MM/YYYY", // Định dạng ngày
     },
     privacy: {
-      profileVisibility: "workspace", // Hiển thị hồ sơ: private, workspace, public
-      activityVisibility: "members", // Hiển thị hoạt động: private, members, public
-      defaultBoard: "private", // Bảng mặc định: private, workspace, public
+      profile_visibility: "members", // Hiển thị hồ sơ: private, members, public
+      activity_visibility: "members", // Hiển thị hoạt động: private, members, public
+      default_board: "private", // Bảng mặc định: private, members, public
     },
     account: {
-      twoFactorEnabled: false, // Xác thực hai yếu tố
-      linkedDevices: [], // Thiết bị đã liên kết
+      two_factor_enabled: false, // Xác thực hai yếu tố
+      linked_devices: [], // Thiết bị đã liên kết
     },
   };
 
@@ -130,16 +130,15 @@ function AuthProvider({ children }) {
             firebaseUser.uid,
             (user) => {
               setUser(user);
+              setLoading(false);
             }
           );
         } else {
           // Người dùng đã đăng xuất
           setUser(null);
+          setLoading(false);
           setIsLogged(false);
         }
-
-        // Dừng loading sau khi xác định xong trạng thái
-        setLoading(false);
       }
     );
 

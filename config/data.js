@@ -1,3 +1,4 @@
+import { Sun, Moon, Monitor } from "lucide-react";
 import paths from "./paths";
 
 export const boardColors = [
@@ -315,8 +316,8 @@ export const initialBoards = [
         boardId: "1",
         order: 3,
         color: "gray",
-        cards: []
-      }
+        cards: [],
+      },
     ],
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -397,3 +398,151 @@ export const initialBoards = [
     updatedAt: new Date(),
   },
 ];
+
+export const settingsData = {
+  notifications: [
+    {
+      title: "Khi ai đó nhắc đến bạn",
+      label: "Được nhắc đến",
+      type: "checkbox",
+      key: "mentions",
+    },
+    {
+      title: "Khi được giao thẻ mới",
+      label: "Được giao thẻ",
+      type: "checkbox",
+      key: "card_assignments",
+    },
+    {
+      title: "Bình luận mới trên thẻ của bạn",
+      label: "Bình luận",
+      type: "checkbox",
+      key: "comments",
+    },
+    {
+      title: "Nhắc nhở về thẻ sắp hết hạn",
+      label: "Hạn chót",
+      type: "checkbox",
+      key: "due_reminders",
+    },
+    {
+      title: "Thay đổi trong bảng bạn theo dõi",
+      label: "Cập nhật bảng",
+      type: "checkbox",
+      key: "board_updates",
+    },
+  ],
+  appearance: [
+    {
+      label: "Chủ đề",
+      type: "select",
+      key: "theme",
+      items: [
+        {
+          value: "light",
+          text_value: "Sáng",
+        },
+        {
+          value: "dark",
+          text_value: "Tối",
+        },
+        {
+          value: "system",
+          text_value: "Theo hệ thống",
+        },
+      ],
+    },
+    {
+      label: "Ngôn ngữ",
+      type: "select",
+      key: "language",
+      items: [
+        {
+          value: "vi",
+          text_value: "Tiếng Việt",
+        },
+      ],
+    },
+    {
+      label: "Múi giờ",
+      type: "select",
+      key: "timezone",
+      items: [
+        {
+          value: "Asia/Ho_Chi_Minh",
+          text_value: "Việt Nam (GMT+7)",
+        },
+      ],
+    },
+    {
+      label: "Định dạng ngày",
+      type: "select",
+      key: "date_format",
+      items: [
+        {
+          value: "DD/MM/YYYY",
+          text_value: "DD/MM/YYYY",
+        },
+      ],
+    },
+  ],
+  privacy: [
+    {
+      label: "Hiển thị hồ sơ",
+      type: "select",
+      key: "profile_visibility",
+      items: [
+        {
+          value: "public",
+          text_value: "Công khai",
+        },
+        {
+          value: "members",
+          text_value: "Thành viên",
+        },
+        {
+          value: "private",
+          text_value: "Riêng tư",
+        },
+      ],
+    },
+    {
+      label: "Hiển thị hoạt động",
+      type: "select",
+      key: "activity_visibility",
+      items: [
+        {
+          value: "public",
+          text_value: "Công khai",
+        },
+        {
+          value: "members",
+          text_value: "Thành viên",
+        },
+        {
+          value: "private",
+          text_value: "Riêng tư",
+        },
+      ],
+    },
+    {
+      label: "Bảng mặc định",
+      type: "select",
+      key: "default_board",
+      items: [
+        {
+          value: "public",
+          text_value: "Công khai",
+        },
+        {
+          value: "members",
+          text_value: "Thành viên",
+        },
+        {
+          value: "private",
+          text_value: "Riêng tư",
+        },
+      ],
+    },
+  ],
+};

@@ -5,7 +5,6 @@ import CreateBoardDialog from "@/Components/CreateBoardDialog";
 import { Button, Input, BoardSkeleton } from "@/Components/UI";
 import { initialBoards } from "../../config/data";
 import BoardCard from "@/Components/BoardCard";
-import { DefaultLayout } from "@/Layouts";
 
 function Home() {
   const [isLoading, setIsLoading] = useState(true);
@@ -27,7 +26,7 @@ function Home() {
   });
 
   return (
-    <DefaultLayout>
+    <>
       {/* Welcome Section */}
       <div className="mb-4 sm:mb-6 md:mb-8">
         <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1 sm:mb-2">
@@ -173,7 +172,7 @@ function Home() {
           </section>
         )}
       </div>
-    </DefaultLayout>
+    </>
   );
 }
 

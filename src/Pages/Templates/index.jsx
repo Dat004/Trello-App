@@ -20,7 +20,6 @@ import {
 } from "@/Components/UI";
 import CreateBoardFromTemplateDialog from "@/Components/CreateBoardFromTemplateDialog";
 import TemplatePreviewDialog from "@/Components/TemplatePreviewDialog";
-import { DefaultLayout } from "@/Layouts";
 import { templateData } from "./data";
 
 function Templates() {
@@ -75,7 +74,7 @@ function Templates() {
   const totalUsage = templates.reduce((sum, t) => sum + (t.usageCount || 0), 0);
 
   return (
-    <DefaultLayout>
+    <>
       {/* Welcome Section */}
       <div className="flex flex-col mb-6 md:mb-8 sm:flex-row sm:items-center sm:justify-between gap-4">
         <section>
@@ -171,7 +170,11 @@ function Templates() {
                     </section>
                     <div className="flex flex-wrap gap-1">
                       {template.tags.slice(0, 3).map((tag) => (
-                        <Badge key={tag} variant="outline" className="text-xs leading-[1.15]">
+                        <Badge
+                          key={tag}
+                          variant="outline"
+                          className="text-xs leading-[1.15]"
+                        >
                           {tag}
                         </Badge>
                       ))}
@@ -310,7 +313,10 @@ function Templates() {
                             </Badge>
                           ))}
                           {template.lists.length > 3 && (
-                            <Badge variant="outline" className="text-xs leading-[1.15]">
+                            <Badge
+                              variant="outline"
+                              className="text-xs leading-[1.15]"
+                            >
                               +{template.lists.length - 3}
                             </Badge>
                           )}
@@ -352,7 +358,7 @@ function Templates() {
           </section>
         )}
       </section>
-    </DefaultLayout>
+    </>
   );
 }
 

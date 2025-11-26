@@ -14,7 +14,6 @@ import {
 
 import MemberDetailsDialog from "@/Components/MemberDetailsDialog";
 import InviteMemberDialog from "@/Components/InviteMemberDialog";
-import { DefaultLayout } from "@/Layouts";
 import {
   Badge,
   Input,
@@ -197,7 +196,7 @@ function Members() {
   };
 
   return (
-    <DefaultLayout>
+    <>
       {/* Welcome Section */}
       <div className="flex flex-col mb-6 md:mb-8 sm:flex-row sm:items-center sm:justify-between gap-4">
         <section>
@@ -458,7 +457,7 @@ function Members() {
           )}
         </CardContent>
       </Card>
-    </DefaultLayout>
+    </>
   );
 }
 

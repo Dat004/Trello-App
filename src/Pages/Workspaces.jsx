@@ -31,7 +31,6 @@ import {
   StatsSkeleton,
   WorkspacesSkeleton,
 } from "@/Components/UI";
-import { DefaultLayout } from "@/Layouts";
 
 function Workspaces() {
   const [isLoading, setIsLoading] = useState(true);
@@ -148,7 +147,7 @@ function Workspaces() {
   };
 
   return (
-    <DefaultLayout>
+    <>
       {/* Welcome Section */}
       <div className="flex mb-6 md:mb-8 flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <section>
@@ -354,7 +353,10 @@ function Workspaces() {
                     </div>
 
                     <div className="flex items-center gap-2 pt-2">
-                      <Button size="sm" className="flex-1 h-8 sm:h-9 font-normal sm:font-medium">
+                      <Button
+                        size="sm"
+                        className="flex-1 h-8 sm:h-9 font-normal sm:font-medium"
+                      >
                         Xem bảng
                       </Button>
                       <Button variant="outline" size="sm">
@@ -388,7 +390,7 @@ function Workspaces() {
           </div>
         </div>
       )}
-    </DefaultLayout>
+    </>
   );
 }
 

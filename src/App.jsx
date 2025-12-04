@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 import routes from "@/config/routes";
 
-function App({ children }) {
+function App() {
   return (
     <Router>
       <Routes>
@@ -12,10 +12,10 @@ function App({ children }) {
             element={
               route.layout ? (
                 <route.layout>
-                  <route.page>{children}</route.page>
+                  <route.page />
                 </route.layout>
               ) : (
-                <route.page>{children}</route.page>
+                <route.page />
               )
             }
           />

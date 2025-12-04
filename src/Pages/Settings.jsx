@@ -10,8 +10,9 @@ import {
   Lock,
 } from "lucide-react";
 
-import { settingsData } from "@/config/data";
 import { UserAuth } from "@/context/AuthContext";
+import { settingsData } from "@/config/data";
+import { updateFS } from "@/lib/firestore";
 import {
   Card,
   CardContent,
@@ -42,17 +43,18 @@ import {
 const tabs = {
   profile: "",
   notifications: "notifications",
-  preferences: "preferences",
+  appearance: "appearance",
   privacy: "privacy",
   account: "account",
 };
 
 function Settings() {
+  const navigate = useNavigate();
+
   const { user } = UserAuth();
   const { step } = useParams();
   const { settings: userSettings } = user;
 
-  const navigate = useNavigate();
   const [tab, setTab] = useState(step ?? "");
   const [profile, setProfile] = useState({
     displayName: user.displayName,
@@ -71,25 +73,33 @@ function Settings() {
   });
 
   useEffect(() => {
-    console.log(notifications);
-  }, [notifications]);
-
-  useEffect(() => {
-    console.log(appearance);
-  }, [appearance]);
-
-  useEffect(() => {
-    console.log(privacy);
-  }, [privacy]);
-
-  useEffect(() => {
+    // Chuyển hướng sang các tab settings tương ứng
     navigate(`/settings/${tab}`);
+
+    // Reset về các cài đặt gốc của người dùng khi thay đổi tab nếu người đó chưa lưu cài đặt
+    setProfile({
+      displayName: user.displayName,
+      email: user.email,
+      bio: user.bio,
+      photoURL: user.photoURL,
+    });
+    setNotifications({
+      ...userSettings.notifications,
+    });
+    setAppearance({
+      ...userSettings.appearance,
+    });
+    setPrivacy({
+      ...userSettings.privacy,
+    });
   }, [tab]);
 
+  // Xử lý cập nhât tab state tương ứng
   const navigateTab = (currentTab) => {
     setTab(currentTab);
   };
 
+  // Xử lý cho các switch checked
   const handleChecked = (setData, key, checked) => {
     setData((state) => ({
       ...state,
@@ -97,11 +107,31 @@ function Settings() {
     }));
   };
 
+  // Xử lý cho các select value
   const handleSelect = (setData, key, value) => {
     setData((state) => ({
       ...state,
       [key]: value,
     }));
+  };
+
+  // Xử lý update thông tin, settings của người dùng lên firestore
+  const updateSettingUser = async (key, data) => {
+    const newData = { ...user };
+
+    const result = await updateFS("users", user?.uid, {
+      ...newData,
+      settings: {
+        ...newData.settings,
+        [key]: data,
+      },
+    });
+
+    if (result.success) {
+      console.log(result);
+
+      return;
+    }
   };
 
   return (
@@ -138,8 +168,8 @@ function Settings() {
               <span className="hidden sm:inline">Thông báo</span>
             </TabsTrigger>
             <TabsTrigger
-              onClick={() => navigateTab(tabs.preferences)}
-              value={tabs.preferences}
+              onClick={() => navigateTab(tabs.appearance)}
+              value={tabs.appearance}
               className="gap-2"
             >
               <Palette className="h-4 w-4" />
@@ -318,13 +348,20 @@ function Settings() {
                   </div>
                 </div>
 
-                <Button className="h-9">Lưu cài đặt</Button>
+                <Button
+                  className="h-9"
+                  onClick={() =>
+                    updateSettingUser("notifications", notifications)
+                  }
+                >
+                  Lưu cài đặt
+                </Button>
               </CardContent>
             </Card>
           </TabsContent>
 
-          {/* Preferences Tab */}
-          <TabsContent value={tabs.preferences} className="space-y-6">
+          {/* Appearance Tab */}
+          <TabsContent value={tabs.appearance} className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Tùy chỉnh giao diện</CardTitle>
@@ -364,7 +401,12 @@ function Settings() {
                   ))}
                 </div>
 
-                <Button className="h-9">Lưu tùy chỉnh</Button>
+                <Button
+                  className="h-9"
+                  onClick={() => updateSettingUser("appearance", appearance)}
+                >
+                  Lưu cài đặt
+                </Button>
               </CardContent>
             </Card>
           </TabsContent>
@@ -410,7 +452,12 @@ function Settings() {
                   ))}
                 </div>
 
-                <Button className="h-9">Lưu cài đặt</Button>
+                <Button
+                  className="h-9"
+                  onClick={() => updateSettingUser("privacy", privacy)}
+                >
+                  Lưu cài đặt
+                </Button>
               </CardContent>
             </Card>
           </TabsContent>

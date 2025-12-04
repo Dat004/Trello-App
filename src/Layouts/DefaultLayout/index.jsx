@@ -7,11 +7,11 @@ import Header from "./Components/Header";
 
 function DefaultLayout({ children }) {
   const navigate = useNavigate();
-  const { isLogged, loading, user } = UserAuth();
+  const { isLogged, user } = UserAuth();
 
   useEffect(() => {
-    if (!isLogged && !loading) navigate("/login");
-  }, [isLogged, loading]);
+    if (!isLogged) navigate("/login");
+  }, [isLogged]);
 
   return (
     <div className="h-screen bg-background">
@@ -26,7 +26,7 @@ function DefaultLayout({ children }) {
           <section>
             <Header userData={user} />
             <section className="container mx-auto p-4 md:p-6 animate-fade-in">
-              {children}
+              {user && children}
             </section>
           </section>
         </main>

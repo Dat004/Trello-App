@@ -1,9 +1,10 @@
-import { useEffect } from "react";
-import { FaFacebook, FaTwitter, FaGithub } from "react-icons/fa";
+import { useEffect, useState } from "react";
+import { FaFacebook } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 import { Link, useNavigate } from "react-router-dom";
 
 import { Button, Label, Input, Separator } from "@/Components/UI";
+import { UserToast } from "@/context/ToastContext";
 import { UserAuth } from "@/context/AuthContext";
 import loginSchema from "@/schemas/loginSchema";
 import { logInWithGoogle } from "@/lib/auth";
@@ -12,7 +13,10 @@ import { authApi } from "@/api/user";
 
 function Auth() {
   const navigate = useNavigate();
+  const [isLogging, setIsLogging] = useState(false);
+
   const { isLogged, loading, user } = UserAuth();
+  const { addToast } = UserToast();
 
   const {
     register,
@@ -29,7 +33,33 @@ function Auth() {
   };
 
   const handleLoginAccount = async (data) => {
+    setIsLogging(true);
+
     const res = await authApi.login(data);
+
+    if(res.data.success) {
+      const duration = 3000;
+
+      addToast({
+        type: "success",
+        title: res.data.message,
+        description: "Chúng tôi sẽ tự động chuyển hướng bạn trong vài giây...",
+        duration: duration
+      });
+
+      setTimeout(() => {
+        navigate("/");
+      }, duration);
+
+      return;
+    }
+
+    addToast({
+      type: "error",
+      title: res.data.message,
+      duration: 3000
+    });
+    setIsLogging(false);
   };
 
   return (
@@ -72,7 +102,7 @@ function Auth() {
                     <Label htmlFor="email" className="text-xs">
                       Email
                     </Label>
-                    <Input {...register('email')} type="email" id="email" />
+                    <Input {...register("email")} type="email" id="email" />
                     {errors.email?.message && (
                       <span className="text-xs text-destructive">
                         {errors.email.message}
@@ -83,15 +113,19 @@ function Auth() {
                     <Label htmlFor="password" className="text-xs">
                       Mật khẩu
                     </Label>
-                    <Input {...register('password')} type="password" id="password" />
+                    <Input
+                      {...register("password")}
+                      type="password"
+                      id="password"
+                    />
                     {errors.password?.message && (
                       <span className="text-xs text-destructive">
                         {errors.password.message}
                       </span>
                     )}
                   </section>
-                  <Button className="w-full" type="submit">
-                    Đăng nhập
+                  <Button disabled={isLogging} className="w-full" type="submit">
+                    {isLogging ? "Đang đăng nhập..." : "Đăng nhập"}
                   </Button>
                 </form>
 
@@ -105,6 +139,7 @@ function Auth() {
                 <section className="space-y-4">
                   <Button
                     variant="outline"
+                    disabled={isLogging}
                     onClick={handleSignInWithGoogle}
                     className="relative flex w-full items-center justify-start border-border hover:bg-muted-foreground h-11"
                   >

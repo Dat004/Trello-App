@@ -3,14 +3,18 @@ import { Link, useNavigate } from "react-router-dom";
 
 import { Button, Input, Label, Separator } from "@/Components/UI";
 import registerSchema from "@/schemas/registerSchema";
+import { UserToast } from "@/context/ToastContext";
 import { UserAuth } from "@/context/AuthContext";
 import { useZodForm } from "@/hooks";
 import { authApi } from "@/api/user";
 
 function Register() {
+  const [isRegistering, setIsRegistering] = useState(false);
   const registerFormRef = useRef(null);
   const navigate = useNavigate();
+
   const { isLogged, loading, user } = UserAuth();
+  const { addToast } = UserToast();
 
   const {
     register,
@@ -23,9 +27,33 @@ function Register() {
   }, [isLogged]);
 
   const handleRegisterAccount = async (data) => {
+    setIsRegistering(true);
+
     const res = await authApi.register(data);
 
-    console.log(res);
+    if (res.data.success) {
+      const duration = 3000;
+
+      addToast({
+        type: "success",
+        title: res.data.message,
+        description: "Tự động đăng nhập. Chúng tôi sẽ tự động chuyển hướng bạn trong vài giây...",
+        duration: duration,
+      });
+
+      setTimeout(() => {
+        navigate("/");
+      }, duration);
+
+      return;
+    }
+
+    addToast({
+      type: "error",
+      title: res.data.message,
+      duration: 3000,
+    });
+    setIsRegistering(false);
   };
 
   return (
@@ -122,7 +150,11 @@ function Register() {
                         </span>
                       )}
                     </section>
-                    <Button type="submit" className="w-full">
+                    <Button
+                      disabled={isRegistering}
+                      type="submit"
+                      className="w-full"
+                    >
                       Đăng ký
                     </Button>
                   </form>

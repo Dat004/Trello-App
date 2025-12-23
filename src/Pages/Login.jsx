@@ -1,15 +1,24 @@
 import { useEffect } from "react";
 import { FaFacebook, FaTwitter, FaGithub } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
+import { Button, Label, Input, Separator } from "@/Components/UI";
 import { UserAuth } from "@/context/AuthContext";
-import { Button, Separator } from "@/Components/UI";
+import loginSchema from "@/schemas/loginSchema";
 import { logInWithGoogle } from "@/lib/auth";
+import useZodForm from "@/hooks/useZodForm";
+import { authApi } from "@/api/user";
 
 function Auth() {
   const navigate = useNavigate();
   const { isLogged, loading, user } = UserAuth();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useZodForm(loginSchema);
 
   useEffect(() => {
     if (isLogged) navigate("/");
@@ -17,6 +26,10 @@ function Auth() {
 
   const handleSignInWithGoogle = async () => {
     const data = await logInWithGoogle();
+  };
+
+  const handleLoginAccount = async (data) => {
+    const res = await authApi.login(data);
   };
 
   return (
@@ -51,6 +64,44 @@ function Auth() {
                   </h3>
                 </section>
 
+                <form
+                  onSubmit={handleSubmit(handleLoginAccount)}
+                  className="space-y-2"
+                >
+                  <section>
+                    <Label htmlFor="email" className="text-xs">
+                      Email
+                    </Label>
+                    <Input {...register('email')} type="email" id="email" />
+                    {errors.email?.message && (
+                      <span className="text-xs text-destructive">
+                        {errors.email.message}
+                      </span>
+                    )}
+                  </section>
+                  <section>
+                    <Label htmlFor="password" className="text-xs">
+                      Mật khẩu
+                    </Label>
+                    <Input {...register('password')} type="password" id="password" />
+                    {errors.password?.message && (
+                      <span className="text-xs text-destructive">
+                        {errors.password.message}
+                      </span>
+                    )}
+                  </section>
+                  <Button className="w-full" type="submit">
+                    Đăng nhập
+                  </Button>
+                </form>
+
+                <section className="relative">
+                  <Separator />
+                  <span className="absolute bg-white px-2 top-1/2 left-1/2 -translate-1/2 text-xs">
+                    Hoặc
+                  </span>
+                </section>
+
                 <section className="space-y-4">
                   <Button
                     variant="outline"
@@ -72,38 +123,19 @@ function Auth() {
                       Đăng nhập với Facebook
                     </span>
                   </Button>
-                  <Button
-                    disabled
-                    variant="outline"
-                    className="relative flex w-full items-center justify-start border-border hover:bg-muted-foreground h-11"
-                  >
-                    <FaTwitter className="!h-6 !w-6 text-sky-400" />
-                    <span className="absolute top-1/2 left-1/2 -translate-1/2">
-                      Đăng nhập với Twitter
-                    </span>
-                  </Button>
-                  <Button
-                    disabled
-                    variant="outline"
-                    className="relative flex w-full items-center justify-start border-border hover:bg-muted-foreground h-11"
-                  >
-                    <FaGithub className="!h-6 !w-6" />
-                    <span className="absolute top-1/2 left-1/2 -translate-1/2">
-                      Đăng nhập với Github
-                    </span>
-                  </Button>
-
-                  <div className="text-center">
-                    <span className="text-xs">
-                      Bạn chưa có tài khoản? 
-                      <a href="/register" className="ml-1 text-primary underline">
-                        Tạo tài khoản
-                      </a>
-                    </span>
-                  </div>
                 </section>
 
-                <Separator />
+                <div className="text-center">
+                  <span className="text-xs">
+                    Bạn chưa có tài khoản?
+                    <Link
+                      to="/register"
+                      className="ml-1 text-primary underline"
+                    >
+                      Tạo tài khoản
+                    </Link>
+                  </span>
+                </div>
 
                 <p className="text-[11px] text-muted-foreground text-center">
                   <span className="flex justify-center mb-2 h-6">

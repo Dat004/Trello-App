@@ -1,20 +1,30 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import { UserAuth } from "@/context/AuthContext";
 import { Button, Input, Label, Separator } from "@/Components/UI";
+import { UserAuth } from "@/context/AuthContext";
+import { useRegisterForm } from "@/hooks";
+import { authApi } from "@/api/user";
 
 function Register() {
   const registerFormRef = useRef(null);
   const navigate = useNavigate();
   const { isLogged, loading, user } = UserAuth();
 
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useRegisterForm();
+
   useEffect(() => {
     if (isLogged) navigate("/");
   }, [isLogged]);
 
-  const handleSignInWithGoogle = async () => {
-    const data = await logInWithGoogle();
+  const handleRegisterAccount = async (data) => {
+    const res = await authApi.register(data);
+
+    console.log(res);
   };
 
   return (
@@ -50,41 +60,76 @@ function Register() {
                 </section>
 
                 <section className="space-y-4">
-                  <form ref={registerFormRef} className="space-y-2">
+                  <form
+                    ref={registerFormRef}
+                    onSubmit={handleSubmit(handleRegisterAccount)}
+                    className="space-y-2"
+                  >
                     <section>
                       <Label htmlFor="full_name" className="text-xs">
                         Tên đầy đủ
                       </Label>
-                      <Input type="text" id="full_name" />
+                      <Input
+                        {...register("full_name")}
+                        type="text"
+                        id="full_name"
+                      />
+                      {errors.full_name?.message && (
+                        <span className="text-xs text-destructive">
+                          {errors.full_name.message}
+                        </span>
+                      )}
                     </section>
                     <section>
                       <Label htmlFor="email" className="text-xs">
                         Email
                       </Label>
-                      <Input type="email" id="email" />
+                      <Input {...register("email")} type="email" id="email" />
+                      {errors.email?.message && (
+                        <span className="text-xs text-destructive">
+                          {errors.email.message}
+                        </span>
+                      )}
                     </section>
                     <section>
                       <Label htmlFor="password" className="text-xs">
                         Mật khẩu
                       </Label>
-                      <Input type="password" id="password" />
+                      <Input
+                        {...register("password")}
+                        type="password"
+                        id="password"
+                      />
+                      {errors.password?.message && (
+                        <span className="text-xs text-destructive">
+                          {errors.password.message}
+                        </span>
+                      )}
                     </section>
                     <section>
                       <Label htmlFor="confirm_password" className="text-xs">
                         Xác nhận mật khẩu
                       </Label>
-                      <Input type="password" id="confirm_password" />
+                      <Input
+                        {...register("confirmPassword")}
+                        type="password"
+                        id="confirm_password"
+                      />
+                      {errors.confirmPassword?.message && (
+                        <span className="text-xs text-destructive">
+                          {errors.confirmPassword.message}
+                        </span>
+                      )}
                     </section>
-                    <Button type="submit" className="w-full">Đăng ký</Button>
+                    <Button type="submit" className="w-full">
+                      Đăng ký
+                    </Button>
                   </form>
 
                   <div className="text-center">
                     <span className="text-xs">
                       Đã có tài khoản?
-                      <a
-                        href="/login"
-                        className="ml-1 text-primary underline"
-                      >
+                      <a href="/login" className="ml-1 text-primary underline">
                         Đăng nhập ngay
                       </a>
                     </span>

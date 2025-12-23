@@ -130,9 +130,9 @@ function Register() {
                   <div className="text-center">
                     <span className="text-xs">
                       Đã có tài khoản?
-                      <a href="/login" className="ml-1 text-primary underline">
+                      <Link to="/login" className="ml-1 text-primary underline">
                         Đăng nhập ngay
-                      </a>
+                      </Link>
                     </span>
                   </div>
                 </section>

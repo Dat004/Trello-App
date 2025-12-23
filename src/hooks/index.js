@@ -1,1 +1,1 @@
-export { default as useRegisterForm } from "./useRegisterForm";
+export { default as useZodForm } from "./useZodForm";

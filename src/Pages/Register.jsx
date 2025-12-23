@@ -2,8 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { Button, Input, Label, Separator } from "@/Components/UI";
+import registerSchema from "@/schemas/registerSchema";
 import { UserAuth } from "@/context/AuthContext";
-import { useRegisterForm } from "@/hooks";
+import { useZodForm } from "@/hooks";
 import { authApi } from "@/api/user";
 
 function Register() {
@@ -15,7 +16,7 @@ function Register() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useRegisterForm();
+  } = useZodForm(registerSchema);
 
   useEffect(() => {
     if (isLogged) navigate("/");

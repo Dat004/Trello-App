@@ -92,6 +92,15 @@ function Auth() {
                       Đăng nhập với Github
                     </span>
                   </Button>
+
+                  <div className="text-center">
+                    <span className="text-xs">
+                      Bạn chưa có tài khoản? 
+                      <a href="/register" className="ml-1 text-primary underline">
+                        Tạo tài khoản
+                      </a>
+                    </span>
+                  </div>
                 </section>
 
                 <Separator />

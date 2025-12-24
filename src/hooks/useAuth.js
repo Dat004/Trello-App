@@ -7,6 +7,7 @@ import { authApi } from "@/api/auth";
 export const useAuth = () => {
   const navigate = useNavigate();
   const setUser = useAuthStore((state) => state.setUser);
+  const clearUser = useAuthStore((state) => state.clearUser);
 
   const { addToast } = UserToast();
   const duration = 3000;
@@ -66,7 +67,19 @@ export const useAuth = () => {
     handleError(res.data.message);
   };
 
-  return { login, register };
+  const logout = async () => {
+    const res = await authApi.logout();
+
+    if (res.data.success) {
+      clearUser();
+
+      return;
+    }
+
+    handleError(res.data.message);
+  };
+
+  return { login, register, logout };
 };
 
 export default useAuth;

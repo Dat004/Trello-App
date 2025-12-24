@@ -9,7 +9,7 @@ const useAuthStore = create((set) => ({
     set(() => ({ user, isAuthenticated: !!user, loading: false })),
 
   clearUser: () =>
-    set(() => ({ user: null, isAuthenticated: faslse, loading: false })),
+    set(() => ({ user: null, isAuthenticated: false, loading: false })),
 }));
 
 export default useAuthStore;

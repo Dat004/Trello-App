@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 
 import { UserToast } from "@/context/ToastContext";
 import { useAuthStore } from "@/store";
-import { authApi } from "@/api/user";
+import { authApi } from "@/api/auth";
 
 export const useAuth = () => {
   const navigate = useNavigate();

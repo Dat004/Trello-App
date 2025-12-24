@@ -1,26 +1,8 @@
 import axiosClient from "./axiosClient";
 
-const registerRoute = '/auth/register';
-const loginRoute = '/auth/login';
 const meRoute = '/users/me';
 
-export const authApi = {
-    async register(data) {
-        try {
-            return await axiosClient.post(registerRoute, data);
-        }
-        catch(err) {
-            return err.response;
-        }
-    },
-    async login(data) {
-        try {
-            return await axiosClient.post(loginRoute, data);
-        }
-        catch(err) {
-            return err.response;
-        }
-    },
+export const userApi = {
     async me() {
         try {
             return await axiosClient.get(meRoute);

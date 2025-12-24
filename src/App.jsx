@@ -1,6 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
+import ProtectedRoute from "./routes/ProtectedRoute";
 import routes from "@/config/routes";
+import PublicRoute from "./routes/PublicRoute";
 
 function App() {
   return (
@@ -10,12 +12,26 @@ function App() {
           <Route
             path={route.path}
             element={
-              route.layout ? (
-                <route.layout>
-                  <route.page />
-                </route.layout>
+              route.auth === "protected" ? (
+                <ProtectedRoute>
+                  {route.layout ? (
+                    <route.layout>
+                      <route.page />
+                    </route.layout>
+                  ) : (
+                    <route.page />
+                  )}
+                </ProtectedRoute>
               ) : (
-                <route.page />
+                <PublicRoute>
+                  {route.layout ? (
+                    <route.layout>
+                      <route.page />
+                    </route.layout>
+                  ) : (
+                    <route.page />
+                  )}
+                </PublicRoute>
               )
             }
           />

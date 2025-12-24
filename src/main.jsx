@@ -1,17 +1,17 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
+import AuthInitializer from "./initializers/AuthInitializer";
 import ToastProvider from "./providers/ToastProvider";
-import AuthProvider from "@/providers/AuthProvider";
 import App from "@/App";
 import "@/global.css";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <AuthProvider>
+    <AuthInitializer>
       <ToastProvider>
         <App />
       </ToastProvider>
-    </AuthProvider>
+    </AuthInitializer>
   </StrictMode>
 );

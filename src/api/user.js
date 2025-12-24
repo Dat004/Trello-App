@@ -2,6 +2,7 @@ import axiosClient from "./axiosClient";
 
 const registerRoute = '/auth/register';
 const loginRoute = '/auth/login';
+const meRoute = '/users/me';
 
 export const authApi = {
     async register(data) {
@@ -15,6 +16,14 @@ export const authApi = {
     async login(data) {
         try {
             return await axiosClient.post(loginRoute, data);
+        }
+        catch(err) {
+            return err.response;
+        }
+    },
+    async me() {
+        try {
+            return await axiosClient.get(meRoute);
         }
         catch(err) {
             return err.response;

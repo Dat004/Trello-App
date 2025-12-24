@@ -9,6 +9,7 @@ const routes = [
     path: paths.home,
     page: pages.Home,
     layout: DefaultLayout,
+    auth: "protected",
   },
   {
     id: 2,
@@ -16,6 +17,7 @@ const routes = [
     path: paths.workspaces,
     page: pages.Workspaces,
     layout: DefaultLayout,
+    auth: "protected",
   },
   {
     id: 3,
@@ -23,6 +25,7 @@ const routes = [
     path: paths.templates,
     page: pages.Templates,
     layout: DefaultLayout,
+    auth: "protected",
   },
   {
     id: 4,
@@ -30,6 +33,7 @@ const routes = [
     path: paths.members,
     page: pages.Members,
     layout: DefaultLayout,
+    auth: "protected",
   },
   {
     id: 5,
@@ -37,6 +41,7 @@ const routes = [
     path: paths.settings,
     page: pages.Settings,
     layout: DefaultLayout,
+    auth: "protected",
   },
   {
     id: 6,
@@ -44,6 +49,7 @@ const routes = [
     path: paths.board,
     page: pages.Board,
     layout: BoardLayout,
+    auth: "protected",
   },
   {
     id: 7,
@@ -51,6 +57,7 @@ const routes = [
     path: paths.login,
     page: pages.Login,
     layout: null,
+    auth: "guest",
   },
   {
     id: 8,
@@ -58,6 +65,7 @@ const routes = [
     path: paths.register,
     page: pages.Register,
     layout: null,
+    auth: "guest",
   },
 ];
 

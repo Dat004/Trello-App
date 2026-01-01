@@ -1,5 +1,6 @@
 import axiosClient from "./axiosClient";
 
+const updateSettingsRoute = '/users/me/settings';
 const meRoute = '/users/me';
 
 export const userApi = {
@@ -11,4 +12,12 @@ export const userApi = {
             return err.response;
         }
     },
+    async updateSettings(data) {
+        try {
+            return await axiosClient.patch(updateSettingsRoute, data);
+        }
+        catch(err) {
+            return err.response;
+        }
+    }
 }

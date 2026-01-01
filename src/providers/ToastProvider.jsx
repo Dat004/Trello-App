@@ -1,8 +1,8 @@
+import { AlertCircle, AlertTriangle, CheckCircle, Info, X } from "lucide-react";
 import { useState } from "react";
-import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from "lucide-react";
 
-import ToastContext from "@/context/ToastContext";
 import { Button } from "@/Components/UI";
+import ToastContext from "@/context/ToastContext";
 
 function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([]);
@@ -77,7 +77,7 @@ function ToastProvider({ children }) {
     >
       {children}
 
-      <div className="fixed top-4 right-4 z-50 space-y-2">
+      <div className="fixed top-4 right-4 z-9999 space-y-2">
         {toasts.map((toast) => (
           <div
             key={toast.id}

@@ -7,10 +7,9 @@ import {
   Trash2,
   User,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-import { userApi } from "@/api/user";
 import {
   Avatar,
   AvatarFallback,
@@ -37,9 +36,19 @@ import {
   TabsTrigger,
   TextArea,
 } from "@/Components/UI";
-import { settingsData } from "@/config/data";
+import {
+  validateFileByIntent,
+  getAcceptByIntent,
+  UPLOAD_INTENT,
+} from "@/lib/file";
+import { uploadService } from "@/services/uploadService";
 import { UserToast } from "@/context/ToastContext";
+import { infoSchema } from "@/schemas/userSchema";
+import { settingsData } from "@/config/data";
+import { uploadApi } from "@/api/upload";
 import { useAuthStore } from "@/store";
+import { userApi } from "@/api/user";
+import { useZodForm } from "@/hooks";
 
 const tabs = {
   profile: "",
@@ -51,6 +60,7 @@ const tabs = {
 
 function Settings() {
   const navigate = useNavigate();
+  const avatarFileRef = useRef(null);
 
   const { addToast } = UserToast();
   const { user } = useAuthStore();
@@ -58,12 +68,22 @@ function Settings() {
 
   const setUser = useAuthStore((state) => state.setUser);
 
+  const form = useZodForm(infoSchema, {
+    defaultValues: {
+      full_name: user.full_name,
+      bio: user.bio,
+    },
+  });
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = form;
+
   const [tab, setTab] = useState(step ?? "");
-  const [profile, setProfile] = useState({
-    full_name: user.full_name,
-    email: user.email,
-    bio: user.bio,
-    avatar: user.avatar,
+  const [pendingAvatar, setPendingAvatar] = useState({
+    url: user.avatar.url,
+    public_id: user.avatar.public_id,
   });
   const [notifications, setNotifications] = useState({
     ...user.settings.notifications,
@@ -80,12 +100,11 @@ function Settings() {
     navigate(`/settings/${tab}`);
 
     // Reset về các cài đặt gốc của người dùng khi thay đổi tab nếu người đó chưa lưu cài đặt
-    setProfile({
+    form.reset({
       full_name: user.full_name,
-      email: user.email,
       bio: user.bio,
-      avatar: user.avatar,
     });
+
     setNotifications({
       ...user.settings.notifications,
     });
@@ -139,22 +158,59 @@ function Settings() {
     }
   };
 
-  const updateSettingsState = (key, data) => {
-    switch (key) {
-      case tabs.notifications:
-        setNotifications(data);
-        break;
+  const handleUploadNewAvatar = async (e) => {
+    const file = e.target.files[0];
 
-      case tabs.appearance:
-        setAppearance(data);
-        break;
+    const error = validateFileByIntent(file, UPLOAD_INTENT.AVATAR);
+    if (error) {
+      addToast({
+        type: "error",
+        title: error,
+      });
 
-      case tabs.privacy:
-        setPrivacy(data);
-        break;
+      return;
+    }
 
-      default:
-        break;
+    const result = await uploadService.upload(file, UPLOAD_INTENT.AVATAR);
+
+    addToast({
+      type: result.error ? "error" : "success",
+      title: result.error
+        ? "Upload hình ảnh thất bại"
+        : "Upload hình ảnh thành công",
+    });
+
+    if (result.error) {
+      return;
+    }
+
+    const { public_id, eager } = result;
+    if (public_id && eager) {
+      setPendingAvatar({
+        url: eager[0]?.secure_url,
+        public_id,
+      });
+    }
+  };
+
+  const updateInfoUser = async (data) => {
+    const userData = {
+      ...data,
+      avatar: { ...pendingAvatar },
+    };
+
+    const res = await userApi.updateInfo(userData);
+
+    addToast({
+      type: res.data.success ? "success" : "error",
+      title: res.data.message,
+      duration: 3000,
+    });
+
+    if (res.data.success) {
+      setUser(res.data.data.user);
+
+      return;
     }
   };
 
@@ -227,63 +283,97 @@ function Settings() {
             <section className="px-4 sm:px-6">
               <Separator />
             </section>
-            <CardContent className="space-y-6">
-              <div className="flex items-center gap-6">
-                <Avatar className="h-20 w-20">
-                  <AvatarImage src={profile.avatar} alt={profile.full_name} />
-                  <AvatarFallback className="text-lg">
-                    {profile.full_name.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="space-y-2">
-                  <Button size="sm" className="gap-2 leading-1.5 text-xs h-8">
-                    <Camera className="h-4 w-4" />
-                    Thay đổi ảnh
-                  </Button>
-                  <p className="text-xs sm:text-sm text-muted-foreground">
-                    JPG, PNG tối đa 2MB
-                  </p>
+            <CardContent>
+              <form
+                className="space-y-6"
+                onSubmit={handleSubmit(updateInfoUser)}
+              >
+                <div className="flex items-center gap-6">
+                  <Avatar className="h-20 w-20">
+                    <AvatarImage src={pendingAvatar.url} alt={user.full_name} />
+                    <AvatarFallback className="text-lg">
+                      {user.full_name.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="space-y-2">
+                    <Button
+                      size="sm"
+                      type="button"
+                      onClick={() => avatarFileRef.current.click()}
+                      className="gap-2 leading-1.5 text-xs h-8"
+                    >
+                      <Camera className="h-4 w-4" />
+                      Thay đổi ảnh
+                    </Button>
+                    <p className="text-xs sm:text-sm text-muted-foreground">
+                      JPG, PNG tối đa 2MB
+                    </p>
+                    <section>
+                      <Input
+                        type="file"
+                        ref={avatarFileRef}
+                        onChange={handleUploadNewAvatar}
+                        accept={getAcceptByIntent(UPLOAD_INTENT.AVATAR)}
+                        className="hidden opacity-0 invisible select-none pointer-events-none"
+                      />
+                    </section>
+                  </div>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <section className="flex items-center">
+                      <Label className="leading-4" htmlFor="full_name">
+                        Họ và tên
+                      </Label>
+
+                      {errors.full_name?.message && (
+                        <span className="text-xs ml-auto text-destructive">
+                          {errors.full_name.message}
+                        </span>
+                      )}
+                    </section>
+                    <Input id="full_name" {...register("full_name")} />
+                  </div>
+                  <div className="space-y-2">
+                    <section className="flex items-center">
+                      <Label className="leading-4" htmlFor="email">
+                        Email
+                      </Label>
+                    </section>
+                    <Input
+                      readOnly
+                      disabled
+                      id="email"
+                      type="email"
+                      value={user.email}
+                    />
+                  </div>
+                </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="name">Họ và tên</Label>
-                  <Input
-                    id="name"
-                    value={profile.full_name}
-                    onChange={(e) =>
-                      setProfile({ ...profile, name: e.target.value })
-                    }
+                  <section className="flex items-center">
+                    <Label className="leading-4" htmlFor="bio">
+                      Giới thiệu
+                    </Label>
+                  </section>
+                  <TextArea
+                    id="bio"
+                    {...register("bio")}
+                    placeholder="Viết vài dòng về bản thân..."
+                    rows={3}
                   />
+                  {errors.bio?.message && (
+                    <span className="text-xs text-destructive">
+                      {errors.bio.message}
+                    </span>
+                  )}
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={profile.email}
-                    onChange={(e) =>
-                      setProfile({ ...profile, email: e.target.value })
-                    }
-                  />
-                </div>
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="bio">Giới thiệu</Label>
-                <TextArea
-                  id="bio"
-                  placeholder="Viết vài dòng về bản thân..."
-                  value={profile.bio}
-                  onChange={(e) =>
-                    setProfile({ ...profile, bio: e.target.value })
-                  }
-                  rows={3}
-                />
-              </div>
-
-              <Button className="leading-1.5 h-9">Lưu thay đổi</Button>
+                <Button type="submit" className="leading-1.5 h-9">
+                  Lưu thay đổi
+                </Button>
+              </form>
             </CardContent>
           </Card>
         </TabsContent>

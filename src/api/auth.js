@@ -1,4 +1,4 @@
-import axiosClient from "./axiosClient";
+import { axiosClient } from "./axiosClient";
 
 const registerRoute = "/auth/register";
 const logoutRoute = "/auth/logout";

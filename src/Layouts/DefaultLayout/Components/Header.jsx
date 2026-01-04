@@ -5,6 +5,7 @@ import { Search, Plus, User, LogOut, Settings } from "lucide-react";
 import NotificationsPanel from "@/Components/NotificationsPanel";
 import CreateBoardDialog from "@/Components/CreateBoardDialog";
 import { headerMenuData } from "@/config/data";
+import { useAuthStore } from "@/store";
 import { useAuth } from "@/hooks";
 import {
   Button,
@@ -21,6 +22,8 @@ import {
 
 function Header() {
   const navigate = useNavigate();
+
+  const { user } = useAuthStore();
   const { logout } = useAuth();
 
   return (
@@ -84,8 +87,8 @@ function Header() {
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                 {/* Avatar */}
                 <Avatar className="h-8 w-8">
-                  {/* <AvatarImage src={user?.photoURL} alt={user?.displayName} />
-                  <AvatarFallback>{user?.displayName.charAt(0)}</AvatarFallback> */}
+                  <AvatarImage src={user.avatar.url} alt={user.full_name} />
+                  <AvatarFallback>{user.full_name.charAt(0)}</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>

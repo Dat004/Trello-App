@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import {
   Building2,
   Users,
@@ -13,6 +12,7 @@ import {
 
 import SettingWorkspaceDialog from "@/Components/SettingWorkspaceDialog";
 import CreateWorkspaceDialog from "@/Components/CreateWorkspaceDialog";
+import { useWorkspaceStore } from "@/store";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,91 +33,18 @@ import {
 } from "@/Components/UI";
 
 function Workspaces() {
-  const [isLoading, setIsLoading] = useState(true);
-  const [workspaces, setWorkspaces] = useState([
-    {
-      id: "1",
-      name: "Công ty ABC",
-      description: "Không gian làm việc chính của công ty",
-      members: 24,
-      boards: 12,
-      isStarred: true,
-      role: "admin",
-      lastActivity: "2 giờ trước",
-      color: "bg-blue-500",
-    },
-    {
-      id: "2",
-      name: "Dự án cá nhân",
-      description: "Các dự án và ý tưởng cá nhân",
-      members: 3,
-      boards: 5,
-      isStarred: false,
-      role: "admin",
-      lastActivity: "1 ngày trước",
-      color: "bg-green-500",
-    },
-    {
-      id: "3",
-      name: "Team Marketing",
-      description: "Chiến lược và campaigns marketing",
-      members: 8,
-      boards: 7,
-      isStarred: true,
-      role: "member",
-      lastActivity: "3 giờ trước",
-      color: "bg-purple-500",
-    },
-    {
-      id: "4",
-      name: "Phát triển sản phẩm",
-      description: "Roadmap và tính năng mới",
-      members: 15,
-      boards: 9,
-      isStarred: false,
-      role: "viewer",
-      lastActivity: "5 giờ trước",
-      color: "bg-orange-500",
-    },
-  ]);
-
-  // Simulate loading
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1000);
-    return () => clearTimeout(timer);
-  }, []);
+  const { loading, workspaces } = useWorkspaceStore();
 
   const handleCreateWorkspace = (data) => {
-    const newWorkspace = {
-      id: Date.now().toString(),
-      name: data.name,
-      description: data.description,
-      members: 1,
-      boards: 0,
-      isStarred: false,
-      role: "admin",
-      lastActivity: "Vừa tạo",
-      color: data.color,
-    };
-    setWorkspaces((prev) => [...prev, newWorkspace]);
   };
 
   const handleToggleStar = (id) => {
-    setWorkspaces((prev) =>
-      prev.map((w) => (w.id === id ? { ...w, isStarred: !w.isStarred } : w))
-    );
-    const workspace = workspaces.find((w) => w.id === id);
   };
 
   const handleDeleteWorkspace = (id) => {
-    const workspace = workspaces.find((w) => w.id === id);
-    setWorkspaces((prev) => prev.filter((w) => w.id !== id));
   };
 
   const handleUpdateWorkspace = (id) => {
-    setWorkspaces((prev) =>
-      prev.map((w) => (w.id === id ? { ...w, ...data } : w))
-    );
   };
 
   const getRoleBadgeVariant = (role) => {
@@ -165,7 +92,7 @@ function Workspaces() {
 
       {/* Stats Cards */}
       <section className="mb-6 md:mb-8">
-        {isLoading ? (
+        {loading ? (
           <StatsSkeleton />
         ) : (
           <div className="animate-slide-in-up">
@@ -241,7 +168,7 @@ function Workspaces() {
       </section>
 
       {/* Workspaces Grid */}
-      {isLoading ? (
+      {loading ? (
         <WorkspacesSkeleton />
       ) : (
         <div

@@ -1,4 +1,11 @@
-import { AlertCircle, AlertTriangle, CheckCircle, Info, X } from "lucide-react";
+import {
+  AlertCircle,
+  AlertTriangle,
+  CheckCircle,
+  Loader2,
+  Info,
+  X,
+} from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/Components/UI";
@@ -18,9 +25,13 @@ function ToastProvider({ children }) {
 
     setToasts((prev) => [...prev, newToast]);
 
-    setTimeout(() => {
-      closeToast(id);
-    }, toast.duration || 5000);
+    if (toast.type !== "loading") {
+      setTimeout(() => {
+        closeToast(id);
+      }, toast.duration || 5000);
+    }
+
+    return id;
   };
 
   const closeToast = (id) => {
@@ -51,6 +62,8 @@ function ToastProvider({ children }) {
         return <AlertTriangle className="h-5 w-5 text-yellow-500" />;
       case "info":
         return <Info className="h-5 w-5 text-blue-500" />;
+      case "loading":
+        return <Loader2 className="h-5 w-5 text-gray-500 animate-spin" />;
       default:
         return null;
     }
@@ -66,6 +79,8 @@ function ToastProvider({ children }) {
         return "bg-yellow-50 border-yellow-200";
       case "info":
         return "bg-blue-50 border-blue-200";
+      case "loading":
+        return "bg-gray-50 border-gray-200";
       default:
         return "";
     }

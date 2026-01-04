@@ -1,7 +1,11 @@
 import { useState, useRef } from "react";
 import { Camera } from "lucide-react";
 
-import { UPLOAD_INTENT, validateFileByIntent, getAcceptByIntent } from "@/lib/file";
+import {
+  UPLOAD_INTENT,
+  validateFileByIntent,
+  getAcceptByIntent,
+} from "@/lib/file";
 import { uploadService } from "@/services/uploadService";
 import { UserToast } from "@/context/ToastContext";
 import { infoSchema } from "@/schemas/userSchema";
@@ -25,10 +29,12 @@ import {
 } from "@/Components/UI";
 
 function ProfileTab() {
-  const { addToast } = UserToast();
+  const { addToast, removeToast } = UserToast();
   const { user } = useAuthStore();
 
   const avatarFileRef = useRef(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   const [pendingAvatar, setPendingAvatar] = useState({
     url: user.avatar.url,
     public_id: user.avatar.public_id,
@@ -48,11 +54,13 @@ function ProfileTab() {
   const setUser = useAuthStore((state) => state.setUser);
 
   const updateInfoUser = async (data) => {
+    if (isUpdating) return; // Tránh spam cập nhật khi đang xử lý cập nhật trước đó
+    setIsUpdating(true);
+
     const userData = {
       ...data,
       avatar: { ...pendingAvatar },
     };
-
     const res = await userApi.updateInfo(userData);
 
     addToast({
@@ -60,6 +68,7 @@ function ProfileTab() {
       title: res.data.message,
       duration: 3000,
     });
+    setIsUpdating(false);
 
     if (res.data.success) {
       setUser(res.data.data.user);
@@ -69,8 +78,10 @@ function ProfileTab() {
   };
 
   const handleUploadNewAvatar = async (e) => {
-    const file = e.target.files[0];
+    if (isUploading) return; // Tránh spam upload file khi đang xử lý upload file trước đó
+    setIsUploading(true);
 
+    const file = e.target.files[0];
     const error = validateFileByIntent(file, UPLOAD_INTENT.AVATAR);
     if (error) {
       addToast({
@@ -78,9 +89,16 @@ function ProfileTab() {
         title: error,
       });
 
+      // Set false để tránh bị treo UI khi không chọn file
+      setIsUploading(false);
+
       return;
     }
 
+    const toastId = addToast({
+      type: "loading",
+      title: "Đang tải ảnh lên...",
+    });
     const result = await uploadService.upload(file, UPLOAD_INTENT.AVATAR);
 
     addToast({
@@ -89,7 +107,8 @@ function ProfileTab() {
         ? "Upload hình ảnh thất bại"
         : "Upload hình ảnh thành công",
     });
-
+    removeToast(toastId);
+    setIsUploading(false);
     if (result.error) {
       return;
     }
@@ -139,6 +158,7 @@ function ProfileTab() {
                   type="file"
                   ref={avatarFileRef}
                   onChange={handleUploadNewAvatar}
+                  disabled={isUpdating || isUploading}
                   accept={getAcceptByIntent(UPLOAD_INTENT.AVATAR)}
                   className="hidden opacity-0 invisible select-none pointer-events-none"
                 />
@@ -196,7 +216,11 @@ function ProfileTab() {
             )}
           </div>
 
-          <Button type="submit" className="leading-1.5 h-9">
+          <Button
+            type="submit"
+            className="leading-1.5 h-9"
+            disabled={isUpdating || isUploading}
+          >
             Lưu thay đổi
           </Button>
         </form>

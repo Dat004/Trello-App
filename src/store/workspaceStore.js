@@ -10,6 +10,18 @@ const useWorkspaceStore = create((set) => ({
       loading: false,
     })),
 
+  addWorkspace: (workspace) =>
+    set((state) => ({
+      workspaces: [workspace, ...state.workspaces],
+    })),
+
+  updateWorkspace: (workspace) =>
+    set((state) => ({
+      workspaces: state.workspaces.map((ws) =>
+        ws._id === workspace._id ? workspace : ws
+      ),
+    })),
+
   clearWorkspaces: () =>
     set(() => ({
       workspaces: [],

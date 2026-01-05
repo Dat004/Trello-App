@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { Plus, Building2 } from "lucide-react";
 
-import { boardColors } from "@/config/data";
+import { workspaceSchema } from "@/schemas/workspaceSchema";
+import { BACKGROUND_COLORS } from "@/config/theme";
+import { useZodForm, useWorkspace } from "@/hooks";
 import {
   Input,
   Label,
@@ -16,27 +18,30 @@ import {
   DialogTrigger,
 } from "./UI";
 
-function CreateWorkSpaceDialog({ trigger, onCreateWorkspace }) {
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [selectedColor, setSelectedColor] = useState(boardColors[0]);
+function CreateWorkSpaceDialog({ trigger }) {
   const [open, setOpen] = useState(false);
+  const [selectedColor, setSelectedColor] = useState(
+    BACKGROUND_COLORS[0].class
+  );
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!name.trim()) return;
+  const { createWorkspace } = useWorkspace();
+  const form = useZodForm(workspaceSchema);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = form;
 
-    onCreateWorkspace({
-      name: name.trim(),
-      description: description.trim(),
+  const handleCreateWorspace = (data) => {
+    createWorkspace({
+      ...data,
       color: selectedColor,
     });
 
-    // Reset form
-    setName("");
-    setDescription("");
-    setSelectedColor(boardColors[0]);
+    // Reset data
     setOpen(false);
+    setSelectedColor(BACKGROUND_COLORS[0].class);
+    form.reset();
   };
 
   return (
@@ -60,15 +65,23 @@ function CreateWorkSpaceDialog({ trigger, onCreateWorkspace }) {
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form
+          onSubmit={handleSubmit(handleCreateWorspace)}
+          className="space-y-4"
+        >
           <div className="space-y-2">
-            <Label htmlFor="name">Tên workspace</Label>
+            <section className="flex items-center">
+              <Label htmlFor="name">Tên workspace</Label>
+              {errors.name?.message && (
+                <span className="ml-auto text-xs text-destructive">
+                  {errors.name.message}
+                </span>
+              )}
+            </section>
             <Input
               id="name"
               placeholder="Nhập tên workspace..."
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
+              {...register("name")}
             />
           </div>
 
@@ -77,25 +90,42 @@ function CreateWorkSpaceDialog({ trigger, onCreateWorkspace }) {
             <TextArea
               id="description"
               placeholder="Mô tả ngắn về workspace..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              {...register("description")}
               rows={3}
             />
           </div>
 
           <div className="space-y-2">
+            <section className="flex items-center">
+              <Label htmlFor="max_members">Số lượng thành viên</Label>
+              {errors.max_members?.message && (
+                <span className="ml-auto text-xs text-destructive">
+                  {errors.max_members.message}
+                </span>
+              )}
+            </section>
+            <Input
+              type="number"
+              id="max_members"
+              {...register("max_members")}
+            />
+          </div>
+
+          <div className="space-y-2">
             <Label>Màu workspace</Label>
-            <div className="flex gap-2 flex-wrap">
-              {boardColors.map((color) => (
+            <div className="flex mt-2 gap-2 flex-wrap">
+              {BACKGROUND_COLORS.map((color) => (
                 <button
-                  key={color}
+                  key={color.value}
                   type="button"
-                  className={`h-8 w-8 rounded-full ${color} border-2 transition-all ${
-                    selectedColor === color
+                  className={`h-8 w-8 rounded-full ${
+                    color.class
+                  } border-2 transition-all ${
+                    selectedColor === color.class
                       ? "border-foreground scale-110"
                       : "border-transparent hover:scale-105"
                   }`}
-                  onClick={() => setSelectedColor(color)}
+                  onClick={() => setSelectedColor(color.class)}
                 />
               ))}
             </div>
@@ -109,9 +139,7 @@ function CreateWorkSpaceDialog({ trigger, onCreateWorkspace }) {
             >
               Hủy
             </Button>
-            <Button type="submit" disabled={!name.trim()}>
-              Tạo workspace
-            </Button>
+            <Button type="submit">Tạo workspace</Button>
           </DialogFooter>
         </form>
       </DialogContent>

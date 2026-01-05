@@ -12,6 +12,8 @@ import {
 
 import SettingWorkspaceDialog from "@/Components/SettingWorkspaceDialog";
 import CreateWorkspaceDialog from "@/Components/CreateWorkspaceDialog";
+import { getMyRole, getRoleText } from "@/helpers/role";
+import { formatDateOnly } from "@/helpers/formatTime";
 import { useWorkspaceStore } from "@/store";
 import {
   DropdownMenu,
@@ -35,17 +37,11 @@ import {
 function Workspaces() {
   const { loading, workspaces } = useWorkspaceStore();
 
-  const handleCreateWorkspace = (data) => {
-  };
+  const handleToggleStar = (id) => {};
 
-  const handleToggleStar = (id) => {
-  };
+  const handleDeleteWorkspace = (id) => {};
 
-  const handleDeleteWorkspace = (id) => {
-  };
-
-  const handleUpdateWorkspace = (id) => {
-  };
+  const handleUpdateWorkspace = (id) => {};
 
   const getRoleBadgeVariant = (role) => {
     switch (role) {
@@ -57,19 +53,6 @@ function Workspaces() {
         return "outline";
       default:
         return "secondary";
-    }
-  };
-
-  const getRoleText = (role) => {
-    switch (role) {
-      case "admin":
-        return "Quản trị";
-      case "member":
-        return "Thành viên";
-      case "viewer":
-        return "Xem";
-      default:
-        return "Thành viên";
     }
   };
 
@@ -86,7 +69,7 @@ function Workspaces() {
           </p>
         </section>
         <section className="sm:ml-auto">
-          <CreateWorkspaceDialog onCreateWorkspace={handleCreateWorkspace} />
+          <CreateWorkspaceDialog />
         </section>
       </div>
 
@@ -122,7 +105,7 @@ function Workspaces() {
                     <div>
                       <p className="text-sm text-muted-foreground">Tổng bảng</p>
                       <p className="text-2xl font-bold">
-                        {workspaces.reduce((sum, w) => sum + w.boards, 0)}
+                        {workspaces.reduce((sum, w) => sum + w.board_count, 0)}
                       </p>
                     </div>
                   </section>
@@ -140,7 +123,10 @@ function Workspaces() {
                         Tổng thành viên
                       </p>
                       <p className="text-2xl font-bold">
-                        {workspaces.reduce((sum, w) => sum + w.members, 0)}
+                        {workspaces.reduce(
+                          (sum, w) => sum + w.members.length,
+                          0
+                        )}
                       </p>
                     </div>
                   </section>
@@ -156,7 +142,7 @@ function Workspaces() {
                     <div>
                       <p className="text-sm text-muted-foreground">Yêu thích</p>
                       <p className="text-2xl font-bold">
-                        {workspaces.filter((w) => w.isStarred).length}
+                        {workspaces.filter((w) => w.is_starred).length}
                       </p>
                     </div>
                   </section>
@@ -175,13 +161,13 @@ function Workspaces() {
           className="animate-slide-in-up"
           style={{ animationDelay: `${workspaces.length * 50}ms` }}
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {workspaces.map((workspace) => (
               <Card
-                key={workspace.id}
+                key={workspace._id}
                 className="group hover:shadow-lg transition-all duration-200 hover:-translate-y-1"
               >
-                <CardHeader className="pb-3">
+                <CardHeader className="pb-3 sm:pb-4">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
                       <Avatar className="h-12 w-12">
@@ -192,17 +178,19 @@ function Workspaces() {
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
-                        <CardTitle className="text-lg">
+                        <CardTitle className="text-base">
                           {workspace.name}
                         </CardTitle>
                         <div className="flex items-center gap-2 mt-1">
                           <Badge
-                            variant={getRoleBadgeVariant(workspace.role)}
+                            variant={getRoleBadgeVariant(
+                              getMyRole(workspace.members)
+                            )}
                             className="text-xs leading-[1.15]"
                           >
-                            {getRoleText(workspace.role)}
+                            {getRoleText(getMyRole(workspace.members))}
                           </Badge>
-                          {workspace.isStarred && (
+                          {workspace.is_starred && (
                             <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
                           )}
                         </div>
@@ -223,7 +211,7 @@ function Workspaces() {
                         <SettingWorkspaceDialog
                           workspace={workspace}
                           onUpdateWorkspace={(data) =>
-                            handleUpdateWorkspace(workspace.id, data)
+                            handleUpdateWorkspace(workspace._id, data)
                           }
                           trigger={
                             <DropdownMenuItem
@@ -235,16 +223,16 @@ function Workspaces() {
                           }
                         />
                         <DropdownMenuItem
-                          onClick={() => handleToggleStar(workspace.id)}
+                          onClick={() => handleToggleStar(workspace._id)}
                         >
                           <Star className="h-4 w-4 mr-2" />
-                          {workspace.isStarred ? "Bỏ yêu thích" : "Yêu thích"}
+                          {workspace.is_starred ? "Bỏ yêu thích" : "Yêu thích"}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        {workspace.role === "admin" && (
+                        {getMyRole(workspace.members) === "admin" && (
                           <DropdownMenuItem
                             className="text-destructive"
-                            onClick={() => handleDeleteWorkspace(workspace.id)}
+                            onClick={() => handleDeleteWorkspace(workspace._id)}
                           >
                             <Trash2 className="h-4 w-4 mr-2" />
                             Xóa workspace
@@ -265,18 +253,24 @@ function Workspaces() {
                       <div className="flex items-center gap-4">
                         <div className="flex items-center gap-1">
                           <Trello className="h-4 w-4 text-muted-foreground" />
-                          <span>{workspace.boards} bảng</span>
+                          <span>
+                            {workspace.board_count === 0
+                              ? "Chưa có bảng"
+                              : `${workspace.board_count} bảng`}
+                          </span>
                         </div>
                         <div className="flex items-center gap-1">
                           <Users className="h-4 w-4 text-muted-foreground" />
-                          <span>{workspace.members} thành viên</span>
+                          <span>{workspace.members.length} thành viên</span>
                         </div>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       <Activity className="h-3 w-3" />
-                      <span>Hoạt động {workspace.lastActivity}</span>
+                      <span>
+                        Hoạt động: {formatDateOnly(workspace.created_at)}
+                      </span>
                     </div>
 
                     <div className="flex items-center gap-2 pt-2">
@@ -297,7 +291,6 @@ function Workspaces() {
 
             {/* Create New Workspace Card */}
             <CreateWorkspaceDialog
-              onCreateWorkspace={handleCreateWorkspace}
               trigger={
                 <Card className="group cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-1 border-dashed border-2 border-muted-foreground/30 hover:border-primary/50">
                   <CardContent className="flex flex-col items-center justify-center h-full min-h-[280px] text-center p-6">

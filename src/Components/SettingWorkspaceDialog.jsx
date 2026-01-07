@@ -1,10 +1,23 @@
+import { Settings, Trash2, Users } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Settings, Users, Trash2 } from "lucide-react";
 
 import { workspaceSchema } from "@/schemas/workspaceSchema";
+import { useWorkspace, useZodForm } from "@/hooks";
+import { UserToast } from "@/context/ToastContext";
 import { BACKGROUND_COLORS } from "@/config/theme";
-import { useZodForm, useWorkspace } from "@/hooks";
+import { workspaceApi } from "@/api/workspace";
+import { getRoleText } from "@/helpers/role";
+import { useAuthStore } from "@/store";
 import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+  Badge,
   Button,
   Dialog,
   DialogContent,
@@ -14,20 +27,23 @@ import {
   DialogTrigger,
   Input,
   Label,
-  TextArea,
-  Avatar,
-  AvatarFallback,
-  Badge,
   Tabs,
+  TabsContent,
   TabsList,
   TabsTrigger,
-  TabsContent,
+  TextArea,
 } from "./UI";
 
 function SettingWorkspaceDialog({ workspace, trigger }) {
+  const [activeTab, setActiveTab] = useState("general");
+  const [isLoadingMembers, setIsLoadingMembers] = useState(false);
   const [open, setOpen] = useState(false);
+  const [members, setMembers] = useState([]);
   const [selectedColor, setSelectedColor] = useState(workspace.color);
+  const [editingRoles, setEditingRoles] = useState({});
 
+  const { user } = useAuthStore();
+  const { addToast } = UserToast();
   const { updateWorkspace } = useWorkspace();
   const form = useZodForm(workspaceSchema, {
     defaultValues: {
@@ -43,6 +59,26 @@ function SettingWorkspaceDialog({ workspace, trigger }) {
     formState: { errors },
   } = form;
 
+  const myMember = members.find((m) => m.user._id === user._id);
+  const isMyWorkspace = user._id === workspace.owner;
+  const isAdminWorkspace = myMember?.role === "admin";
+
+  useEffect(() => {
+    if (activeTab === "members" && members.length === 0) {
+      (async () => {
+        setIsLoadingMembers(true);
+        try {
+          const result = await workspaceApi.getMemberInWorkspace(workspace._id);
+          if (result.data.success) {
+            setMembers(result.data.data.members);
+          }
+        } finally {
+          setIsLoadingMembers(false);
+        }
+      })();
+    }
+  }, [activeTab, workspace._id]);
+
   useEffect(() => {
     setSelectedColor(workspace.color);
 
@@ -50,12 +86,6 @@ function SettingWorkspaceDialog({ workspace, trigger }) {
     setValue("description", workspace.description);
     setValue("max_members", workspace.max_members);
   }, [workspace]);
-
-  const members = [
-    { id: "1", name: "Nguyễn Văn A", email: "a@example.com", role: "admin" },
-    { id: "2", name: "Trần Thị B", email: "b@example.com", role: "member" },
-    { id: "3", name: "Lê Văn C", email: "c@example.com", role: "viewer" },
-  ];
 
   const handleUpdateWorkspace = (data) => {
     updateWorkspace(workspace._id, {
@@ -65,6 +95,59 @@ function SettingWorkspaceDialog({ workspace, trigger }) {
 
     // Close
     setOpen(false);
+  };
+
+  const handleUpdateRoleMember = async (role, member) => {
+    if (!canEditRole(member)) return;
+    if (workspace.owner === member.user._id) return;
+
+    const result = await workspaceApi.updateMemberRole(workspace._id, {
+      member_id: member.user._id,
+      role,
+    });
+
+    addToast({
+      type: result.data.success ? "success" : "error",
+      title: result.data.message,
+    });
+
+    if (result.data.success) {
+      setMembers((prevMembers) =>
+        prevMembers.map((m) =>
+          m.user._id === member.user._id
+            ? { ...m, role: role }
+            : m
+        )
+      );
+    }
+  };
+
+  // Xác định ai có thể chỉnh sửa
+  const canEditRole = (member) => {
+    const isTargetOwner = member.user._id === workspace.owner;
+    const isMe = member.user._id === user._id;
+
+    if (isMyWorkspace) return !isTargetOwner;
+
+    if (isAdminWorkspace) {
+      return !isTargetOwner && !isMe;
+    }
+
+    return false;
+  };
+
+  // Xác định có thể cấp quyền admin không
+  const canGrantAdmin = (member) => {
+    const isTargetOwner = member.user._id === workspace.owner;
+    const isMe = member.user._id === user._id;
+
+    if (isMyWorkspace) return !isTargetOwner;
+
+    if (isAdminWorkspace) {
+      return !isTargetOwner && member.role !== "admin" && !isMe;
+    }
+
+    return false;
   };
 
   return (
@@ -87,7 +170,12 @@ function SettingWorkspaceDialog({ workspace, trigger }) {
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue="general" className="w-full">
+        <Tabs
+          onValueChange={(value) => setActiveTab(value)}
+          defaultValue="general"
+          value={activeTab}
+          className="w-full"
+        >
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="general">Chung</TabsTrigger>
             <TabsTrigger value="members">Thành viên</TabsTrigger>
@@ -203,42 +291,73 @@ function SettingWorkspaceDialog({ workspace, trigger }) {
             </div>
 
             <div className="space-y-3">
-              {members.map((member) => (
-                <div
-                  key={member.id}
-                  className="flex items-center justify-between p-3 border rounded-lg"
-                >
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback className="text-xs">
-                        {member.name.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="text-sm font-medium">{member.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {member.email}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge
-                      variant={
-                        member.role === "admin" ? "default" : "secondary"
-                      }
-                    >
-                      {member.role === "admin"
-                        ? "Quản trị"
-                        : member.role === "member"
-                        ? "Thành viên"
-                        : "Xem"}
-                    </Badge>
-                    <Button variant="ghost" size="sm">
-                      <Settings className="h-3 w-3" />
-                    </Button>
-                  </div>
+              {isLoadingMembers ? (
+                <div className="text-center text-sm py-4 text-muted-foreground">
+                  Đang tải thành viên...
                 </div>
-              ))}
+              ) : (
+                <>
+                  {members.map((member) => {
+                    const isOwner = workspace.owner === member.user._id;
+                    const isMe = member.user._id === user._id;
+
+                    return (
+                      <div
+                        key={member._id}
+                        className="flex items-center justify-between p-3 border rounded-lg"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-8 w-8">
+                            <AvatarFallback className="text-xs">
+                              {member.user.full_name.charAt(0)}
+                            </AvatarFallback>
+                            <AvatarImage
+                              src={member.user.avatar.url}
+                              alt={member.user.full_name}
+                            ></AvatarImage>
+                          </Avatar>
+                          <div>
+                            <p className="text-sm font-medium">
+                              {member.user.full_name}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {member.user.email}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {isOwner || isMe ? (
+                            <>
+                              {isOwner && <Badge>Chủ sở hữu</Badge>}
+                              {isMe && !isOwner && (
+                                <Badge>{getRoleText(member.role)}</Badge>
+                              )}
+                            </>
+                          ) : (
+                            <Select
+                              value={member.role}
+                              disabled={!canEditRole(member)}
+                              onValueChange={(value) =>
+                                handleUpdateRoleMember(value, member)
+                              }
+                            >
+                              <SelectTrigger id="role">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="admin">Quản trị</SelectItem>
+                                <SelectItem value="member">
+                                  Thành viên
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </>
+              )}
             </div>
           </TabsContent>
 

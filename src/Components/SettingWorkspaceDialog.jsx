@@ -9,6 +9,10 @@ import { workspaceApi } from "@/api/workspace";
 import { getRoleText } from "@/helpers/role";
 import { useAuthStore } from "@/store";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
   Select,
   SelectTrigger,
   SelectValue,
@@ -114,11 +118,28 @@ function SettingWorkspaceDialog({ workspace, trigger }) {
     if (result.data.success) {
       setMembers((prevMembers) =>
         prevMembers.map((m) =>
-          m.user._id === member.user._id
-            ? { ...m, role: role }
-            : m
+          m.user._id === member.user._id ? { ...m, role: role } : m
         )
       );
+    }
+  };
+
+  const handleKickMember = async (member_id) => {
+    if (!member_id) return;
+
+    const result = await workspaceApi.kickMember(workspace._id, {
+      member_id,
+    });
+
+    addToast({
+      type: result.data.success ? "success" : "error",
+      title: result.data.message,
+    });
+
+    if (result.data.success) {
+      setMembers((prevMembers) => [
+        ...prevMembers.filter((m) => m.user._id !== member_id),
+      ]);
     }
   };
 
@@ -137,14 +158,14 @@ function SettingWorkspaceDialog({ workspace, trigger }) {
   };
 
   // Xác định có thể cấp quyền admin không
-  const canGrantAdmin = (member) => {
+  const canManagerMembers = (member) => {
     const isTargetOwner = member.user._id === workspace.owner;
     const isMe = member.user._id === user._id;
 
     if (isMyWorkspace) return !isTargetOwner;
 
     if (isAdminWorkspace) {
-      return !isTargetOwner && member.role !== "admin" && !isMe;
+      return !isTargetOwner && !isMe && member.role !== "admin";
     }
 
     return false;
@@ -325,34 +346,60 @@ function SettingWorkspaceDialog({ workspace, trigger }) {
                             </p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          {isOwner || isMe ? (
-                            <>
-                              {isOwner && <Badge>Chủ sở hữu</Badge>}
-                              {isMe && !isOwner && (
-                                <Badge>{getRoleText(member.role)}</Badge>
-                              )}
-                            </>
-                          ) : (
-                            <Select
-                              value={member.role}
-                              disabled={!canEditRole(member)}
-                              onValueChange={(value) =>
-                                handleUpdateRoleMember(value, member)
-                              }
-                            >
-                              <SelectTrigger id="role">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="admin">Quản trị</SelectItem>
-                                <SelectItem value="member">
-                                  Thành viên
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
+                        <section className="flex items-center gap-3">
+                          <div className="flex items-center gap-2">
+                            {isOwner || isMe ? (
+                              <>
+                                {isOwner && <Badge>Chủ sở hữu</Badge>}
+                                {isMe && !isOwner && (
+                                  <Badge>{getRoleText(member.role)}</Badge>
+                                )}
+                              </>
+                            ) : (
+                              <Select
+                                value={member.role}
+                                disabled={!canEditRole(member)}
+                                onValueChange={(value) =>
+                                  handleUpdateRoleMember(value, member)
+                                }
+                              >
+                                <SelectTrigger id="role">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="admin">
+                                    Quản trị
+                                  </SelectItem>
+                                  <SelectItem value="member">
+                                    Thành viên
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                            )}
+                          </div>
+
+                          {canManagerMembers(member) && (
+                            <section>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger align="start">
+                                  <Button variant="ghost" className="w-8 h-8">
+                                    <Settings />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                  <DropdownMenuItem
+                                    onClick={() =>
+                                      handleKickMember(member.user._id)
+                                    }
+                                    className="hover:bg-destructive hover:text-background justify-center"
+                                  >
+                                    Kick thành viên
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </section>
                           )}
-                        </div>
+                        </section>
                       </div>
                     );
                   })}

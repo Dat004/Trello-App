@@ -45,4 +45,16 @@ export const workspaceApi = {
       return err.response;
     }
   },
+  async kickMember(id, data) {
+    try {
+      return await axiosClient.delete(
+        `${workspacesRoute}/${id}${membersRoute}`,
+        {
+          data,
+        }
+      );
+    } catch (err) {
+      return err.response;
+    }
+  },
 };

@@ -4,11 +4,13 @@ const useBoardStore = create((set) => ({
   boards: [],
   currentBoard: null,
   loading: true,
+  isInitialized: false,
 
   setBoards: (boards) =>
     set(() => ({
       boards,
       loading: false,
+      isInitialized: true,
     })),
 
   setCurrentBoard: (board) =>
@@ -55,6 +57,7 @@ const useBoardStore = create((set) => ({
       boards: [],
       currentBoard: null,
       loading: false,
+      isInitialized: false,
     })),
 }));
 

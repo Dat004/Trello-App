@@ -9,7 +9,7 @@ const useBoardInit = () => {
   const location = useLocation();
 
   const user = useAuthStore((s) => s.user);
-  const boards = useBoardStore((s) => s.boards);
+  const isInitialized = useBoardStore((s) => s.isInitialized);
 
   const setBoards = useBoardStore((s) => s.setBoards);
   const clearBoards = useBoardStore((s) => s.clearBoards);
@@ -18,7 +18,7 @@ const useBoardInit = () => {
     if (!user) return;
 
     const isBoardDetail = matchPath(paths.board, location.pathname);
-    if (isBoardDetail || boards.length > 0) return;
+    if (isBoardDetail || isInitialized) return;
 
     const fetchBoards = async () => {
       const res = await boardApi.getMyBoards();
@@ -32,7 +32,7 @@ const useBoardInit = () => {
     };
 
     fetchBoards();
-  }, [location.pathname, boards.length, user]);
+  }, [location.pathname, user, isInitialized]);
 };
 
 export default useBoardInit;

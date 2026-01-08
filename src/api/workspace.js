@@ -27,6 +27,13 @@ export const workspaceApi = {
       return err.response;
     }
   },
+  async delete(id) {
+    try {
+      return await axiosClient.delete(`${workspacesRoute}/${id}`);
+    } catch (err) {
+      return err.response;
+    }
+  },
   // MEMBERS
   async getMemberInWorkspace(id) {
     try {

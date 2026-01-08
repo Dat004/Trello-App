@@ -1,8 +1,9 @@
-import { useAuthInit, useWorkspaceInit } from "@/hooks";
+import { useAuthInit, useWorkspaceInit, useBoardInit } from "@/hooks";
 
 const AppInitializer = ({ children }) => {
   useAuthInit();
   useWorkspaceInit();
+  useBoardInit();
   
   return children;
 };

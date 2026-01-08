@@ -22,6 +22,13 @@ const useWorkspaceStore = create((set) => ({
       ),
     })),
 
+  removeWorkspace: (workspaceId) =>
+    set((state) => ({
+      workspaces: [
+        ...state.workspaces.filter((ws) => ws._id !== workspaceId),
+      ],
+    })),
+
   clearWorkspaces: () =>
     set(() => ({
       workspaces: [],

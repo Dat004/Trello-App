@@ -6,6 +6,7 @@ import CreateWorkspaceDialog from "@/Components/CreateWorkspaceDialog";
 import WorkspaceStats from "./WorkspaceStats";
 import WorkspaceItem from "./WorkspaceItem";
 import { useWorkspaceStore } from "@/store";
+import { useWorkspace } from "@/hooks";
 import {
   Card,
   CardContent,
@@ -15,10 +16,13 @@ import {
 
 function Workspaces() {
   const { loading, workspaces } = useWorkspaceStore();
+  const { removeWorkspace } = useWorkspace();
 
   const handleToggleStar = (id) => {};
 
-  const handleDeleteWorkspace = (id) => {};
+  const handleDeleteWorkspace = async (id) => {
+    await removeWorkspace(id);
+  };
 
   const handleUpdateWorkspace = (id) => {};
 
@@ -58,7 +62,7 @@ function Workspaces() {
         >
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {workspaces.map((workspace) => (
-              <WorkspaceItem workspace={workspace} />
+              <WorkspaceItem workspace={workspace} onDelete={handleDeleteWorkspace} />
             ))}
 
             {/* Create New Workspace Card */}

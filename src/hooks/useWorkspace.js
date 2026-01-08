@@ -5,6 +5,7 @@ import { workspaceApi } from "@/api/workspace";
 function useWorkspace() {
   const addWorkspace = useWorkspaceStore((s) => s.addWorkspace);
   const updateWorkspaceInStore = useWorkspaceStore((s) => s.updateWorkspace);
+  const removeWorkspaceInStore = useWorkspaceStore((s) => s.removeWorkspace);
   const { addToast } = UserToast();
 
   const createWorkspace = async (data) => {
@@ -35,7 +36,21 @@ function useWorkspace() {
     return res;
   };
 
-  return { createWorkspace, updateWorkspace };
+  const removeWorkspace = async (workspaceId) => {
+    const res = await workspaceApi.delete(workspaceId);
+    if (res.data?.success) {
+      removeWorkspaceInStore(workspaceId);
+    }
+
+    addToast({
+      type: res.data.success ? "success" : "error",
+      title: res.data.message,
+    });
+
+    return res;
+  };
+
+  return { createWorkspace, updateWorkspace, removeWorkspace };
 }
 
 export default useWorkspace;

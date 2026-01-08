@@ -11,6 +11,7 @@ import {
 import SettingWorkspaceDialog from "@/Components/SettingWorkspaceDialog";
 import { getMyRole, getRoleText } from "@/helpers/role";
 import { formatDateOnly } from "@/helpers/formatTime";
+import { useAuthStore } from "@/store";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,7 +29,8 @@ import {
   CardTitle,
 } from "@/Components/UI";
 
-function WorkspaceItem({ workspace }) {
+function WorkspaceItem({ workspace, onDelete }) {
+  const { user } = useAuthStore();
   const role = getMyRole(workspace.members);
 
   const roleVariant = {
@@ -92,15 +94,17 @@ function WorkspaceItem({ workspace }) {
                 <Star className="h-4 w-4 mr-2" />
                 {workspace.is_starred ? "Bỏ yêu thích" : "Yêu thích"}
               </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              {getMyRole(workspace.members) === "admin" && (
-                <DropdownMenuItem
-                  className="text-destructive"
-                  onClick={() => handleDeleteWorkspace(workspace._id)}
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Xóa workspace
-                </DropdownMenuItem>
+              {workspace.owner === user._id && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    className="text-destructive"
+                    onClick={() => onDelete(workspace._id)}
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Xóa workspace
+                  </DropdownMenuItem>
+                </>
               )}
             </DropdownMenuContent>
           </DropdownMenu>

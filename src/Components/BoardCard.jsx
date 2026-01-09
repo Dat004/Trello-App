@@ -10,6 +10,8 @@ import {
   Loader2,
 } from "lucide-react";
 
+import { formatRelativeTime } from "@/helpers/formatTime";
+import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,7 +26,7 @@ import {
 } from "./UI";
 import { Link } from "react-router-dom";
 
-function BoardCard({ board }) {
+function BoardCard({ index, board, view = "grid" }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -43,7 +45,7 @@ function BoardCard({ board }) {
 
   const handleDelete = async (e) => {
     e.stopPropagation();
-    if (confirm(`Bạn có chắc chắn muốn xóa bảng "${board.name}"?`)) {
+    if (confirm(`Bạn có chắc chắn muốn xóa bảng "${board.title}"?`)) {
       setIsDeleting(true);
 
       try {
@@ -56,95 +58,150 @@ function BoardCard({ board }) {
     }
   };
   return (
-    <Card
-      className={`group cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-1 ${
-        isDeleting ? "opacity-50 pointer-events-none" : ""
-      }`}
-    >
-      <CardHeader className="pb-3">
+    <>
+      {view === "grid" && (
         <div
-          className={`h-12 w-full rounded-md ${board.color} mb-3 relative overflow-hidden`}
+          className="animate-slide-in-up"
+          style={{ animationDelay: `${index * 50}ms` }}
         >
-          {isDeleting && (
-            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-              <Loader2 className="h-5 w-5 text-white animate-spin" />
-            </div>
-          )}
+          <Card
+            className={`group cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-1 ${
+              isDeleting ? "opacity-50 pointer-events-none" : ""
+            }`}
+          >
+            <CardHeader className="pb-3">
+              <div
+                className={`h-12 w-full rounded-md ${board.color} mb-3 relative overflow-hidden`}
+              >
+                {isDeleting && (
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                    <Loader2 className="h-5 w-5 text-white animate-spin" />
+                  </div>
+                )}
+              </div>
+              <div className="flex items-start justify-between">
+                <CardTitle className="text-lg font-semibold text-card-foreground group-hover:text-primary transition-colors line-clamp-2">
+                  <Link to={`/board/${board._id}`}>{board.title}</Link>
+                </CardTitle>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0"
+                    onClick={handleStarToggle}
+                    disabled={isLoading || isDeleting}
+                  >
+                    {isLoading ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <Star
+                        className={`h-4 w-4 ${
+                          board.is_starred
+                            ? "fill-yellow-400 text-yellow-400"
+                            : "text-muted-foreground"
+                        }`}
+                      />
+                    )}
+                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0"
+                        onClick={(e) => e.stopPropagation()}
+                        disabled={isDeleting}
+                      >
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        Chỉnh sửa
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
+                        <Copy className="mr-2 h-4 w-4" />
+                        Sao chép
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={handleDelete}
+                        className="text-destructive"
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Xóa bảng
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                {board.description}
+              </p>
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <Users className="h-3 w-3" />
+                  <span>{board.members.length} thành viên</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  <span>{formatRelativeTime(board.updated_at)}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
-        <div className="flex items-start justify-between">
-          <CardTitle className="text-lg font-semibold text-card-foreground group-hover:text-primary transition-colors line-clamp-2">
-            <Link to={`/board/${board.id}`}>{board.name}</Link>
-          </CardTitle>
-          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 p-0"
-              onClick={handleStarToggle}
-              disabled={isLoading || isDeleting}
-            >
-              {isLoading ? (
-                <Loader2 className="h-3 w-3 animate-spin" />
-              ) : (
-                <Star
-                  className={`h-4 w-4 ${
-                    board.starred
-                      ? "fill-yellow-400 text-yellow-400"
-                      : "text-muted-foreground"
-                  }`}
-                />
+      )}
+      {view === "list" && (
+        <div
+          className="animate-slide-in-up bg-card border border-border rounded-lg p-3 hover:border-primary/50 hover:shadow-sm transition-all cursor-pointer group"
+          style={{ animationDelay: `${index * 50}ms` }}
+        >
+          <div className="flex items-start gap-3">
+            <div
+              className={cn(
+                "h-10 w-10 rounded-md flex-shrink-0 mt-0.5",
+                board.color
               )}
-            </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 w-6 p-0"
-                  onClick={(e) => e.stopPropagation()}
-                  disabled={isDeleting}
-                >
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
-                  <Edit className="mr-2 h-4 w-4" />
-                  Chỉnh sửa
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
-                  <Copy className="mr-2 h-4 w-4" />
-                  Sao chép
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={handleDelete}
-                  className="text-destructive"
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Xóa bảng
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            />
+
+            {/* Main Content */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between gap-2 mb-1">
+                <h3 className="font-semibold text-sm text-foreground truncate group-hover:text-primary transition-colors">
+                  {board.name}
+                </h3>
+                {board.starred && (
+                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 flex-shrink-0 mt-0.5" />
+                )}
+              </div>
+              {board.description && (
+                <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
+                  {board.description}
+                </p>
+              )}
+              <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap">
+                <span className="flex items-center gap-1">
+                  <span className="w-1 h-1 rounded-full bg-muted-foreground"></span>
+                  {board.members || 0} thành viên
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-1 h-1 rounded-full bg-muted-foreground"></span>
+                  {board.lists?.length || 0} danh sách
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-1 h-1 rounded-full bg-muted-foreground"></span>
+                  Cập nhật: {formatRelativeTime(board.updated_at)}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
-      </CardHeader>
-      <CardContent className="pt-0">
-        <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-          {board.description}
-        </p>
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <div className="flex items-center gap-1">
-            <Users className="h-3 w-3" />
-            <span>{board.members} thành viên</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <Clock className="h-3 w-3" />
-            <span>{board.lastActivity}</span>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+      )}
+    </>
   );
 }
 

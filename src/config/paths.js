@@ -6,6 +6,7 @@ const paths = {
   register: "/register",
   members: "/members",
   board: "/board/:id",
+  boards: "/boards",
   login: "/login",
 };
 

@@ -21,6 +21,14 @@ const routes = [
   },
   {
     id: 3,
+    name: "Bảng làm việc",
+    path: paths.boards,
+    page: pages.Boards,
+    layout: DefaultLayout,
+    auth: "protected",
+  },
+  {
+    id: 4,
     name: "Mẫu",
     path: paths.templates,
     page: pages.Templates,
@@ -28,7 +36,7 @@ const routes = [
     auth: "protected",
   },
   {
-    id: 4,
+    id: 5,
     name: "Thành viên",
     path: paths.members,
     page: pages.Members,
@@ -36,7 +44,7 @@ const routes = [
     auth: "protected",
   },
   {
-    id: 5,
+    id: 6,
     name: "Cài đặt",
     path: paths.settings,
     page: pages.Settings,
@@ -44,7 +52,7 @@ const routes = [
     auth: "protected",
   },
   {
-    id: 6,
+    id: 7,
     name: "Chi tiết bảng",
     path: paths.board,
     page: pages.Board,
@@ -52,7 +60,7 @@ const routes = [
     auth: "protected",
   },
   {
-    id: 7,
+    id: 8,
     name: "Đăng nhập",
     path: paths.login,
     page: pages.Login,
@@ -60,7 +68,7 @@ const routes = [
     auth: "guest",
   },
   {
-    id: 8,
+    id: 9,
     name: "Đăng ký",
     path: paths.register,
     page: pages.Register,

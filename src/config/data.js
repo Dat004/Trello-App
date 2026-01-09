@@ -31,11 +31,16 @@ export const headerMenuData = [
   },
   {
     id: 2,
+    name: "Bảng làm việc",
+    path: paths.boards,
+  },
+  {
+    id: 3,
     name: "Mẫu",
     path: paths.templates,
   },
   {
-    id: 3,
+    id: 4,
     name: "Thành viên",
     path: paths.members,
   },

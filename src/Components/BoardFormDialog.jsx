@@ -24,7 +24,7 @@ function BoardFormDialog({ trigger, isEdit = false, boardData }) {
     BACKGROUND_COLORS[0].class
   );
 
-  const { createBoard } = useBoard();
+  const { createBoard, updateBoard } = useBoard();
   const form = useZodForm(boardSchema, {
     defaultValue: {
       title: isEdit ? boardData.title : "",
@@ -54,9 +54,8 @@ function BoardFormDialog({ trigger, isEdit = false, boardData }) {
   const handleActionsCard = async (data) => {
     const payload = { ...data, color: selectedColor, visibility: "private" };
 
-    console.log(payload);
-
     if (isEdit) {
+      await updateBoard(boardData._id, payload);
     } else {
       await createBoard(payload);
     }

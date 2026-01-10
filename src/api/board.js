@@ -18,4 +18,11 @@ export const boardApi = {
       return err.response;
     }
   },
+  async update(id, data) {
+    try {
+      return await axiosClient.patch(`${boardsRoute}/${id}`, data);
+    } catch (err) {
+      return err.response;
+    }
+  },
 };

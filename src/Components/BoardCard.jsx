@@ -12,6 +12,7 @@ import {
 
 import { getRoleText, getMyRole, getRoleVariant } from "@/helpers/role";
 import { formatRelativeTime } from "@/helpers/formatTime";
+import BoardFormDialog from "./BoardFormDialog";
 import { useAuthStore } from "@/store";
 import { cn } from "@/lib/utils";
 import {
@@ -135,10 +136,18 @@ function BoardCard({ index, board, view = "grid" }) {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
-                        <Edit className="mr-2 h-4 w-4" />
-                        Chỉnh sửa
-                      </DropdownMenuItem>
+                      <BoardFormDialog
+                        isEdit
+                        boardData={board}
+                        trigger={
+                          <DropdownMenuItem
+                            onSelect={(e) => e.preventDefault()}
+                          >
+                            <Edit className="mr-2 h-4 w-4" />
+                            Chỉnh sửa
+                          </DropdownMenuItem>
+                        }
+                      />
                       <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
                         <Copy className="mr-2 h-4 w-4" />
                         Sao chép

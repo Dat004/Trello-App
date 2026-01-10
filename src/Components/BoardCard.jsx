@@ -10,7 +10,9 @@ import {
   Loader2,
 } from "lucide-react";
 
+import { getRoleText, getMyRole, getRoleVariant } from "@/helpers/role";
 import { formatRelativeTime } from "@/helpers/formatTime";
+import { useAuthStore } from "@/store";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
@@ -19,6 +21,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   Button,
+  Badge,
   Card,
   CardContent,
   CardHeader,
@@ -29,6 +32,12 @@ import { Link } from "react-router-dom";
 function BoardCard({ index, board, view = "grid" }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const user = useAuthStore((s) => s.user);
+
+  const myRole = getMyRole(board.members);
+  const variantRole = getRoleVariant(myRole);
+  const isOwner = user._id === board.owner;
 
   const handleStarToggle = async (e) => {
     e.stopPropagation();
@@ -81,7 +90,17 @@ function BoardCard({ index, board, view = "grid" }) {
               </div>
               <div className="flex items-start justify-between">
                 <CardTitle className="text-lg font-semibold text-card-foreground group-hover:text-primary transition-colors line-clamp-2">
-                  <Link to={`/board/${board._id}`}>{board.title}</Link>
+                  <section className="flex items-center">
+                    <Link to={`/board/${board._id}`}>{board.title}</Link>
+                    {myRole && (
+                      <>
+                        <span className="block w-1 h-1 mx-2 rounded-full bg-muted-foreground"></span>
+                        <Badge variant={isOwner ? "destructive" : variantRole}>
+                          {isOwner ? "Chủ sở hữu" : getRoleText(myRole)}
+                        </Badge>
+                      </>
+                    )}
+                  </section>
                 </CardTitle>
                 <div className="flex items-center gap-1">
                   <Button
@@ -172,11 +191,20 @@ function BoardCard({ index, board, view = "grid" }) {
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2 mb-1">
                 <h3 className="font-semibold text-sm text-foreground truncate group-hover:text-primary transition-colors">
-                  {board.name}
+                  {board.title}
                 </h3>
-                {board.starred && (
-                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 flex-shrink-0 mt-0.5" />
-                )}
+                <section className="flex items-start gap-2">
+                  {myRole && (
+                    <section>
+                      <Badge variant={isOwner ? "destructive" : variantRole}>
+                        {isOwner ? "Chủ sở hữu" : getRoleText(myRole)}
+                      </Badge>
+                    </section>
+                  )}
+                  {board.starred && (
+                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 flex-shrink-0 mt-0.5" />
+                  )}
+                </section>
               </div>
               {board.description && (
                 <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
@@ -186,11 +214,7 @@ function BoardCard({ index, board, view = "grid" }) {
               <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap">
                 <span className="flex items-center gap-1">
                   <span className="w-1 h-1 rounded-full bg-muted-foreground"></span>
-                  {board.members || 0} thành viên
-                </span>
-                <span className="flex items-center gap-1">
-                  <span className="w-1 h-1 rounded-full bg-muted-foreground"></span>
-                  {board.lists?.length || 0} danh sách
+                  {board.members.length} thành viên
                 </span>
                 <span className="flex items-center gap-1">
                   <span className="w-1 h-1 rounded-full bg-muted-foreground"></span>

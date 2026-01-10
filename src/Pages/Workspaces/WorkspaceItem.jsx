@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 
 import SettingWorkspaceDialog from "@/Components/SettingWorkspaceDialog";
-import { getMyRole, getRoleText } from "@/helpers/role";
+import { getMyRole, getRoleText, getRoleVariant } from "@/helpers/role";
 import { formatDateOnly } from "@/helpers/formatTime";
 import { useAuthStore } from "@/store";
 import {
@@ -31,13 +31,9 @@ import {
 
 function WorkspaceItem({ workspace, onDelete }) {
   const { user } = useAuthStore();
+  const isOwner = user._id === workspace.owner;
   const role = getMyRole(workspace.members);
-
-  const roleVariant = {
-    admin: "default",
-    member: "secondary",
-    viewer: "outline",
-  }[role];
+  const roleVariant = getRoleVariant(role);
 
   return (
     <Card
@@ -57,8 +53,11 @@ function WorkspaceItem({ workspace, onDelete }) {
             <div className="flex-1">
               <CardTitle className="text-base">{workspace.name}</CardTitle>
               <div className="flex items-center gap-2 mt-1">
-                <Badge variant={roleVariant} className="text-xs">
-                  {getRoleText(role)}
+                <Badge
+                  variant={isOwner ? "destructive" : roleVariant}
+                  className="text-xs"
+                >
+                  {isOwner ? "Chủ sở hữu" : getRoleText(role)}
                 </Badge>
                 {workspace.is_starred && (
                   <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />

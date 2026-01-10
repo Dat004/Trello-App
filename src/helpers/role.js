@@ -27,3 +27,16 @@ export const getRoleText = (role) => {
       return "Thành viên";
   }
 };
+
+export const getRoleVariant = (role) => {
+  switch (role) {
+    case "admin":
+      return "default";
+    case "member":
+      return "secondary";
+    case "viewer":
+      return "outline";
+    default:
+      return "destructive";
+  }
+}

@@ -1,9 +1,8 @@
-import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Search, Plus, User, LogOut, Settings } from "lucide-react";
 
 import NotificationsPanel from "@/Components/NotificationsPanel";
-import CreateBoardDialog from "@/Components/CreateBoardDialog";
+import BoardFormDialog from "@/Components/BoardFormDialog";
 import { headerMenuData } from "@/config/data";
 import { useAuthStore } from "@/store";
 import { useAuth } from "@/hooks";
@@ -69,7 +68,7 @@ function Header() {
           </div>
 
           {/* Create Button */}
-          <CreateBoardDialog
+          <BoardFormDialog
             trigger={
               <Button size="sm" className="leading-1.5 gap-2">
                 <Plus className="h-4 w-4" />

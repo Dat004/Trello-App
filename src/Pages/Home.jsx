@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
-import { Plus, Search, Filter, Users } from "lucide-react";
+import { Filter, Plus, Search, Users } from "lucide-react";
+import { useEffect, useState } from "react";
 
-import CreateBoardDialog from "@/Components/CreateBoardDialog";
-import { Button, Input, BoardSkeleton } from "@/Components/UI";
-import { initialBoards } from "@/config/data";
 import BoardCard from "@/Components/BoardCard";
+import BoardFormDialog from "@/Components/BoardFormDialog";
+import { BoardSkeleton, Button, Input } from "@/Components/UI";
+import { initialBoards } from "@/config/data";
 
 function Home() {
   const [isLoading, setIsLoading] = useState(true);
@@ -68,7 +68,7 @@ function Home() {
 
           <section className="flex items-center gap-2 w-full sm:w-auto">
             <section className="w-1/6 sm:w-auto">
-              <CreateBoardDialog />
+              <BoardFormDialog />
             </section>
             <Button
               variant="outline"
@@ -120,7 +120,7 @@ function Home() {
                 className="animate-slide-in-up"
                 style={{ animationDelay: `${filteredBoards.length * 50}ms` }}
               >
-                <CreateBoardDialog
+                <BoardFormDialog
                   trigger={
                     <div className="group cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-1 border-dashed border-2 border-muted-foreground/30 hover:border-primary/50 rounded-lg p-4 sm:p-6 h-full min-h-[150px] sm:min-h-[200px]">
                       <div className="flex flex-col items-center justify-center h-full text-center">

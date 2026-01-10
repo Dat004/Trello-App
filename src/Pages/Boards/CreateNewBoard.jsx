@@ -1,10 +1,10 @@
 import { Plus } from "lucide-react";
 
-import CreateBoardDialog from "@/Components/CreateBoardDialog";
+import BoardFormDialog from "@/Components/BoardFormDialog";
 
 function CreateNewBoard() {
   return (
-    <CreateBoardDialog
+    <BoardFormDialog
       trigger={
         <div className="group cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-1 border-dashed border-2 border-muted-foreground/30 hover:border-primary/50 rounded-lg p-4 sm:p-6 h-full min-h-[150px] sm:min-h-[200px]">
           <div className="flex flex-col items-center justify-center h-full text-center">

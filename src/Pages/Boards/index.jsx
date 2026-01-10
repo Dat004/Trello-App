@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Search, Star, Grid3x3, List, X } from "lucide-react";
 
 import { BoardSkeleton } from "@/Components/UI/LoadingSkeleton";
-import CreateBoardDialog from "@/Components/CreateBoardDialog";
+import BoardFormDialog from "@/Components/BoardFormDialog";
 import { Input, Button } from "@/Components/UI";
 import BoardCard from "@/Components/BoardCard";
 import CreateNewBoard from "./CreateNewBoard";
@@ -29,7 +29,7 @@ function Members() {
           </p>
         </section>
         <section className="sm:ml-auto">
-          <CreateBoardDialog />
+          <BoardFormDialog />
         </section>
       </div>
 
@@ -155,7 +155,7 @@ function Members() {
                 ? `Không có bảng nào khớp với "${searchQuery}"`
                 : "Bạn chưa tạo bảng nào. Hãy tạo bảng đầu tiên của bạn."}
             </p>
-            <CreateBoardDialog trigger={<Button>Tạo bảng mới</Button>} />
+            <BoardFormDialog trigger={<Button>Tạo bảng mới</Button>} />
           </div>
         </div>
       )}

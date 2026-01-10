@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 
 import { boardSchema } from "@/schemas/boardSchema";
@@ -18,29 +18,50 @@ import {
   DialogTrigger,
 } from "./UI";
 
-function CreateBoardDialog({ trigger }) {
+function BoardFormDialog({ trigger, isEdit = false, boardData }) {
   const [open, setOpen] = useState(false);
   const [selectedColor, setSelectedColor] = useState(
     BACKGROUND_COLORS[0].class
   );
 
   const { createBoard } = useBoard();
-  const form = useZodForm(boardSchema);
+  const form = useZodForm(boardSchema, {
+    defaultValue: {
+      title: isEdit ? boardData.title : "",
+      description: isEdit ? boardData.description : "",
+    },
+  });
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = form;
 
-  const handleCreateBoard = async (data) => {
-    await createBoard({
-      ...data,
-      color: selectedColor,
-      visibility: "private",
-    });
+  useEffect(() => {
+    if (open) {
+      if (isEdit) {
+        setValue("title", boardData.title);
+        setValue("description", boardData.description);
+        setSelectedColor(boardData.color);
+      } else {
+        form.reset();
+        setSelectedColor(BACKGROUND_COLORS[0].class);
+      }
+    }
+  }, [open, boardData]);
+
+  const handleActionsCard = async (data) => {
+    const payload = { ...data, color: selectedColor, visibility: "private" };
+
+    console.log(payload);
+
+    if (isEdit) {
+    } else {
+      await createBoard(payload);
+    }
 
     // Reset
-    form.reset();
     setOpen(false);
   };
 
@@ -50,18 +71,22 @@ function CreateBoardDialog({ trigger }) {
         {trigger || (
           <Button className="w-full leading-1.5 gap-2">
             <Plus className="h-4 w-4" />
-            <span className="hidden sm:inline">Tạo bảng mới</span>
+            <span className="hidden sm:inline">
+              {isEdit ? "Cập nhật bảng" : "Tạo bảng mới"}
+            </span>
           </Button>
         )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px] animate-scale-in">
         <DialogHeader>
-          <DialogTitle>Tạo bảng mới</DialogTitle>
+          <DialogTitle>{isEdit ? "Cập nhật bảng" : "Tạo bảng mới"}</DialogTitle>
           <DialogDescription>
-            Tạo một bảng làm việc mới để tổ chức dự án của bạn.
+            {isEdit
+              ? "Thay đổi thông tin bảng làm việc của bạn."
+              : "Tạo một bảng làm việc mới để tổ chức dự án của bạn."}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit(handleCreateBoard)}>
+        <form onSubmit={handleSubmit(handleActionsCard)}>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <section className="flex items-center justify-between">
@@ -126,7 +151,7 @@ function CreateBoardDialog({ trigger }) {
               Hủy
             </Button>
             <Button type="submit" className="leading-1.5">
-              Tạo bảng
+              {isEdit ? "Lưu thay đổi" : "Tạo bảng"}
             </Button>
           </DialogFooter>
         </form>
@@ -135,4 +160,4 @@ function CreateBoardDialog({ trigger }) {
   );
 }
 
-export default CreateBoardDialog;
+export default BoardFormDialog;

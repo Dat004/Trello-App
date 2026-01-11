@@ -25,4 +25,13 @@ export const boardApi = {
       return err.response;
     }
   },
+  async delete(id, data) {
+    try {
+      return await axiosClient.delete(`${boardsRoute}/${id}`, {
+        data: data || {},
+      });
+    } catch (err) {
+      return err.response;
+    }
+  },
 };

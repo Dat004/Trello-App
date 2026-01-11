@@ -5,6 +5,7 @@ import { boardApi } from "@/api/board";
 function useBoard() {
   const addBoard = useBoardStore((s) => s.addBoard);
   const updateBoardStore = useBoardStore((s) => s.updateBoard);
+  const removeBoardStore = useBoardStore((s) => s.removeBoard);
 
   const { addToast } = UserToast();
 
@@ -36,7 +37,21 @@ function useBoard() {
     return res;
   };
 
-  return { createBoard, updateBoard };
+  const removeBoard = async (id) => {
+    const res = await boardApi.delete(id);
+    if (res.data?.success) {
+      removeBoardStore(id);
+    }
+
+    addToast({
+      type: res.data.success ? "success" : "error",
+      title: res.data.message,
+    });
+
+    return res;
+  };
+
+  return { createBoard, updateBoard, removeBoard };
 }
 
 export default useBoard;

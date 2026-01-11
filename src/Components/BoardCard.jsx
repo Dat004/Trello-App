@@ -12,8 +12,10 @@ import {
 
 import { getRoleText, getMyRole, getRoleVariant } from "@/helpers/role";
 import { formatRelativeTime } from "@/helpers/formatTime";
+import { useAuthStore, useWorkspaceStore } from "@/store";
 import BoardFormDialog from "./BoardFormDialog";
-import { useAuthStore } from "@/store";
+import DeleteDialog from "./DeleteDialog";
+import { useBoard } from "@/hooks";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
@@ -34,11 +36,30 @@ function BoardCard({ index, board, view = "grid" }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const { removeBoard } = useBoard();
+
   const user = useAuthStore((s) => s.user);
+  const workspaces = useWorkspaceStore((s) => s.workspaces);
 
   const myRole = getMyRole(board.members);
   const variantRole = getRoleVariant(myRole);
   const isOwner = user._id === board.owner;
+
+  const checkPermission = () => {
+    if (board.workspace) {
+      const workspace = workspaces.find((w) => w._id === board.workspace);
+      if (!workspace) return false;
+
+      const isWorkspaceOwner = workspace.owner === user._id;
+      const isWorkspaceAdmin = workspace.members.some(
+        (m) => m.user === user._id && m.role === "admin"
+      );
+
+      return isOwner || isWorkspaceOwner || isWorkspaceAdmin;
+    } else {
+      return isOwner;
+    }
+  };
 
   const handleStarToggle = async (e) => {
     e.stopPropagation();
@@ -53,20 +74,14 @@ function BoardCard({ index, board, view = "grid" }) {
     }
   };
 
-  const handleDelete = async (e) => {
-    e.stopPropagation();
-    if (confirm(`Bạn có chắc chắn muốn xóa bảng "${board.title}"?`)) {
-      setIsDeleting(true);
+  const handleDelete = async (boardId) => {
+    setIsDeleting(true);
 
-      try {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-      } catch (error) {
-      } finally {
-        setIsDeleting(false);
-      }
-    }
+    await removeBoard(boardId);
+
+    setIsDeleting(false);
   };
+
   return (
     <>
       {view === "grid" && (
@@ -148,18 +163,21 @@ function BoardCard({ index, board, view = "grid" }) {
                           </DropdownMenuItem>
                         }
                       />
-                      <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
-                        <Copy className="mr-2 h-4 w-4" />
-                        Sao chép
-                      </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onClick={handleDelete}
-                        className="text-destructive"
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Xóa bảng
-                      </DropdownMenuItem>
+                      {checkPermission() && (
+                        <DeleteDialog
+                          onConfirm={() => handleDelete(board._id)}
+                          trigger={
+                            <DropdownMenuItem
+                              className="text-destructive"
+                              onSelect={(e) => e.preventDefault()}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Xóa bảng
+                            </DropdownMenuItem>
+                          }
+                        />
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>

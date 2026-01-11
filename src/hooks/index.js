@@ -1,4 +1,5 @@
 export { default as useUpdateUserSettings } from "./useUpdateUserSettings";
+export { default as useBoardPermissions } from "./useBoardPermissions";
 export { default as useWorkspaceInit } from "./useWorkspaceInit";
 export { default as useWorkspace } from "./useWorkspace";
 export { default as useBoardInit } from "./useBoardInit";

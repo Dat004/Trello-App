@@ -8,7 +8,7 @@ import BoardCard from "@/Components/BoardCard";
 import CreateNewBoard from "./CreateNewBoard";
 import { useBoardStore } from "@/store";
 
-function Members() {
+function Boards() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStarred, setFilterStarred] = useState(false);
   const [viewMode, setViewMode] = useState("grid");
@@ -163,4 +163,4 @@ function Members() {
   );
 }
 
-export default Members;
+export default Boards;

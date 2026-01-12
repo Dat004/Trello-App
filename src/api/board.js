@@ -34,4 +34,11 @@ export const boardApi = {
       return err.response;
     }
   },
+  async detailBoard(id) {
+    try {
+      return await axiosClient.get(`${boardsRoute}/${id}`);
+    } catch (err) {
+      return err.response;
+    }
+  },
 };

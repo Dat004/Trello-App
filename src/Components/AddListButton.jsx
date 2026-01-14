@@ -2,42 +2,52 @@ import { useState } from "react";
 import { Plus, X, Palette } from "lucide-react";
 
 import { Button, Input, Card, CardContent } from "./UI";
-import { listColors } from "@/config/data";
+import { UserToast } from "@/context/ToastContext";
+import { BACKGROUND_COLORS } from "@/config/theme";
+import { useBoardDetailStore } from "@/store";
+import { listApi } from "@/api/list";
 import { cn } from "@/lib/utils";
 
-function AddListButton() {
+function AddListButton({ boardId }) {
   const [isAdding, setIsAdding] = useState(false);
   const [title, setTitle] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedColor, setSelectedColor] = useState(listColors[0]);
+  const [selectedColor, setSelectedColor] = useState(
+    BACKGROUND_COLORS[0].class
+  );
+
+  const { addToast } = UserToast();
+  const addList = useBoardDetailStore((state) => state.addList);
 
   const handleAdd = async () => {
-    if (!title.trim()) return;
+    const newData = {
+      title: title.trim(),
+      color: selectedColor,
+    };
 
     setIsLoading(true);
-
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    setTitle("");
+    const response = await listApi.create(boardId, newData);
     setIsLoading(false);
-    setIsAdding(false);
-    setSelectedColor(listColors[0]);
+
+    addToast({
+      type: response.data.success ? "success" : "error",
+      title: response.data.message,
+    });
+
+    if (response.data.success) {
+      addList(response.data.data.list);
+
+      setTitle("");
+      setIsAdding(false);
+    }
   };
 
   const handleCancel = () => {
-    setIsAdding(false);
     setTitle("");
-    setSelectedColor(listColors[0]);
+    setIsAdding(false);
   };
 
-  const handleKeyPress = () => {
-    if (e.key === "Enter") {
-      handleAdd();
-    } else if (e.key === "Escape") {
-      handleCancel();
-    }
-  };
+  const handleKeyPress = () => {};
 
   if (isAdding) {
     return (
@@ -60,14 +70,14 @@ function AddListButton() {
                 <span className="text-sm font-medium">Màu header:</span>
               </section>
               <section className="grid grid-cols-4 gap-2">
-                {listColors.map((color) => (
+                {BACKGROUND_COLORS.map((color) => (
                   <button
                     key={color.value}
                     type="button"
-                    onClick={() => setSelectedColor(color)}
+                    onClick={() => setSelectedColor(color.class)}
                     className={cn(
                       "relative h-8 rounded-md transition-all hover:scale-105",
-                      selectedColor.value === color.value
+                      selectedColor === color.class
                         ? "ring-2 ring-white ring-offset-2 ring-offset-card"
                         : "",
                       color.class
@@ -75,7 +85,7 @@ function AddListButton() {
                     title={color.name}
                     disabled={isLoading}
                   >
-                    {selectedColor.value === color.value && (
+                    {selectedColor === color.class && (
                       <section className="absolute inset-0 flex items-center justify-center">
                         <div className="w-2 h-2 bg-white rounded-full" />
                       </section>
@@ -112,9 +122,9 @@ function AddListButton() {
   return (
     <div className="flex-shrink-0 w-72">
       <Button
-        variant="ghost"
+        variant="secondary"
         onClick={() => setIsAdding(true)}
-        className="w-full h-12 border-2 border-dashed border-white/30 text-white hover:bg-white/10 hover:border-white/50 transition-all"
+        className="w-full h-12 transition-all"
       >
         <Plus className="h-4 w-4 mr-2" />
         Thêm danh sách

@@ -130,6 +130,79 @@ const useBoardDetailStore = create((set) => ({
     });
   },
 
+  addCard: (card) => {
+    set((state) => {
+      const newCards = { ...state.cards };
+      newCards[card._id] = card;
+
+      // Cập nhật list chứa card
+      const listId = card.list;
+      const newLists = { ...state.lists };
+      const targetList = newLists[listId];
+      
+      if (targetList) {
+        const updatedCardOrderIds = [...targetList.cardOrderIds, card._id];
+        newLists[listId] = {
+          ...targetList,
+          cardOrderIds: updatedCardOrderIds,
+        };
+      }
+
+      return {
+        cards: newCards,
+        lists: newLists,
+      };
+    });
+  },
+
+  updateCard: (cardId, updatedData) => {
+    set((state) => {
+      const newCards = { ...state.cards };
+      const currentCard = newCards[cardId];
+
+      if (!currentCard) return state;
+
+      // Cập nhật card
+      const updatedCard = { ...currentCard, ...updatedData };
+      newCards[cardId] = updatedCard;
+
+      return {
+        cards: newCards,
+      };
+    });
+  },
+
+  removeCard: (cardId) => {
+    set((state) => {
+      const newCards = { ...state.cards };
+      const cardToRemove = newCards[cardId];
+      if (!cardToRemove) return state;
+
+      const listId = cardToRemove.list;
+
+      // Xóa card khỏi store
+      delete newCards[cardId];
+
+      // Cập nhật list chứa card
+      const newLists = { ...state.lists };
+      const targetList = newLists[listId];
+      if (targetList) {
+        const updatedCardOrderIds = targetList.cardOrderIds.filter(
+          (id) => id !== cardId
+        );
+        newLists[listId] = {
+          ...targetList,
+          cardOrderIds: updatedCardOrderIds,
+        };
+      }
+
+      return {
+        cards: newCards,
+        lists: newLists,
+      };
+    });
+  },
+
   // Reset store
   reset: () =>
     set({

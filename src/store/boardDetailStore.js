@@ -13,14 +13,14 @@ const useBoardDetailStore = create((set) => ({
     const listOrderIds = [];
 
     if (boardDetail.lists && Array.isArray(boardDetail.lists)) {
-      boardDetail.lists.forEach((list) => {
+      boardDetail.lists?.forEach((list) => {
         // 1. Lưu thứ tự List
         listOrderIds.push(list._id);
 
         // 2. Tách Cards ra khỏi List
         const cardOrderIds = [];
         if (list.cards && Array.isArray(list.cards)) {
-          list.cards.forEach((card) => {
+          list.cards?.forEach((card) => {
             // Lưu card vào map cards
             cardsMap[card._id] = { ...card, list: list._id };
             // Lưu thứ tự card trong list này
@@ -43,6 +43,90 @@ const useBoardDetailStore = create((set) => ({
       cards: cardsMap,
       listOrder: listOrderIds,
       isLoading: false,
+    });
+  },
+
+  addList: (list) => {
+    set((state) => {
+      const newLists = { ...state.lists };
+      const newListOrder = [...state.listOrder, list._id];
+
+      // List mới
+      newLists[list._id] = {
+        ...list,
+        cards: undefined,
+        cardOrderIds: [],
+      };
+
+      // Cập nhật currentBoard với list mới
+      const updatedBoard = {
+        ...state.currentBoard,
+        lists: [...state.currentBoard?.lists, list],
+      };
+
+      return {
+        currentBoard: updatedBoard,
+        lists: newLists,
+        listOrder: newListOrder,
+      };
+    });
+  },
+
+  updateList: (listId, updatedData) => {
+    set((state) => {
+      const newLists = { ...state.lists };
+      const currentList = newLists[listId];
+
+      if (!currentList) return state;
+
+      // Cập nhật list
+      const updatedList = { ...currentList, ...updatedData };
+      newLists[listId] = updatedList;
+
+      // Cập nhật currentBoard
+      const updatedBoard = {
+        ...state.currentBoard,
+        lists: state.currentBoard.lists?.map((list) =>
+          list._id === listId ? updatedList : list
+        ),
+      };
+
+      return {
+        currentBoard: updatedBoard,
+        lists: newLists,
+      };
+    });
+  },
+
+  removeList: (listId) => {
+    set((state) => {
+      const newLists = { ...state.lists };
+      const newCards = { ...state.cards };
+      const newListOrder = state.listOrder.filter((id) => id !== listId);
+
+      // Xóa tất cả card trong list
+      const listToRemove = newLists[listId];
+      if (listToRemove) {
+        listToRemove.cardOrderIds?.forEach((cardId) => {
+          delete newCards[cardId];
+        });
+      }
+
+      // Xóa list khỏi store
+      delete newLists[listId];
+
+      // Cập nhật currentBoard
+      const updatedBoard = {
+        ...state.currentBoard,
+        lists: state.currentBoard.lists?.filter((list) => list._id !== listId),
+      };
+
+      return {
+        currentBoard: updatedBoard,
+        lists: newLists,
+        cards: newCards,
+        listOrder: newListOrder,
+      };
     });
   },
 

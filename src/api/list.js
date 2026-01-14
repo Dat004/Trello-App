@@ -11,23 +11,23 @@ export const listApi = {
       return err.response;
     }
   },
-  async create(data) {
+  async create(boardId, data) {
     try {
-      return await axiosClient.post(`${listsRoute}/create`, data);
+      return await axiosClient.post(`${boardsRoute}/${boardId}${listsRoute}/create`, data);
     } catch (err) {
       return err.response;
     }
   },
-  async update(id, data) {
+  async update(boardId, id, data) {
     try {
-      return await axiosClient.patch(`${listsRoute}/${id}`, data);
+      return await axiosClient.patch(`${boardsRoute}/${boardId}${listsRoute}/${id}`, data);
     } catch (err) {
       return err.response;
     }
   },
-  async delete(id, data) {
+  async delete(boardId, id, data) {
     try {
-      return await axiosClient.delete(`${listsRoute}/${id}`, {
+      return await axiosClient.delete(`${boardsRoute}/${boardId}${listsRoute}/${id}`, {
         data: data || {},
       });
     } catch (err) {

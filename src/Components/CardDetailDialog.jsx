@@ -1,69 +1,51 @@
-import { useState, useEffect } from "react";
 import {
-  X,
-  Calendar,
-  User,
-  Tag,
-  CheckSquare,
-  Plus,
-  Trash2,
-  MessageSquare,
-  Paperclip,
   AlertCircle,
+  Calendar,
+  CheckSquare,
   Clock,
+  Plus,
+  Tag,
+  Trash2,
+  User,
 } from "lucide-react";
+import { useState } from "react";
 
+import { getChecklistProgress } from "@/helpers/card";
+import { formatDateOnly } from "@/helpers/formatTime";
+// import MemberSelectorDialog from "@/Components/MemberSelectorDialog";
 import {
-  Button,
-  Input,
-  Label,
-  TextArea,
-  Checkbox,
-  Progress,
-  Separator,
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "./UI";
+  Button,
+  Checkbox,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  Input,
+  TextArea,
+  Label,
+  Progress,
+  Separator,
+} from "@/Components/UI";
+import { useBoardDetailStore } from "@/store";
 
-function CardDetailDialog({ card, listId, boardId, open, onOpenChange }) {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+function CardDetailModal({ card, listId, boardId, trigger }) {
+  const { updateCard } = useBoardDetailStore();
+  const [open, setOpen] = useState(false);
   const [newChecklistItem, setNewChecklistItem] = useState("");
   const [newComment, setNewComment] = useState("");
+  const [showMemberSelector, setShowMemberSelector] = useState(false);
 
-  useEffect(() => {
-    if (card) {
-      setTitle(card.title);
-      setDescription(card.description || "");
-    }
-  }, [card]);
-
-  const handleSave = async () => {
-    if (!card || !title.trim()) return;
-
-    setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    const updatedCard = {
-      ...card,
-      title: title.trim(),
-      description: description.trim(),
-      updatedAt: new Date(),
-    };
-
-    dispatch({
-      type: "UPDATE_CARD",
-      payload: { boardId, listId, card: updatedCard },
-    });
-    setIsLoading(false);
-    onOpenChange(false);
-  };
+  const workspaceMembers = [
+    { id: "1", name: "Nguyễn Văn A", avatar: "/placeholder.svg" },
+    { id: "2", name: "Trần Thị B", avatar: "/placeholder.svg" },
+    { id: "3", name: "Phạm Văn C", avatar: "/placeholder.svg" },
+    { id: "4", name: "Hoàng Thị D", avatar: "/placeholder.svg" },
+  ];
 
   const handleToggleChecklistItem = (itemId) => {
     if (!card) return;
@@ -77,6 +59,8 @@ function CardDetailDialog({ card, listId, boardId, open, onOpenChange }) {
       checklist: updatedChecklist,
       updatedAt: new Date(),
     };
+
+    updateCard(card._id, updatedCard);
   };
 
   const handleAddChecklistItem = () => {
@@ -95,6 +79,7 @@ function CardDetailDialog({ card, listId, boardId, open, onOpenChange }) {
       updatedAt: new Date(),
     };
 
+    updateCard(card._id, updatedCard);
     setNewChecklistItem("");
   };
 
@@ -106,6 +91,8 @@ function CardDetailDialog({ card, listId, boardId, open, onOpenChange }) {
       checklist: card.checklist.filter((item) => item.id !== itemId),
       updatedAt: new Date(),
     };
+
+    updateCard(card._id, updatedCard);
   };
 
   const handleAddComment = () => {
@@ -114,7 +101,7 @@ function CardDetailDialog({ card, listId, boardId, open, onOpenChange }) {
     const comment = {
       id: Date.now().toString(),
       text: newComment.trim(),
-      author: "Người dùng hiện tại",
+      author: "Bạn",
       createdAt: new Date(),
     };
 
@@ -124,91 +111,94 @@ function CardDetailDialog({ card, listId, boardId, open, onOpenChange }) {
       updatedAt: new Date(),
     };
 
+    updateCard(card._id, updatedCard);
     setNewComment("");
   };
 
-  const getChecklistProgress = () => {
-    if (!card || card.checklist.length === 0) return null;
-    const completed = card.checklist.filter((item) => item.completed).length;
-    const total = card.checklist.length;
-    const percentage = Math.round((completed / total) * 100);
-    return { completed, total, percentage };
-  };
+  const handleAddCommentWithReply = (replyTo) => {
+    // Logic to add comment with reply
+    if (!card || !newComment.trim()) return;
 
-  const getLabelColor = (color) => {
-    const colors = {
-      red: "bg-red-500",
-      orange: "bg-orange-500",
-      yellow: "bg-yellow-500",
-      green: "bg-green-500",
-      blue: "bg-blue-500",
-      purple: "bg-purple-500",
-      pink: "bg-pink-500",
-      indigo: "bg-indigo-500",
-      gray: "bg-gray-500",
+    const comment = {
+      id: Date.now().toString(),
+      text: newComment.trim(),
+      author: "Bạn",
+      createdAt: new Date(),
+      replyTo: replyTo,
     };
-    return colors[color] || "bg-gray-500";
-  };
-  // </CHANGE>
 
-  const handleClose = () => {
-    onOpenChange(false);
-    if (card) {
-      setTitle(card.title);
-      setDescription(card.description || "");
-    }
+    const updatedCard = {
+      ...card,
+      comments: [...card.comments, comment],
+      updatedAt: new Date(),
+    };
+
+    updateCard(card._id, updatedCard);
+    setNewComment("");
+  };
+
+  const handleAddMembers = (members) => {
+    if (!card) return;
+
+    const updatedCard = {
+      ...card,
+      members: members,
+      updatedAt: new Date(),
+    };
+
+    updateCard(card._id, updatedCard);
   };
 
   if (!card) return null;
 
-  const checklistProgress = getChecklistProgress();
+  const checklistProgress = getChecklistProgress(card);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <section className="flex items-center justify-between">
-            <DialogTitle className="text-lg font-semibold">
-              Chi tiết thẻ
-            </DialogTitle>
-          </section>
+          <DialogTitle className="text-lg font-semibold">
+            Chi tiết thẻ
+          </DialogTitle>
+          <DialogDescription>
+            Xem và chỉnh sửa thông tin chi tiết của thẻ, bao gồm tiêu đề, mô tả,
+            thành viên và danh sách công việc.
+          </DialogDescription>
         </DialogHeader>
 
-        <section className="grid gap-6 py-4">
+        <div className="grid gap-6 py-4">
           {/* Title */}
-          <section className="grid gap-2">
+          <div className="grid gap-2">
             <Label htmlFor="card-title" className="text-sm font-medium">
-              Tiêu đề *
+              Tiêu đề
             </Label>
             <Input
               id="card-title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Nhập tiêu đề thẻ..."
+              value={card.title}
+              readOnly
               className="text-base"
             />
-          </section>
+          </div>
 
-          <section className="grid gap-3">
+          <div className="grid gap-3">
             {card.labels.length > 0 && (
-              <section className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center gap-2 flex-wrap">
                 <Tag className="h-4 w-4 text-gray-500" />
                 {card.labels.map((label) => (
-                  <section
-                    key={label.id}
-                    className={`${getLabelColor(
-                      label.color
-                    )} text-white text-xs px-2 py-1 rounded`}
+                  <div
+                    key={label._id}
+                    className={`${label.color} text-white text-xs px-2 py-1 rounded`}
                   >
                     {label.name}
-                  </section>
+                  </div>
                 ))}
-              </section>
+              </div>
             )}
 
-            <section className="flex items-center gap-4 text-sm">
+            <div className="flex items-center gap-4 text-sm">
               {card.priority && (
-                <section className="flex items-center gap-2">
+                <div className="flex items-center gap-2">
                   <AlertCircle
                     className={`h-4 w-4 ${
                       card.priority === "high"
@@ -221,36 +211,49 @@ function CardDetailDialog({ card, listId, boardId, open, onOpenChange }) {
                   <span className="capitalize text-gray-700 dark:text-gray-300">
                     Độ ưu tiên: <strong>{card.priority}</strong>
                   </span>
-                </section>
+                </div>
               )}
 
-              {card.dueDate && (
-                <section className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-gray-500" />
-                  <span className="text-gray-700 dark:text-gray-300">
-                    Hạn:{" "}
-                    <strong>{card.dueDate.toLocaleDateString("vi-VN")}</strong>
-                  </span>
-                </section>
-              )}
-            </section>
-          </section>
-          {/* </CHANGE> */}
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-gray-500" />
+                <span className="text-gray-700 dark:text-gray-300">
+                  Hạn:{" "}
+                  <strong>
+                    {card.due_date
+                      ? formatDateOnly(card.due_date)
+                      : "Không có hạn"}
+                  </strong>
+                </span>
+              </div>
+            </div>
+          </div>
 
           {/* Members */}
-          {card.members.length > 0 && (
-            <section className="grid gap-2">
+          <div className="grid gap-2">
+            <div className="flex items-center justify-between">
               <Label className="text-sm font-medium flex items-center gap-2">
                 <User className="h-4 w-4" />
                 Thành viên
               </Label>
-              <section className="flex items-center gap-2 flex-wrap">
-                {card.members.map((member) => (
-                  <section
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 px-2 text-xs"
+                onClick={() => setShowMemberSelector(true)}
+              >
+                <Plus className="h-3 w-3 mr-1" />
+                Thêm
+              </Button>
+            </div>
+
+            <div className="flex items-center gap-2 flex-wrap">
+              {card && card.members.length > 0 ? (
+                card.members.map((member) => (
+                  <div
                     key={member.id}
-                    className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded"
+                    className="flex items-center gap-1.5 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full text-xs"
                   >
-                    <Avatar className="h-6 w-6">
+                    <Avatar className="h-5 w-5">
                       <AvatarImage
                         src={member.avatar || "/placeholder.svg"}
                         alt={member.name}
@@ -259,30 +262,34 @@ function CardDetailDialog({ card, listId, boardId, open, onOpenChange }) {
                         {member.name.charAt(0)}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="text-sm">{member.name}</span>
-                  </section>
-                ))}
-              </section>
-            </section>
-          )}
+                    <span className="max-w-[100px] truncate">
+                      {member.name}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-xs text-gray-500">Chưa có thành viên</p>
+              )}
+            </div>
+          </div>
 
           {/* Description */}
-          <section className="grid gap-2">
+          <div className="grid gap-2">
             <Label htmlFor="card-description" className="text-sm font-medium">
               Mô tả
             </Label>
             <TextArea
               id="card-description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Thêm mô tả chi tiết cho thẻ này..."
+              value={card.description || ""}
+              readOnly
+              placeholder="Chưa có mô tả"
               rows={4}
               className="resize-none"
             />
-          </section>
+          </div>
 
-          <section className="grid gap-3">
-            <section className="flex items-center justify-between">
+          <div className="grid gap-3">
+            <div className="flex items-center justify-between">
               <Label className="text-sm font-medium flex items-center gap-2">
                 <CheckSquare className="h-4 w-4" />
                 Checklist
@@ -293,15 +300,15 @@ function CardDetailDialog({ card, listId, boardId, open, onOpenChange }) {
                   {checklistProgress.percentage}%)
                 </span>
               )}
-            </section>
+            </div>
 
             {checklistProgress && (
               <Progress value={checklistProgress.percentage} className="h-2" />
             )}
 
-            <section className="space-y-2">
+            <div className="space-y-2">
               {card.checklist.map((item) => (
-                <section key={item.id} className="flex items-center gap-2 group">
+                <div key={item.id} className="flex items-center gap-2 group">
                   <Checkbox
                     checked={item.completed}
                     onCheckedChange={() => handleToggleChecklistItem(item.id)}
@@ -325,11 +332,11 @@ function CardDetailDialog({ card, listId, boardId, open, onOpenChange }) {
                   >
                     <Trash2 className="h-3 w-3 text-red-500" />
                   </Button>
-                </section>
+                </div>
               ))}
-            </section>
+            </div>
 
-            <section className="flex gap-2">
+            <div className="flex gap-2">
               <Input
                 value={newChecklistItem}
                 onChange={(e) => setNewChecklistItem(e.target.value)}
@@ -344,59 +351,53 @@ function CardDetailDialog({ card, listId, boardId, open, onOpenChange }) {
               >
                 <Plus className="h-4 w-4" />
               </Button>
-            </section>
-          </section>
-          {/* </CHANGE> */}
+            </div>
+          </div>
 
-          {card.attachments.length > 0 && (
-            <section className="grid gap-3">
+          {/* {card.attachments.length > 0 && (
+            <div className="grid gap-3">
               <Label className="text-sm font-medium flex items-center gap-2">
                 <Paperclip className="h-4 w-4" />
                 Tệp đính kèm
               </Label>
-              <section className="space-y-2">
+              <div className="space-y-2 max-h-[200px] overflow-y-auto">
                 {card.attachments.map((attachment) => (
-                  <section
+                  <div
                     key={attachment.id}
-                    className="flex items-center gap-3 p-2 bg-gray-50 dark:bg-gray-800 rounded border"
+                    className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded border hover:shadow-md transition-shadow"
                   >
-                    <Paperclip className="h-4 w-4 text-gray-500" />
-                    <section className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">
-                        {attachment.name}
-                      </p>
+                    <Paperclip className="h-4 w-4 text-blue-500" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{attachment.name}</p>
                       <p className="text-xs text-gray-500">
-                        {(attachment.size / 1024).toFixed(0)} KB •{" "}
-                        {attachment.createdAt.toLocaleDateString("vi-VN")}
+                        {(attachment.size / 1024).toFixed(0)} KB • {attachment.createdAt.toLocaleDateString("vi-VN")}
                       </p>
-                    </section>
-                  </section>
+                    </div>
+                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-red-500 hover:text-red-700">
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
                 ))}
-              </section>
-            </section>
-          )}
-          {/* </CHANGE> */}
+              </div>
+            </div>
+          )} */}
 
-          <section className="grid gap-3">
+          {/* <div className="grid gap-3">
             <Label className="text-sm font-medium flex items-center gap-2">
               <MessageSquare className="h-4 w-4" />
               Bình luận ({card.comments.length})
             </Label>
 
-            <section className="space-y-3">
+            <div className="space-y-3 max-h-[300px] overflow-y-auto">
               {card.comments.map((comment) => (
-                <section key={comment.id} className="flex gap-3">
+                <div key={comment.id} className="flex gap-3 group">
                   <Avatar className="h-8 w-8">
-                    <AvatarFallback className="text-xs">
-                      {comment.author.charAt(0)}
-                    </AvatarFallback>
+                    <AvatarFallback className="text-xs">{comment.author.charAt(0)}</AvatarFallback>
                   </Avatar>
-                  <section className="flex-1">
-                    <section className="bg-gray-50 dark:bg-gray-800 p-3 rounded">
-                      <section className="flex items-center gap-2 mb-1">
-                        <span className="text-sm font-medium">
-                          {comment.author}
-                        </span>
+                  <div className="flex-1">
+                    <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-sm font-medium">{comment.author}</span>
                         <span className="text-xs text-gray-500">
                           {comment.createdAt.toLocaleString("vi-VN", {
                             month: "short",
@@ -405,17 +406,33 @@ function CardDetailDialog({ card, listId, boardId, open, onOpenChange }) {
                             minute: "2-digit",
                           })}
                         </span>
-                      </section>
-                      <p className="text-sm text-gray-700 dark:text-gray-300">
-                        {comment.text}
-                      </p>
-                    </section>
-                  </section>
-                </section>
+                      </div>
+                      <p className="text-sm text-gray-700 dark:text-gray-300">{comment.text}</p>
+                    </div>
+                    <div className="flex gap-2 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 px-2 text-xs"
+                        onClick={() => setNewComment(`@${comment.author} `)}
+                      >
+                        Trả lời
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 px-2 text-xs"
+                        onClick={() => setNewComment(`@${comment.author} `)}
+                      >
+                        Nhắc đến
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               ))}
-            </section>
+            </div>
 
-            <section className="flex gap-2">
+            <div className="flex gap-2">
               <TextArea
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
@@ -423,49 +440,49 @@ function CardDetailDialog({ card, listId, boardId, open, onOpenChange }) {
                 rows={2}
                 className="resize-none text-sm"
               />
-              <Button
-                size="sm"
-                onClick={handleAddComment}
-                disabled={!newComment.trim()}
-              >
+              <Button size="sm" onClick={handleAddComment} disabled={!newComment.trim()}>
                 <Plus className="h-4 w-4" />
               </Button>
-            </section>
-          </section>
-          {/* </CHANGE> */}
+            </div>
+          </div> */}
 
           <Separator />
 
           {/* Card Info */}
-          <section className="grid gap-2">
+          <div className="grid gap-2">
             <h4 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Clock className="h-4 w-4" />
               Thông tin thẻ
             </h4>
-            <section className="grid grid-cols-2 gap-4 text-sm">
-              <section className="flex items-center gap-2 text-muted-foreground">
-                <span>Tạo: {card.createdAt.toLocaleDateString("vi-VN")}</span>
-              </section>
-              <section className="flex items-center gap-2 text-muted-foreground">
-                <span>
-                  Cập nhật: {card.updatedAt.toLocaleDateString("vi-VN")}
-                </span>
-              </section>
-            </section>
-          </section>
-        </section>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <span>Tạo: {formatDateOnly(card.created_at)}</span>
+              </div>
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <span>Cập nhật: {formatDateOnly(card.updated_at)}</span>
+              </div>
+            </div>
+          </div>
+        </div>
 
-        <section className="flex justify-end gap-2 pt-4 border-t">
-          <Button variant="outline" onClick={handleClose}>
+        {/* {card && (
+          <MemberSelectorDialog
+            open={showMemberSelector}
+            onOpenChange={setShowMemberSelector}
+            workspaceMembers={workspaceMembers}
+            selectedMembers={card.members}
+            onConfirm={handleAddMembers}
+          />
+        )} */}
+
+        <div className="flex justify-end gap-2 pt-4 border-t">
+          <Button variant="outline" onClick={() => setOpen(false)}>
             Đóng
           </Button>
-          <Button onClick={handleSave} disabled={!title.trim() || isLoading}>
-            {isLoading ? "Đang lưu..." : "Lưu thay đổi"}
-          </Button>
-        </section>
+        </div>
       </DialogContent>
     </Dialog>
   );
 }
 
-export default CardDetailDialog;
+export default CardDetailModal;

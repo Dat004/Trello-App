@@ -28,4 +28,29 @@ export const cardApi = {
       return err.response;
     }
   },
+
+  // Checklist
+  async addChecklist(boardId, listId, id, data) {
+    try {
+      return await axiosClient.post(`${boardsRoute}/${boardId}${listsRoute}/${listId}${cardsRoute}/${id}/checklist`, data);
+    } catch (err) {
+      return err.response;
+    }
+  },
+  async toggleChecklistItem(boardId, listId, id, data) {
+    try {
+      return await axiosClient.patch(`${boardsRoute}/${boardId}${listsRoute}/${listId}${cardsRoute}/${id}/checklist`, data);
+    } catch (err) {
+      return err.response;
+    }
+  },
+  async deleteChecklist(boardId, listId, id, data) {
+    try {
+      return await axiosClient.delete(`${boardsRoute}/${boardId}${listsRoute}/${listId}${cardsRoute}/${id}/checklist`, {
+        data: data || {},
+      });
+    } catch (err) {
+      return err.response;
+    }
+  },
 };

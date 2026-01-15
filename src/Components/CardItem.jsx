@@ -2,7 +2,6 @@ import { useState } from "react";
 import {
   Edit,
   Trash2,
-  Copy,
   MoreHorizontal,
   GripVertical,
   Calendar,
@@ -12,9 +11,14 @@ import {
   AlertCircle,
 } from "lucide-react";
 
+import { getChecklistProgress } from "@/helpers/card";
+import { formatDueDate } from "@/helpers/formatTime";
+import { useBoardDetailStore } from "@/store";
+import { cn } from "@/lib/utils";
 import {
   Progress,
   Button,
+  Badge,
   Avatar,
   AvatarFallback,
   AvatarImage,
@@ -25,116 +29,21 @@ import {
   DropdownMenuTrigger,
 } from "./UI";
 
-const getChecklistProgress = (card) => {
-  if (card.checklist.length === 0) return null;
-  const completed = card.checklist.filter((item) => item.completed).length;
-  const total = card.checklist.length;
-  const percentage = Math.round((completed / total) * 100);
-  return { completed, total, percentage };
-};
-
-const formatDueDate = (date) => {
-  const now = new Date();
-  const diff = date.getTime() - now.getTime();
-  const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-
-  if (days < 0) return { text: "Quá hạn", color: "destructive" };
-  if (days === 0) return { text: "Hôm nay", color: "warning" };
-  if (days === 1) return { text: "Ngày mai", color: "warning" };
-  if (days <= 3) return { text: `${days} ngày`, color: "warning" };
-  return {
-    text: date.toLocaleDateString("vi-VN", { month: "short", day: "numeric" }),
-    color: "default",
-  };
-};
-
-const getPriorityColor = (priority) => {
-  switch (priority) {
-    case "high":
-      return "destructive";
-    case "medium":
-      return "warning";
-    case "low":
-      return "secondary";
-    default:
-      return "secondary";
-  }
-};
-
-const getLabelColor = (color) => {
-  const colors = {
-    red: "bg-red-500",
-    orange: "bg-orange-500",
-    yellow: "bg-yellow-500",
-    green: "bg-green-500",
-    blue: "bg-blue-500",
-    purple: "bg-purple-500",
-    pink: "bg-pink-500",
-    indigo: "bg-indigo-500",
-    gray: "bg-gray-500",
-  };
-  return colors[color] || "bg-gray-500";
-};
-
-function CardItem({
-  card,
-  listId,
-  boardId,
-  index,
-  onEdit,
-  isDragging = false,
-}) {
+function CardItem({ cardId, listId, boardId }) {
   const [isLoading, setIsLoading] = useState(false);
 
+  const cards = useBoardDetailStore((state) => state.cards);
+  const card = cards[cardId];
+
   const checklistProgress = getChecklistProgress(card);
-  const dueDateInfo = card.dueDate ? formatDueDate(card.dueDate) : null;
+  const dueDateInfo = formatDueDate(card.due_date);
 
-  const handleDelete = async (e) => {
-    e.stopPropagation();
-    if (confirm(`Bạn có chắc chắn muốn xóa thẻ "${card.title}"?`)) {
-      setIsLoading(true);
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      setIsLoading(false);
-    }
-  };
+  const handleDelete = async (e) => {};
 
-  const handleCopy = async (e) => {
-    e.stopPropagation();
-    setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    const newCard = {
-      ...card,
-      id: Date.now().toString(),
-      title: `${card.title} (Sao chép)`,
-      order: card.order + 0.1,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    setIsLoading(false);
-  };
-
-  const handleEdit = (e) => {
-    e.stopPropagation();
-    onEdit(card);
-  };
-
-  if (isDragging) {
-    return (
-      <div className="bg-white dark:bg-gray-800 p-3 rounded-md shadow-lg border-2 border-blue-300 dark:border-blue-600 opacity-90 rotate-3 scale-105 cursor-grabbing">
-        <p className="text-sm font-medium text-gray-900 dark:text-white mb-1">
-          {card.title}
-        </p>
-      </div>
-    );
-  }
+  const handleEdit = (e) => {};
 
   return (
-    <div
-      className="bg-white dark:bg-gray-800 p-3 rounded-md shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200 cursor-pointer group"
-      onClick={() => onEdit(card)}
-    >
+    <div className="bg-white dark:bg-gray-800 p-3 rounded-md shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200 cursor-pointer group">
       <div className="flex items-start justify-between mb-2">
         <div className="flex items-start gap-2 flex-1 min-w-0">
           <div className="opacity-0 group-hover:opacity-100 transition-opacity mt-1 cursor-grab active:cursor-grabbing">
@@ -148,18 +57,20 @@ function CardItem({
             {card.labels.length > 0 && (
               <div className="flex flex-wrap gap-1 mb-2">
                 {card.labels.map((label) => (
-                  <div
-                    key={label.id}
-                    className={`${getLabelColor(
+                  <Badge
+                    style={{ lineHeight: 1.15 }}
+                    key={label._id}
+                    className={cn(
+                      "text-white text-xs px-2 py-0.5 rounded",
+                      `hover:${label.color}/10`,
                       label.color
-                    )} text-white text-xs px-2 py-0.5 rounded`}
+                    )}
                   >
                     {label.name}
-                  </div>
+                  </Badge>
                 ))}
               </div>
             )}
-            {/* </CHANGE> */}
 
             {card.description && (
               <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 mb-2">
@@ -181,7 +92,6 @@ function CardItem({
                 />
               </div>
             )}
-            {/* </CHANGE> */}
 
             <div className="flex items-center gap-3 flex-wrap">
               {dueDateInfo && (
@@ -214,21 +124,20 @@ function CardItem({
                 </div>
               )}
 
-              {card.comments.length > 0 && (
+              {card.comment_count > 0 && (
                 <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
                   <MessageSquare className="h-3 w-3" />
-                  <span>{card.comments.length}</span>
+                  <span>{card.comment_count}</span>
                 </div>
               )}
 
-              {card.attachments.length > 0 && (
+              {card.attachment_count > 0 && (
                 <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
                   <Paperclip className="h-3 w-3" />
-                  <span>{card.attachments.length}</span>
+                  <span>{card.attachment_count}</span>
                 </div>
               )}
             </div>
-            {/* </CHANGE> */}
 
             {card.members.length > 0 && (
               <div className="flex items-center gap-1 mt-2">
@@ -253,7 +162,6 @@ function CardItem({
                 )}
               </div>
             )}
-            {/* </CHANGE> */}
           </div>
         </div>
         <DropdownMenu>
@@ -272,10 +180,6 @@ function CardItem({
             <DropdownMenuItem onClick={handleEdit}>
               <Edit className="mr-2 h-4 w-4" />
               Chỉnh sửa
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleCopy}>
-              <Copy className="mr-2 h-4 w-4" />
-              Sao chép
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem

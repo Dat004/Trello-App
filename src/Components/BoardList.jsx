@@ -5,9 +5,10 @@ import { UserToast } from "@/context/ToastContext";
 import CardDetailDialog from "./CardDetailDialog";
 import { useBoardPermissions } from "@/hooks";
 import { useBoardDetailStore } from "@/store";
+import AddCardDialog from "./AddCardDialog";
 import DeleteDialog from "./DeleteDialog";
-import AddCardForm from "./AddCardForm";
 import { listApi } from "@/api/list";
+import CardItem from "./CardItem";
 import { cn } from "@/lib/utils";
 import {
   Button,
@@ -34,7 +35,6 @@ function BoardList({ listId, boardId }) {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedCard, setSelectedCard] = useState(null);
   const [isCardModalOpen, setIsCardModalOpen] = useState(false);
-  const [showAddCard, setShowAddCard] = useState(false);
 
   const { addToast } = UserToast();
   const { canDelete } = useBoardPermissions(currentBoard);
@@ -169,51 +169,44 @@ function BoardList({ listId, boardId }) {
           </CardHeader>
           <CardContent className="p-4 pt-0">
             <section className="min-h-[100px] mb-3 rounded-lg transition-all duration-200 relative">
-              {/* <section className="space-y-2 p-2">
-                  {list.cards.length === 0 ? (
-                    <section className="text-center py-8 text-gray-500 dark:text-gray-400">
-                      <p className="text-sm">Chưa có thẻ nào</p>
-                      <p className="text-xs">Thêm thẻ đầu tiên của bạn</p>
-                    </section>
-                  ) : (
-                    list.cards
-                      .sort((a, b) => a.order - b.order)
-                      .map((card, cardIndex) => (
-                        <CardItem
-                          key={card.id}
-                          card={card}
-                          listId={list.id}
-                          boardId={boardId}
-                          index={cardIndex}
-                          onEdit={handleCardEdit}
-                        />
-                      ))
-                  )}
-                </section> */}
+              <section className="space-y-2 p-2">
+                {list.cardOrderIds.length === 0 ? (
+                  <section className="text-center py-8 text-gray-500 dark:text-gray-400">
+                    <p className="text-sm">Chưa có thẻ nào</p>
+                    <p className="text-xs">Thêm thẻ đầu tiên của bạn</p>
+                  </section>
+                ) : (
+                  list.cardOrderIds.map((cardId) => (
+                    <CardItem
+                      key={cardId}
+                      cardId={cardId}
+                      listId={list._id}
+                      boardId={boardId}
+                    />
+                  ))
+                )}
+              </section>
             </section>
-            {showAddCard ? (
-              <AddCardForm
-                listId={list.id}
-                boardId={boardId}
-                onCancel={() => setShowAddCard(false)}
-                onSuccess={() => setShowAddCard(false)}
-              />
-            ) : (
-              <Button
-                variant="ghost"
-                className="w-full justify-start text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-colors"
-                onClick={() => setShowAddCard(true)}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Thêm thẻ
-              </Button>
-            )}
+            <AddCardDialog
+              listId={list._id}
+              boardId={boardId}
+              trigger={
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="w-full leading-1.5 justify-start text-muted-foreground"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Thêm thẻ
+                </Button>
+              }
+            />
           </CardContent>
         </Card>
       </section>
       <CardDetailDialog
         card={selectedCard}
-        listId={list.id}
+        listId={list._id}
         boardId={boardId}
         open={isCardModalOpen}
         onOpenChange={setIsCardModalOpen}

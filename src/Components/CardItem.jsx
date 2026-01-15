@@ -199,7 +199,7 @@ function CardItem({ cardId, listId, boardId }) {
                   <MoreHorizontal className="h-3 w-3" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
                 <CardFormDialog
                   isEdit
                   cardData={card}
@@ -219,8 +219,7 @@ function CardItem({ cardId, listId, boardId }) {
                     description={`Bạn có chắc muốn xóa thẻ "${card.title}"? Hành động này không thể hoàn tác.`}
                     onConfirm={handleDelete}
                     trigger={
-                      <DropdownMenuItem
-                        onSelect={(e) => e.preventDefault()}
+                      <DropdownMenuItem onSelect={(e) => e.preventDefault()}
                         className="text-destructive"
                       >
                         <Trash2 className="mr-2 h-4 w-4" />

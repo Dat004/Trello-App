@@ -2,30 +2,29 @@ import { useEffect, useState } from "react";
 import { X, Plus } from "lucide-react";
 
 import { toDateInputValue } from "@/helpers/formatTime";
-import { UserToast } from "@/context/ToastContext";
+import { useApiMutation, useZodForm } from "@/hooks";
 import { BACKGROUND_COLORS } from "@/config/theme";
 import { cardSchema } from "@/schemas/cardSchema";
 import { useBoardDetailStore } from "@/store";
 import { cardApi } from "@/api/card";
-import { useZodForm } from "@/hooks";
 import { cn } from "@/lib/utils";
 import {
+  Badge,
+  Button,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
   Input,
   Label,
-  TextArea,
-  Button,
-  Badge,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogTrigger,
+  TextArea,
 } from "@/Components/UI";
 
 const PRIORITY_OPTIONS = [
@@ -59,7 +58,6 @@ function CardFormDialog({
   } = form;
   const addCard = useBoardDetailStore((state) => state.addCard);
   const updateCard = useBoardDetailStore((state) => state.updateCard);
-  const { addToast } = UserToast();
 
   const titleValue = watch("title");
   const priority = watch("priority") ?? "medium";
@@ -70,7 +68,24 @@ function CardFormDialog({
   const [newLabelColor, setNewLabelColor] = useState(
     BACKGROUND_COLORS[0].class
   );
-  const [isLoading, setIsLoading] = useState(false);
+
+  const { mutate: createCard, isLoading: isCreating } = useApiMutation(
+    (data) => cardApi.create(boardId, listId, data),
+    (responseData) => {
+      addCard(responseData.card);
+      handleCancel();
+    }
+  );
+
+  const { mutate: updateCardMutation, isLoading: isUpdating } = useApiMutation(
+    (data) => cardApi.update(boardId, listId, cardData._id, data),
+    (responseData) => {
+      updateCard(cardData._id, responseData.card);
+      handleCancel();
+    }
+  );
+
+  const isLoading = isCreating || isUpdating;
 
   useEffect(() => {
     if (isEdit && cardData && open) {
@@ -108,31 +123,14 @@ function CardFormDialog({
     setNewLabelColor(BACKGROUND_COLORS[0].class);
   };
 
-  const handleAddCard = async (data) => {
-    setIsLoading(true);
-
+  const handleAddCard = (data) => {
     const payload = {
       ...data,
       labels,
     };
 
-    const res = isEdit
-      ? await cardApi.update(boardId, listId, cardData._id, payload)
-      : await cardApi.create(boardId, listId, payload);
-
-    if (res.data.success) {
-      isEdit
-        ? updateCard(cardData._id, res.data.data.card)
-        : addCard(res.data.data.card);
-    }
-
-    addToast({
-      type: res.data.success ? "success" : "error",
-      title: res.data.message,
-    });
-
-    handleCancel();
-    setIsLoading(false);
+    const mutation = isEdit ? updateCardMutation : createCard;
+    mutation(payload);
   };
 
   return (

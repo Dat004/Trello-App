@@ -1,15 +1,14 @@
-import { useEffect, useState } from "react";
 import { Edit, GripVertical, MoreHorizontal, Plus, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
 
-import { UserToast } from "@/context/ToastContext";
-import CardDetailDialog from "./CardDetailDialog";
-import { useBoardDetailStore } from "@/store";
-import CardFormDialog from "./CardFormDialog";
-import DeleteDialog from "./DeleteDialog";
-import { usePermissions } from "@/hooks";
 import { listApi } from "@/api/list";
-import CardItem from "./CardItem";
+import { useApiMutation, usePermissions } from "@/hooks";
 import { cn } from "@/lib/utils";
+import { useBoardDetailStore } from "@/store";
+import CardDetailDialog from "./CardDetailDialog";
+import CardFormDialog from "./CardFormDialog";
+import CardItem from "./CardItem";
+import DeleteDialog from "./DeleteDialog";
 import {
   Button,
   Card,
@@ -32,40 +31,38 @@ function BoardList({ listId, boardId }) {
 
   const [title, setTitle] = useState(list.title);
   const [isEditing, setIsEditing] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [selectedCard, setSelectedCard] = useState(null);
   const [isCardModalOpen, setIsCardModalOpen] = useState(false);
 
-  const { addToast } = UserToast();
   const { canDelete } = usePermissions({ board: currentBoard });
+
+  const { mutate: updateListTitle, isLoading: isUpdating } = useApiMutation(
+    (data) => listApi.update(boardId, listId, data),
+    (responseData) => {
+      updateList(listId, responseData.list);
+      setIsEditing(false);
+    }
+  );
+
+  const { mutate: deleteList, isLoading: isDeleting } = useApiMutation(
+    () => listApi.delete(boardId, listId),
+    () => removeList(listId),
+  );
+
+  const isLoading = isUpdating || isDeleting;
 
   useEffect(() => {
     setTitle(list.title);
   }, [list]);
 
-  const handleSaveTitle = async () => {
+  const handleSaveTitle = () => {
     if (!title.trim() || title === list.title) {
       setIsEditing(false);
       setTitle(list.title);
-
       return;
     }
 
-    setIsLoading(true);
-    const res = await listApi.update(boardId, listId, {
-      title: title.trim(),
-    });
-    setIsLoading(false);
-    setIsEditing(false);
-
-    if (res.data.success) {
-      updateList(listId, res.data.data.list);
-    }
-
-    addToast({
-      type: res.data.success ? "success" : "error",
-      title: res.data.message,
-    });
+    updateListTitle({ title: title.trim() });
   };
 
   const handleKeyPress = (e) => {
@@ -77,19 +74,8 @@ function BoardList({ listId, boardId }) {
     }
   };
 
-  const handleDelete = async () => {
-    setIsLoading(true);
-    const res = await listApi.delete(boardId, listId);
-    setIsLoading(false);
-
-    if (res.data.success) {
-      removeList(listId);
-    }
-
-    addToast({
-      type: res.data.success ? "success" : "error",
-      title: res.data.message,
-    });
+  const handleDelete = () => {
+    deleteList();
   };
 
   return (

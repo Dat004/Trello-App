@@ -9,15 +9,14 @@ import {
   Paperclip,
   Trash2,
 } from "lucide-react";
-import { useState } from "react";
 
+import { useApiMutation, usePermissions } from "@/hooks";
 import { getChecklistProgress } from "@/helpers/card";
 import { formatDueDate } from "@/helpers/formatTime";
 import CardDetailDialog from "./CardDetailDialog";
 import { useBoardDetailStore } from "@/store";
 import CardFormDialog from "./CardFormDialog";
 import DeleteDialog from "./DeleteDialog";
-import { usePermissions } from "@/hooks";
 import { cardApi } from "@/api/card";
 import { cn } from "@/lib/utils";
 import {
@@ -35,8 +34,6 @@ import {
 } from "./UI";
 
 function CardItem({ cardId, listId, boardId }) {
-  const [isLoading, setIsLoading] = useState(false);
-
   const currentBoard = useBoardDetailStore((state) => state.currentBoard);
   const removeCard = useBoardDetailStore((state) => state.removeCard);
   const cards = useBoardDetailStore((state) => state.cards);
@@ -51,13 +48,13 @@ function CardItem({ cardId, listId, boardId }) {
   const checklistProgress = getChecklistProgress(card);
   const dueDateInfo = formatDueDate(card.due_date);
 
-  const handleDelete = async () => {
-    setIsLoading(true);
-    const response = await cardApi.delete(boardId, listId, cardId);
-    if (response.data.success) {
-      removeCard(cardId);
-    }
-    setIsLoading(false);
+  const { mutate: deleteCard, isLoading } = useApiMutation(
+    () => cardApi.delete(boardId, listId, cardId),
+    () => removeCard(cardId)
+  );
+
+  const handleDelete = () => {
+    deleteCard();
   };
 
   return (

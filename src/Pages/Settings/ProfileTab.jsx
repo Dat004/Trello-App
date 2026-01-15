@@ -1,32 +1,32 @@
 import { useState, useRef } from "react";
 import { Camera } from "lucide-react";
 
-import {
-  UPLOAD_INTENT,
-  validateFileByIntent,
-  getAcceptByIntent,
-} from "@/lib/file";
 import { uploadService } from "@/services/uploadService";
+import { useApiMutation, useZodForm } from "@/hooks";
 import { UserToast } from "@/context/ToastContext";
 import { infoSchema } from "@/schemas/userSchema";
 import { useAuthStore } from "@/store";
 import { userApi } from "@/api/user";
-import { useZodForm } from "@/hooks";
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
+  Button,
+  Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-  Card,
   Input,
   Label,
-  Button,
-  TextArea,
   Separator,
+  TextArea,
 } from "@/Components/UI";
+import {
+  getAcceptByIntent,
+  UPLOAD_INTENT,
+  validateFileByIntent,
+} from "@/lib/file";
 
 function ProfileTab() {
   const { addToast, removeToast } = UserToast();
@@ -34,7 +34,6 @@ function ProfileTab() {
 
   const avatarFileRef = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [isUpdating, setIsUpdating] = useState(false);
   const [pendingAvatar, setPendingAvatar] = useState({
     url: user.avatar.url,
     public_id: user.avatar.public_id,
@@ -53,28 +52,18 @@ function ProfileTab() {
   } = form;
   const setUser = useAuthStore((state) => state.setUser);
 
-  const updateInfoUser = async (data) => {
-    if (isUpdating) return; // Tránh spam cập nhật khi đang xử lý cập nhật trước đó
-    setIsUpdating(true);
+  const { mutate: updateInfo, isLoading: isUpdating } = useApiMutation(
+    (data) => userApi.updateInfo(data),
+    (responseData) => setUser(responseData.user)
+  );
 
+  const updateInfoUser = (data) => {
     const userData = {
       ...data,
       avatar: { ...pendingAvatar },
     };
-    const res = await userApi.updateInfo(userData);
-
-    addToast({
-      type: res.data.success ? "success" : "error",
-      title: res.data.message,
-      duration: 3000,
-    });
-    setIsUpdating(false);
-
-    if (res.data.success) {
-      setUser(res.data.data.user);
-
-      return;
-    }
+    
+    updateInfo(userData);
   };
 
   const handleUploadNewAvatar = async (e) => {

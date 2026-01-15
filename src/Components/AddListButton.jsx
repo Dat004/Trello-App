@@ -1,45 +1,37 @@
+import { Palette, Plus, X } from "lucide-react";
 import { useState } from "react";
-import { Plus, X, Palette } from "lucide-react";
 
-import { Button, Input, Card, CardContent } from "./UI";
-import { UserToast } from "@/context/ToastContext";
-import { BACKGROUND_COLORS } from "@/config/theme";
-import { useBoardDetailStore } from "@/store";
 import { listApi } from "@/api/list";
+import { BACKGROUND_COLORS } from "@/config/theme";
+import { useApiMutation } from "@/hooks";
 import { cn } from "@/lib/utils";
+import { useBoardDetailStore } from "@/store";
+import { Button, Card, CardContent, Input } from "./UI";
 
 function AddListButton({ boardId }) {
   const [isAdding, setIsAdding] = useState(false);
   const [title, setTitle] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [selectedColor, setSelectedColor] = useState(
     BACKGROUND_COLORS[0].class
   );
-
-  const { addToast } = UserToast();
   const addList = useBoardDetailStore((state) => state.addList);
 
-  const handleAdd = async () => {
+  const { mutate: createList, isLoading } = useApiMutation(
+    (data) => listApi.create(boardId, data),
+    (responseData) => {
+      addList(responseData.list);
+      setTitle("");
+      setIsAdding(false);
+    }
+  );
+
+  const handleAdd = () => {
     const newData = {
       title: title.trim(),
       color: selectedColor,
     };
 
-    setIsLoading(true);
-    const response = await listApi.create(boardId, newData);
-    setIsLoading(false);
-
-    addToast({
-      type: response.data.success ? "success" : "error",
-      title: response.data.message,
-    });
-
-    if (response.data.success) {
-      addList(response.data.data.list);
-
-      setTitle("");
-      setIsAdding(false);
-    }
+    createList(newData);
   };
 
   const handleCancel = () => {

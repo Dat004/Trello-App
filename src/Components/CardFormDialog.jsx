@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { X, Plus } from "lucide-react";
 
+import { toDateInputValue } from "@/helpers/formatTime";
 import { UserToast } from "@/context/ToastContext";
 import { BACKGROUND_COLORS } from "@/config/theme";
 import { cardSchema } from "@/schemas/cardSchema";
@@ -33,7 +34,13 @@ const PRIORITY_OPTIONS = [
   { value: "high", label: "Cao" },
 ];
 
-function AddCardDialog({ trigger, listId, boardId }) {
+function CardFormDialog({
+  trigger,
+  isEdit = false,
+  cardData = {},
+  listId,
+  boardId,
+}) {
   const form = useZodForm(cardSchema, {
     defaultValues: {
       title: "",
@@ -51,6 +58,7 @@ function AddCardDialog({ trigger, listId, boardId }) {
     reset,
   } = form;
   const addCard = useBoardDetailStore((state) => state.addCard);
+  const updateCard = useBoardDetailStore((state) => state.updateCard);
   const { addToast } = UserToast();
 
   const titleValue = watch("title");
@@ -63,6 +71,18 @@ function AddCardDialog({ trigger, listId, boardId }) {
     BACKGROUND_COLORS[0].class
   );
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (isEdit && cardData && open) {
+      reset({
+        title: cardData.title || "",
+        description: cardData.description || "",
+        due_date: toDateInputValue(cardData.due_date) || null,
+        priority: cardData.priority || "medium",
+      });
+      setLabels(cardData.labels || []);
+    }
+  }, [cardData, open, isEdit]);
 
   const handleAddLabel = () => {
     if (newLabelName.trim()) {
@@ -91,14 +111,19 @@ function AddCardDialog({ trigger, listId, boardId }) {
   const handleAddCard = async (data) => {
     setIsLoading(true);
 
-    const newCard = {
+    const payload = {
       ...data,
       labels,
     };
 
-    const res = await cardApi.create(boardId, listId, newCard);
+    const res = isEdit
+      ? await cardApi.update(boardId, listId, cardData._id, payload)
+      : await cardApi.create(boardId, listId, payload);
+
     if (res.data.success) {
-      addCard(res.data.data.card);
+      isEdit
+        ? updateCard(cardData._id, res.data.data.card)
+        : addCard(res.data.data.card);
     }
 
     addToast({
@@ -106,7 +131,6 @@ function AddCardDialog({ trigger, listId, boardId }) {
       title: res.data.message,
     });
 
-    // Reset
     handleCancel();
     setIsLoading(false);
   };
@@ -118,9 +142,11 @@ function AddCardDialog({ trigger, listId, boardId }) {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Thêm thẻ mới</DialogTitle>
+          <DialogTitle>{isEdit ? "Chỉnh sửa thẻ" : "Thêm thẻ mới"}</DialogTitle>
           <DialogDescription>
-            Tạo thẻ mới để tổ chức công việc của bạn trong mỗi cột.
+            {isEdit
+              ? "Cập nhật thông tin thẻ."
+              : "Tạo thẻ mới để tổ chức công việc của bạn trong mỗi cột."}
           </DialogDescription>
         </DialogHeader>
 
@@ -222,7 +248,7 @@ function AddCardDialog({ trigger, listId, boardId }) {
                 {labels.map((label) => (
                   <Badge
                     style={{ lineHeight: 1.45 }}
-                    key={label.id}
+                    key={label._id}
                     className={cn(
                       "text-white cursor-pointer hover:opacity-80",
                       label.color
@@ -297,7 +323,7 @@ function AddCardDialog({ trigger, listId, boardId }) {
               type="submit"
               disabled={isSubmitting || isLoading || !titleValue.trim()}
             >
-              {isSubmitting || isLoading ? "Đang thêm..." : "Thêm thẻ"}
+              {isEdit ? "Lưu thay đổi" : "Thêm thẻ"}
             </Button>
           </div>
         </form>
@@ -306,4 +332,4 @@ function AddCardDialog({ trigger, listId, boardId }) {
   );
 }
 
-export default AddCardDialog;
+export default CardFormDialog;

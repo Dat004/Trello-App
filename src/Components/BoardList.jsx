@@ -5,7 +5,7 @@ import { UserToast } from "@/context/ToastContext";
 import CardDetailDialog from "./CardDetailDialog";
 import { useBoardPermissions } from "@/hooks";
 import { useBoardDetailStore } from "@/store";
-import AddCardDialog from "./AddCardDialog";
+import CardFormDialog from "./CardFormDialog";
 import DeleteDialog from "./DeleteDialog";
 import { listApi } from "@/api/list";
 import CardItem from "./CardItem";
@@ -187,7 +187,7 @@ function BoardList({ listId, boardId }) {
                 )}
               </section>
             </section>
-            <AddCardDialog
+            <CardFormDialog
               listId={list._id}
               boardId={boardId}
               trigger={

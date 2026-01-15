@@ -15,6 +15,9 @@ import { getChecklistProgress } from "@/helpers/card";
 import { formatDueDate } from "@/helpers/formatTime";
 import { useBoardDetailStore } from "@/store";
 import CardFormDialog from "./CardFormDialog";
+import DeleteDialog from "./DeleteDialog";
+import { usePermissions } from "@/hooks";
+import { cardApi } from "@/api/card";
 import { cn } from "@/lib/utils";
 import {
   Progress,
@@ -33,13 +36,28 @@ import {
 function CardItem({ cardId, listId, boardId }) {
   const [isLoading, setIsLoading] = useState(false);
 
+  const currentBoard = useBoardDetailStore((state) => state.currentBoard);
+  const removeCard = useBoardDetailStore((state) => state.removeCard);
   const cards = useBoardDetailStore((state) => state.cards);
   const card = cards[cardId];
 
+  const { canDelete } = usePermissions({
+    board: currentBoard,
+    entity: {
+      ownerId: card?.creator,
+    },
+  });
   const checklistProgress = getChecklistProgress(card);
   const dueDateInfo = formatDueDate(card.due_date);
 
-  const handleDelete = async (e) => {};
+  const handleDelete = async () => {
+    setIsLoading(true);
+    const response = await cardApi.delete(boardId, listId, cardId);
+    if (response.data.success) {
+      removeCard(cardId);
+    }
+    setIsLoading(false);
+  };
 
   return (
     <div className="bg-white dark:bg-gray-800 p-3 rounded-md shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200 cursor-pointer group">
@@ -192,13 +210,22 @@ function CardItem({ cardId, listId, boardId }) {
               }
             />
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={handleDelete}
-              className="text-destructive"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Xóa thẻ
-            </DropdownMenuItem>
+            {canDelete && (
+              <DeleteDialog
+                title="Xóa thẻ này?"
+                description={`Bạn có chắc muốn xóa thẻ "${card.title}"? Hành động này không thể hoàn tác.`}
+                onConfirm={handleDelete}
+                trigger={
+                  <DropdownMenuItem
+                    onSelect={(e) => e.preventDefault()}
+                    className="text-destructive"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Xóa thẻ
+                  </DropdownMenuItem>
+                }
+              />
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

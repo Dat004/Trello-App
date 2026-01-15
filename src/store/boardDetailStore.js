@@ -46,6 +46,7 @@ const useBoardDetailStore = create((set) => ({
     });
   },
 
+  // List
   addList: (list) => {
     set((state) => {
       const newLists = { ...state.lists };
@@ -130,6 +131,7 @@ const useBoardDetailStore = create((set) => ({
     });
   },
 
+  // Card
   addCard: (card) => {
     set((state) => {
       const newCards = { ...state.cards };
@@ -199,6 +201,74 @@ const useBoardDetailStore = create((set) => ({
       return {
         cards: newCards,
         lists: newLists,
+      };
+    });
+  },
+
+  // Checklist
+  addChecklistItem: (cardId, item) => {
+    set((state) => {
+      const newCards = { ...state.cards };
+      const currentCard = newCards[cardId];
+
+      if (!currentCard) return state;
+
+      // Thêm item mới vào checklist
+      const updatedChecklist = [...(currentCard.checklist || []), item];
+      const updatedCard = {
+        ...currentCard,
+        checklist: updatedChecklist,
+      };
+      newCards[cardId] = updatedCard;
+
+      return {
+        cards: newCards,
+      };
+    });
+  },
+
+  toggleChecklistItem: (cardId, itemId) => {
+    set((state) => {
+      const newCards = { ...state.cards };
+      const currentCard = newCards[cardId];
+
+      if (!currentCard) return state;
+
+      // Toggle completed status của item
+      const updatedChecklist = currentCard.checklist.map((item) =>
+        item.id === itemId ? { ...item, completed: !item.completed } : item
+      );
+      const updatedCard = {
+        ...currentCard,
+        checklist: updatedChecklist,
+      };
+      newCards[cardId] = updatedCard;
+
+      return {
+        cards: newCards,
+      };
+    });
+  },
+
+  deleteChecklistItem: (cardId, itemId) => {
+    set((state) => {
+      const newCards = { ...state.cards };
+      const currentCard = newCards[cardId];
+
+      if (!currentCard) return state;
+
+      // Xóa item khỏi checklist
+      const updatedChecklist = currentCard.checklist.filter(
+        (item) => item.id !== itemId
+      );
+      const updatedCard = {
+        ...currentCard,
+        checklist: updatedChecklist,
+      };
+      newCards[cardId] = updatedCard;
+
+      return {
+        cards: newCards,
       };
     });
   },

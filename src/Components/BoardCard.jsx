@@ -5,21 +5,21 @@ import { Badge, Card, CardContent, CardHeader, CardTitle, Button } from "./UI";
 import { getRoleText, getRoleVariant } from "@/helpers/role";
 import { formatRelativeTime } from "@/helpers/formatTime";
 import BoardActions from "@/Pages/Boards/BoardActions";
-import { useBoardPermissions } from "@/hooks";
+import { usePermissions } from "@/hooks";
 import { cn } from "@/lib/utils";
 
 function BoardCard({ index, board, view = "grid" }) {
-  const { isOwner, role, canDelete } = useBoardPermissions(board);
+  const { isBoardOwner, role, canDelete } = usePermissions({ board });
 
   const renderRoleBadge = () => {
-    if (!role && !isOwner) return null;
+    if (!role && !isBoardOwner) return null;
 
     return (
       <Badge
-        variant={isOwner ? "destructive" : getRoleVariant(role)}
+        variant={isBoardOwner ? "destructive" : getRoleVariant(role)}
         className="ml-2 px-1.5 h-5 text-[10px] sm:text-xs sm:h-auto font-normal pointer-events-none"
       >
-        {isOwner ? "Chủ sở hữu" : getRoleText(role)}
+        {isBoardOwner ? "Chủ sở hữu" : getRoleText(role)}
       </Badge>
     );
   };

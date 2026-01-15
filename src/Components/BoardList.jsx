@@ -3,10 +3,10 @@ import { Edit, GripVertical, MoreHorizontal, Plus, Trash2 } from "lucide-react";
 
 import { UserToast } from "@/context/ToastContext";
 import CardDetailDialog from "./CardDetailDialog";
-import { useBoardPermissions } from "@/hooks";
 import { useBoardDetailStore } from "@/store";
 import CardFormDialog from "./CardFormDialog";
 import DeleteDialog from "./DeleteDialog";
+import { usePermissions } from "@/hooks";
 import { listApi } from "@/api/list";
 import CardItem from "./CardItem";
 import { cn } from "@/lib/utils";
@@ -37,7 +37,7 @@ function BoardList({ listId, boardId }) {
   const [isCardModalOpen, setIsCardModalOpen] = useState(false);
 
   const { addToast } = UserToast();
-  const { canDelete } = useBoardPermissions(currentBoard);
+  const { canDelete } = usePermissions({ board: currentBoard });
 
   useEffect(() => {
     setTitle(list.title);

@@ -14,6 +14,7 @@ import {
 import { getChecklistProgress } from "@/helpers/card";
 import { formatDueDate } from "@/helpers/formatTime";
 import { useBoardDetailStore } from "@/store";
+import CardFormDialog from "./CardFormDialog";
 import { cn } from "@/lib/utils";
 import {
   Progress,
@@ -39,8 +40,6 @@ function CardItem({ cardId, listId, boardId }) {
   const dueDateInfo = formatDueDate(card.due_date);
 
   const handleDelete = async (e) => {};
-
-  const handleEdit = (e) => {};
 
   return (
     <div className="bg-white dark:bg-gray-800 p-3 rounded-md shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200 cursor-pointer group">
@@ -101,6 +100,8 @@ function CardItem({ cardId, listId, boardId }) {
                       ? "text-red-600 dark:text-red-400"
                       : dueDateInfo.color === "warning"
                       ? "text-orange-600 dark:text-orange-400"
+                      : dueDateInfo.color === "secondary"
+                      ? "text-blue-600 dark:text-blue-400"
                       : "text-gray-600 dark:text-gray-400"
                   }`}
                 >
@@ -110,16 +111,17 @@ function CardItem({ cardId, listId, boardId }) {
               )}
 
               {card.priority && (
-                <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
-                  <AlertCircle
-                    className={`h-3 w-3 ${
-                      card.priority === "high"
-                        ? "text-red-500"
-                        : card.priority === "medium"
-                        ? "text-orange-500"
-                        : "text-gray-500"
-                    }`}
-                  />
+                <div
+                  className={cn(
+                    "flex items-center gap-1 text-xs dark:text-gray-400",
+                    card.priority === "high"
+                      ? "text-red-500"
+                      : card.priority === "medium"
+                      ? "text-orange-500"
+                      : "text-gray-500"
+                  )}
+                >
+                  <AlertCircle className="h-3 w-3" />
                   <span className="capitalize">{card.priority}</span>
                 </div>
               )}
@@ -177,10 +179,18 @@ function CardItem({ cardId, listId, boardId }) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={handleEdit}>
-              <Edit className="mr-2 h-4 w-4" />
-              Chỉnh sửa
-            </DropdownMenuItem>
+            <CardFormDialog
+              isEdit
+              cardData={card}
+              boardId={boardId}
+              listId={listId}
+              trigger={
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                  <Edit className="mr-2 h-4 w-4" />
+                  Chỉnh sửa
+                </DropdownMenuItem>
+              }
+            />
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={handleDelete}

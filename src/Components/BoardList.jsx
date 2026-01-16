@@ -5,7 +5,6 @@ import { listApi } from "@/api/list";
 import { useApiMutation, usePermissions } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { useBoardDetailStore } from "@/store";
-import CardDetailDialog from "./CardDetailDialog";
 import CardFormDialog from "./CardFormDialog";
 import CardItem from "./CardItem";
 import DeleteDialog from "./DeleteDialog";
@@ -190,13 +189,6 @@ function BoardList({ listId, boardId }) {
           </CardContent>
         </Card>
       </section>
-      <CardDetailDialog
-        card={selectedCard}
-        listId={list._id}
-        boardId={boardId}
-        open={isCardModalOpen}
-        onOpenChange={setIsCardModalOpen}
-      />
     </>
   );
 }

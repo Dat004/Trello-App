@@ -227,7 +227,7 @@ const useBoardDetailStore = create((set) => ({
     });
   },
 
-  toggleChecklistItem: (cardId, itemId) => {
+  toggleChecklistItem: (cardId, updatedItem) => {
     set((state) => {
       const newCards = { ...state.cards };
       const currentCard = newCards[cardId];
@@ -236,7 +236,7 @@ const useBoardDetailStore = create((set) => ({
 
       // Toggle completed status của item
       const updatedChecklist = currentCard.checklist.map((item) =>
-        item.id === itemId ? { ...item, completed: !item.completed } : item
+        item._id === updatedItem._id ? { ...item, ...updatedItem } : item
       );
       const updatedCard = {
         ...currentCard,
@@ -259,7 +259,7 @@ const useBoardDetailStore = create((set) => ({
 
       // Xóa item khỏi checklist
       const updatedChecklist = currentCard.checklist.filter(
-        (item) => item.id !== itemId
+        (item) => item._id !== itemId
       );
       const updatedCard = {
         ...currentCard,

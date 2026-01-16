@@ -12,6 +12,9 @@ import { useState } from "react";
 
 import { getChecklistProgress } from "@/helpers/card";
 import { formatDateOnly } from "@/helpers/formatTime";
+import { useBoardDetailStore } from "@/store";
+import { useApiMutation } from "@/hooks";
+import { cardApi } from "@/api/card";
 // import MemberSelectorDialog from "@/Components/MemberSelectorDialog";
 import {
   Avatar,
@@ -26,20 +29,21 @@ import {
   DialogTitle,
   DialogTrigger,
   Input,
-  TextArea,
   Label,
   Progress,
   Separator,
+  TextArea,
 } from "@/Components/UI";
-import { useBoardDetailStore } from "@/store";
 
 function CardDetailModal({ card, listId, boardId, trigger }) {
-  const { updateCard } = useBoardDetailStore();
+  const { addChecklistItem, toggleChecklistItem, deleteChecklistItem, updateCard } =
+    useBoardDetailStore();
   const [open, setOpen] = useState(false);
   const [newChecklistItem, setNewChecklistItem] = useState("");
   const [newComment, setNewComment] = useState("");
   const [showMemberSelector, setShowMemberSelector] = useState(false);
 
+  const checklistProgress = getChecklistProgress(card);
   const workspaceMembers = [
     { id: "1", name: "Nguyễn Văn A", avatar: "/placeholder.svg" },
     { id: "2", name: "Trần Thị B", avatar: "/placeholder.svg" },
@@ -47,52 +51,51 @@ function CardDetailModal({ card, listId, boardId, trigger }) {
     { id: "4", name: "Hoàng Thị D", avatar: "/placeholder.svg" },
   ];
 
-  const handleToggleChecklistItem = (itemId) => {
-    if (!card) return;
+  const { mutate: addChecklist } = useApiMutation(
+    (data) => cardApi.addChecklist(boardId, listId, card._id, data),
+    (res) => {
+      addChecklistItem(card._id, res.checklist);
+      setNewChecklistItem("");
+    }
+  );
 
-    const updatedChecklist = card.checklist.map((item) =>
-      item.id === itemId ? { ...item, completed: !item.completed } : item
-    );
+  const { mutate: toggleChecklist } = useApiMutation(
+    (data) => cardApi.toggleChecklistItem(boardId, listId, card._id, data),
+    (res) => {
+      toggleChecklistItem(card._id, res.checklist);
+    }
+  );
 
-    const updatedCard = {
-      ...card,
-      checklist: updatedChecklist,
-      updatedAt: new Date(),
-    };
-
-    updateCard(card._id, updatedCard);
-  };
+  const { mutate: deleteChecklist } = useApiMutation(
+    (data) => cardApi.deleteChecklist(boardId, listId, card._id, data)
+  );
 
   const handleAddChecklistItem = () => {
     if (!card || !newChecklistItem.trim()) return;
 
-    const newItem = {
-      id: Date.now().toString(),
+    addChecklist({
       text: newChecklistItem.trim(),
-      completed: false,
-      createdAt: new Date(),
-    };
-
-    const updatedCard = {
-      ...card,
-      checklist: [...card.checklist, newItem],
-      updatedAt: new Date(),
-    };
-
-    updateCard(card._id, updatedCard);
-    setNewChecklistItem("");
+    });
   };
 
-  const handleDeleteChecklistItem = (itemId) => {
+  const handleToggleChecklistItem = (itemId) => {
     if (!card) return;
 
-    const updatedCard = {
-      ...card,
-      checklist: card.checklist.filter((item) => item.id !== itemId),
-      updatedAt: new Date(),
-    };
+    toggleChecklist({
+      checklistId: itemId,
+    });
+  };
 
-    updateCard(card._id, updatedCard);
+  const handleDeleteChecklist = async (itemId) => {
+    if (!card) return;
+    
+    const res = await deleteChecklist({
+      checklistId: itemId,
+    });
+
+    if (res.success) {
+      deleteChecklistItem(card._id, itemId);
+    }
   };
 
   const handleAddComment = () => {
@@ -150,8 +153,6 @@ function CardDetailModal({ card, listId, boardId, trigger }) {
   };
 
   if (!card) return null;
-
-  const checklistProgress = getChecklistProgress(card);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -308,14 +309,14 @@ function CardDetailModal({ card, listId, boardId, trigger }) {
 
             <div className="space-y-2">
               {card.checklist.map((item) => (
-                <div key={item.id} className="flex items-center gap-2 group">
+                <div key={item._id} className="flex items-center gap-2 group">
                   <Checkbox
                     checked={item.completed}
-                    onCheckedChange={() => handleToggleChecklistItem(item.id)}
-                    id={`check-${item.id}`}
+                    onCheckedChange={() => handleToggleChecklistItem(item._id)}
+                    id={`check-${item._id}`}
                   />
                   <label
-                    htmlFor={`check-${item.id}`}
+                    htmlFor={`check-${item._id}`}
                     className={`flex-1 text-sm cursor-pointer ${
                       item.completed
                         ? "line-through text-gray-500"
@@ -325,10 +326,10 @@ function CardDetailModal({ card, listId, boardId, trigger }) {
                     {item.text}
                   </label>
                   <Button
-                    variant="ghost"
                     size="sm"
-                    className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
-                    onClick={() => handleDeleteChecklistItem(item.id)}
+                    variant="link"
+                    className="h-6 w-6 p-0 opacity-0 text-white hover:bg-none group-hover:opacity-100"
+                    onClick={() => handleDeleteChecklist(item._id)}
                   >
                     <Trash2 className="h-3 w-3 text-red-500" />
                   </Button>

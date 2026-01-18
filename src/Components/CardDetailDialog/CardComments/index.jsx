@@ -4,37 +4,46 @@ import { useEffect, useMemo, useState } from "react";
 import { commentsApi } from "@/api/comments";
 import { Button, Label } from "@/Components/UI";
 import { resolvePermissions } from "@/helpers/permission";
-import { useApiMutation } from "@/hooks";
-import { useAuthStore, useWorkspaceStore } from "@/store";
+import { useAuthStore, useCommentsStore, useWorkspaceStore } from "@/store";
 import CommentInput from "./CommentInput";
 import CommentItem from "./CommentItem";
 
 function CardComments({ card, boardId, board }) {
   const { user } = useAuthStore();
-  const [comments, setComments] = useState([]);
-  const [hasMore, setHasMore] = useState(false);
-  const [nextSkip, setNextSkip] = useState(0);
-  const [total, setTotal] = useState(0);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-
   const workspaces = useWorkspaceStore((s) => s.workspaces);
+  
+  // Comments Store
+  const {
+    total,
+    hasMore,
+    nextSkip,
+    comments,
+    initComments,
+    appendComments,
+    addComment: addCommentToStore,
+    deleteComment: deleteCommentFromStore,
+    reset: resetComments,
+  } = useCommentsStore();
 
-  // Fetch comments
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
+
+  // Fetch comments on mount
   useEffect(() => {
     const fetchComments = async () => {
       const response = await commentsApi.getCommentsByCardId(boardId, card._id);
       if (response.data.success) {
-        const { comments: fetchedComments, hasMore: more, nextSkip: skip, total: totalCount } = response.data.data;
-        setComments(fetchedComments);
-        setHasMore(more);
-        setNextSkip(skip);
-        setTotal(totalCount);
+        initComments(response.data.data);
       }
     };
 
     fetchComments();
-  }, [boardId, card._id]);
 
+    // Cleanup on unmount
+    return () => resetComments();
+  }, [boardId, card._id, initComments, resetComments]);
+
+  // Apply permissions to comments
   const commentsWithPermissions = useMemo(() => {
     if (!user || !board) return comments;
     
@@ -55,78 +64,52 @@ function CardComments({ card, boardId, board }) {
 
   // Load more comments
   const handleLoadMore = async () => {
-    const limit = 10;
-    const skip = nextSkip;
-
     setIsLoadingMore(true);
     
-    const response = await commentsApi.getCommentsByCardId(boardId, card._id, limit, skip);
+    const response = await commentsApi.getCommentsByCardId(boardId, card._id, 10, nextSkip);
     if (response.data.success) {
-      const { comments: moreComments, hasMore: more, nextSkip: skip } = response.data.data;
-      setComments((prev) => [...prev, ...moreComments]);
-      setHasMore(more);
-      setNextSkip(skip);
+      appendComments(response.data.data);
     }
 
     setIsLoadingMore(false);
   };
 
-  // Add comment
-  const { mutate: addComment, isLoading: isAdding } = useApiMutation(
-    (data) => commentsApi.addComment(boardId, card._id, data),
-    (responseData) => {
-      setComments((prev) => [responseData.comment, ...prev]);
-      setTotal((prev) => prev + 1);
-    },
-    {
-      successMessage: "Đã thêm bình luận",
+  // Add new comment
+  const handleAddComment = async (data) => {
+    setIsAdding(true);
+    try {
+      const response = await commentsApi.addComment(boardId, card._id, data);
+      if (response.data.success) {
+        addCommentToStore(response.data.data.comment);
+      }
+    } catch (error) {
+      console.error("Error adding comment:", error);
+    } finally {
+      setIsAdding(false);
     }
-  );
+  };
+
+  // Reply to comment
+  const handleReply = async (data) => {
+    try {
+      const response = await commentsApi.addComment(boardId, card._id, data);
+      if (response.data.success) {
+        addCommentToStore(response.data.data.comment);
+      }
+    } catch (error) {
+      console.error("Error adding reply:", error);
+    }
+  };
 
   // Delete comment
-  const { mutate: deleteComment } = useApiMutation(
-    (commentId) => commentsApi.deleteComment(boardId, card._id, commentId),
-  );
-
-  const handleAddComment = (data) => {
-    addComment(data);
-  };
-
-  const handleReply = (data) => {
-    addComment(data, {
-      onSuccess: (responseData) => {
-        // Update reply count for the parent comment
-        if (data.parent_comment) {
-          setComments((prev) =>
-            prev.map((c) =>
-              c._id === data.parent_comment
-                ? { ...c, reply_count: (c.reply_count || 0) + 1 }
-                : c
-            )
-          );
-        }
-      },
-    });
-  };
-
   const handleDeleteComment = async (commentId, parentCommentId) => {
-    const res = await deleteComment(commentId);
-
-    if (res.success) {
-      // If it's a root comment, remove from list
-      if (!parentCommentId) {
-        setComments((prev) => prev.filter((c) => c._id !== commentId));
-        setTotal((prev) => prev - 1);
-      } else {
-        // If it's a reply, update parent's reply count
-        setComments((prev) =>
-          prev.map((c) =>
-            c._id === parentCommentId
-              ? { ...c, reply_count: Math.max((c.reply_count || 1) - 1, 0) }
-              : c
-          )
-        );
+    try {
+      const response = await commentsApi.deleteComment(boardId, card._id, commentId);
+      if (response.data.success) {
+        deleteCommentFromStore(commentId, parentCommentId);
       }
+    } catch (error) {
+      console.error("Error deleting comment:", error);
     }
   };
 
@@ -154,7 +137,7 @@ function CardComments({ card, boardId, board }) {
               comment={comment}
               onReply={handleReply}
               canDelete={comment.canDelete}
-              onDelete={() => handleDeleteComment(comment._id)}
+              onDelete={handleDeleteComment}
               boardId={boardId}
               cardId={card._id}
             />

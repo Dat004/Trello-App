@@ -2,14 +2,15 @@ import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
 import { useState } from "react";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/Components/UI";
-import ToggleRepliesComment from "./ToggleRepliesComment";
-import CommentWrapper from "./CommentWrapper";
 import { commentsApi } from "@/api/comments";
-import CommentInput from "./CommentInput";
-import ThreadLine from "./ThreadLine";
-import ReplyLine from "./ReplyLine";
+import { Avatar, AvatarFallback, AvatarImage } from "@/Components/UI";
 import { cn } from "@/lib/utils";
+import { useCommentsStore } from "@/store";
+import CommentInput from "./CommentInput";
+import CommentWrapper from "./CommentWrapper";
+import ReplyLine from "./ReplyLine";
+import ThreadLine from "./ThreadLine";
+import ToggleRepliesComment from "./ToggleRepliesComment";
 
 function CommentItem({ 
   comment, 
@@ -21,8 +22,16 @@ function CommentItem({
 }) {
   const [showReplyInput, setShowReplyInput] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
-  const [threadComments, setThreadComments] = useState([]);
   const [isLoadingThread, setIsLoadingThread] = useState(false);
+
+  // Get thread from store
+  const { 
+    getThreadReplies, 
+    setThreadReplies,
+    deleteComment: deleteFromStore 
+  } = useCommentsStore();
+  
+  const threadComments = getThreadReplies(comment._id);
 
   const timeAgo = formatDistanceToNow(new Date(comment.created_at), {
     addSuffix: true,
@@ -34,6 +43,7 @@ function CommentItem({
   const hasReplies = comment.reply_count > 0;
   const avatarStyles = isReply ? "h-6 w-6" : "h-8 w-8";
 
+  // Fetch và cache thread replies
   const handleToggleReplies = async () => {
     if (!showReplies && threadComments.length === 0) {
       setIsLoadingThread(true);
@@ -45,7 +55,7 @@ function CommentItem({
             ...reply,
             canDelete: canDelete || reply.author?._id === comment.author?._id,
           }));
-          setThreadComments(repliesWithPermissions);
+          setThreadReplies(comment._id, repliesWithPermissions);
         }
       } catch (error) {
         console.error("Error fetching thread:", error);
@@ -56,15 +66,15 @@ function CommentItem({
     setShowReplies(!showReplies);
   };
 
+  // Handle reply submit
   const handleReplySubmit = async (data) => {
-    onReply({
+    await onReply({
       ...data,
       parent_comment: comment._id,
     });
     setShowReplyInput(false);
     
-    // Refresh thread sau khi reply để hiển thị comment mới
-    // Force fetch lại từ API
+    // Refresh thread từ API
     setIsLoadingThread(true);
     try {
       const response = await commentsApi.getThreadComment(boardId, cardId, comment._id);
@@ -74,7 +84,7 @@ function CommentItem({
           ...reply,
           canDelete: canDelete || reply.author?._id === comment.author?._id,
         }));
-        setThreadComments(repliesWithPermissions);
+        setThreadReplies(comment._id, repliesWithPermissions);
         setShowReplies(true);
       }
     } catch (error) {
@@ -82,6 +92,11 @@ function CommentItem({
     } finally {
       setIsLoadingThread(false);
     }
+  };
+
+  // Handle delete
+  const handleDelete = () => {
+    onDelete(comment._id, comment.parent_comment);
   };
 
   return (
@@ -108,7 +123,15 @@ function CommentItem({
           <div className="flex-1 space-y-1">
             <div className="bg-muted/50 rounded-2xl px-3 py-2 inline-block max-w-full">
               <span className="font-medium text-sm">{comment.author?.full_name}</span>
-              <p className="text-sm whitespace-pre-wrap">{comment.text}</p>
+              <p className="text-sm whitespace-pre-wrap">
+                {/* Hiển thị tên người được reply - chỉ khi là reply và có thông tin parent author */}
+                {isReply && comment.author?.full_name && (
+                  <span className="text-primary font-medium bg-primary/10 rounded px-1 mr-1">
+                    @{comment.author.full_name}
+                  </span>
+                )}
+                {comment.text}
+              </p>
             </div>
 
             <div className="flex items-center gap-3 px-2 mb-1">
@@ -122,7 +145,7 @@ function CommentItem({
               
               {canDelete && (
                 <button
-                  onClick={onDelete}
+                  onClick={handleDelete}
                   className="text-xs font-semibold text-red-500 hover:underline opacity-0 group-hover:opacity-100 transition-opacity"
                 >
                   Xóa
@@ -140,12 +163,7 @@ function CommentItem({
             <CommentItem
               key={reply._id}
               comment={reply}
-              onDelete={() => {
-                // Xóa reply khỏi local state
-                setThreadComments((prev) => prev.filter((c) => c._id !== reply._id));
-                // Gọi callback để update parent state (nếu cần)
-                onDelete(reply._id, comment._id);
-              }}
+              onDelete={onDelete}
               onReply={onReply}
               canDelete={reply.canDelete}
               boardId={boardId}
@@ -153,17 +171,6 @@ function CommentItem({
             />
           ))}
         </>
-      )}
-
-      {/* Reply Input */}
-      {showReplyInput && (
-        <div className="ml-11 mt-2">
-          <CommentInput
-            onSubmit={handleReplySubmit}
-            placeholder="Viết câu trả lời..."
-            replyTo={comment._id}
-          />
-        </div>
       )}
 
       {/* Toggle Replies Button */}
@@ -174,6 +181,22 @@ function CommentItem({
           isLoadingThread={isLoadingThread}
           handleToggleReplies={handleToggleReplies} 
         />
+      )}
+
+      {/* Reply Input - positioned based on depth */}
+      {showReplyInput && (
+        <CommentWrapper depth={depth}>
+          {Array.from({ length: depth }).map((_, i) => <ThreadLine key={i} depth={i} />)}
+          <div className="pt-2 ml-5">
+            <CommentInput
+              onSubmit={handleReplySubmit}
+              onCancel={() => setShowReplyInput(false)}
+              placeholder="Viết câu trả lời..."
+              replyTo={comment._id}
+              replyToName={comment.author?.full_name}
+            />
+          </div>
+        </CommentWrapper>
       )}
     </div>
   );

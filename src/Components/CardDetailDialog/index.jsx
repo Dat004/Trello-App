@@ -10,13 +10,16 @@ import {
     DialogTrigger,
     Separator,
 } from "@/Components/UI";
-import CardChecklist from "./CardChecklist";
 import CardDescription from "./CardDescription";
-import CardHeader from "./CardHeader";
-import CardMembers from "./CardMembers";
+import { useBoardDetailStore } from "@/store";
+import CardChecklist from "./CardChecklist";
+import CardComments from "./CardComments";
 import CardMetadata from "./CardMetadata";
+import CardMembers from "./CardMembers";
+import CardHeader from "./CardHeader";
 
 function CardDetailDialog({ card, listId, boardId, trigger }) {
+  const currentBoard = useBoardDetailStore((state) => state.currentBoard);
   const [open, setOpen] = useState(false);
 
   if (!card) return null;
@@ -43,6 +46,10 @@ function CardDetailDialog({ card, listId, boardId, trigger }) {
           <Separator />
           
           <CardChecklist card={card} boardId={boardId} listId={listId} />
+          
+          <Separator />
+          
+          <CardComments card={card} boardId={boardId} board={currentBoard} />
           
           <Separator />
           

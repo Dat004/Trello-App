@@ -1,16 +1,17 @@
 import { useState } from "react";
 
 import {
-    Button,
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-    Separator,
+  Button,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  Separator,
 } from "@/Components/UI";
 import CardDescription from "./CardDescription";
+import CardAttachments from "./CardAttachments";
 import { useBoardDetailStore } from "@/store";
 import CardChecklist from "./CardChecklist";
 import CardComments from "./CardComments";
@@ -46,6 +47,10 @@ function CardDetailDialog({ card, listId, boardId, trigger }) {
           <Separator />
           
           <CardChecklist card={card} boardId={boardId} listId={listId} />
+          
+          <Separator />
+          
+          <CardAttachments card={card} boardId={boardId} />
           
           <Separator />
           

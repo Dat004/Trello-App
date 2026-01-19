@@ -93,7 +93,7 @@ function Board() {
                 className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
               >
                 <Users className="h-4 w-4 mr-2" />
-                {currentBoard.members}
+                {currentBoard.members.length}
               </Button>
               <Button
                 variant="ghost"

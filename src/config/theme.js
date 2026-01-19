@@ -9,3 +9,13 @@ export const BACKGROUND_COLORS = [
   { name: "Đỏ", value: "red", class: "bg-red-500" },
   { name: "Xám", value: "gray", class: "bg-gray-500" },
 ];
+
+export const GRADIENT_MAP = {
+  "bg-blue-500": "from-blue-600 to-indigo-700",
+  "bg-green-500": "from-emerald-500 to-teal-600",
+  "bg-orange-500": "from-orange-500 to-rose-500",
+  "bg-red-500": "from-red-600 to-pink-700",
+  "bg-purple-500": "from-purple-600 to-fuchsia-700",
+  "bg-pink-500": "from-pink-500 to-rose-600",
+  "bg-slate-500": "from-slate-600 to-slate-800",
+};

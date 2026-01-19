@@ -48,7 +48,7 @@ export const validateFileByIntent = (file, intent) => {
   }
 
   // Check MIME type
-  if (!rule.mimeTypes.includes(file.type)) {
+  if (rule.mimeTypes !== "*" && !rule.mimeTypes.includes(file.type)) {
     return `${rule.label} không đúng định dạng cho phép`;
   }
 
@@ -59,5 +59,5 @@ export const validateFileByIntent = (file, intent) => {
 export const getAcceptByIntent = (intent) => {
   const rule = FILE_RULES[intent];
   if (!rule) return "";
-  return rule === "*" ? rule : rule.mimeTypes.join(",");
+  return rule.mimeTypes === "*" ? "" : rule.mimeTypes.join(",");
 };

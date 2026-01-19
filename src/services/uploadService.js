@@ -18,8 +18,9 @@ export const uploadService = {
     formData.append("api_key", apiKey);
     formData.append("timestamp", timestamp);
     formData.append("signature", signature);
-    formData.append("folder", params.folder);
-    formData.append("eager", params.eager);
+    
+    if (params.folder) formData.append("folder", params.folder);
+    if (params.eager) formData.append("eager", params.eager);
 
     const res = await uploadApi.uploadToCloudinary({
       data: formData,

@@ -11,6 +11,7 @@ export const formatFileSize = (bytes) => {
 
 // Get file type label
 export const getFileTypeLabel = (type) => {
+    if (!type) return "Tệp";
     if (type.startsWith("image/")) return "Hình ảnh";
     if (type.startsWith("video/")) return "Video";
     if (type.startsWith("audio/")) return "Âm thanh";
@@ -23,5 +24,6 @@ export const getFileTypeLabel = (type) => {
 
 // Check if file is previewable image
 export const isPreviewableImage = (type) => {
+    if (!type) return false;
     return type.startsWith("image/");
 };

@@ -19,6 +19,13 @@ export const cardApi = {
       return err.response;
     }
   },
+  async move(boardId, listId, id, data) {
+    try {
+      return await axiosClient.patch(`${boardsRoute}/${boardId}${listsRoute}/${listId}${cardsRoute}/${id}/move`, data);
+    } catch (err) {
+      return err.response;
+    }
+  },
   async delete(boardId, listId, id, data) {
     try {
       return await axiosClient.delete(`${boardsRoute}/${boardId}${listsRoute}/${listId}${cardsRoute}/${id}`, {

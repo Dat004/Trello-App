@@ -25,6 +25,13 @@ export const listApi = {
       return err.response;
     }
   },
+  async move(boardId, id, data) {
+    try {
+      return await axiosClient.patch(`${boardsRoute}/${boardId}${listsRoute}/${id}/move`, data);
+    } catch (err) {
+      return err.response;
+    }
+  },
   async delete(boardId, id, data) {
     try {
       return await axiosClient.delete(`${boardsRoute}/${boardId}${listsRoute}/${id}`, {

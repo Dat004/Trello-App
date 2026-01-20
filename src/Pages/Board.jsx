@@ -1,21 +1,38 @@
 import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Star, Users, MoreHorizontal } from "lucide-react";
+import { DndContext, DragOverlay } from "@dnd-kit/core";
+import { horizontalListSortingStrategy, SortableContext } from "@dnd-kit/sortable";
 
 import AddListButton from "@/Components/AddListButton";
+import { useBoardDnD, usePermissions } from "@/hooks";
 import BoardList from "@/Components/BoardList";
 import { useBoardDetailStore } from "@/store";
+import CardItem from "@/Components/CardItem";
 import { Button } from "@/Components/UI";
 import { boardApi } from "@/api/board";
+import { cn } from "@/lib/utils";
 
 function Board() {
-  const navigate = useNavigate();
-
+  const navigate = useNavigate();  
   const { id } = useParams();
+  
   const currentBoard = useBoardDetailStore((state) => state.currentBoard);
   const isLoading = useBoardDetailStore((state) => state.isLoading);
   const listOrder = useBoardDetailStore((state) => state.listOrder);
   const setCurrentBoard = useBoardDetailStore((state) => state.setCurrentBoard);
+
+  const {
+    sensors,
+    activeId,
+    activeType,
+    activeData,
+    customCollisionDetectionStrategy,
+    handleDragStart,
+    handleDragOver,
+    handleDragEnd,
+  } = useBoardDnD();
+  const { canEdit } = usePermissions({ board: currentBoard });
 
   useEffect(() => {
     if (!id) {
@@ -33,9 +50,9 @@ function Board() {
     };
 
     fetchBoardDetail();
-  }, [id]);
+  }, [id, navigate, setCurrentBoard]);
 
-  if (isLoading) {
+  if (isLoading || !currentBoard) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
@@ -80,11 +97,10 @@ function Board() {
                 className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
               >
                 <Star
-                  className={`h-4 w-4 ${
+                  className={cn("h-4 w-4", 
                     currentBoard.starred
                       ? "fill-yellow-400 text-yellow-400"
-                      : "text-gray-700 dark:text-gray-300"
-                  }`}
+                      : "text-gray-700 dark:text-gray-300")}
                 />
               </Button>
               <Button
@@ -93,7 +109,7 @@ function Board() {
                 className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
               >
                 <Users className="h-4 w-4 mr-2" />
-                {currentBoard.members.length}
+                {currentBoard.members?.length || 0}
               </Button>
               <Button
                 variant="ghost"
@@ -109,35 +125,36 @@ function Board() {
 
       {/* Board Content */}
       <section className="container mx-auto px-4 py-6">
-        {!isLoading && (
-          <>
-            {listOrder.length > 0 && (
-              <section className="relative flex gap-4 overflow-x-auto pb-4">
-                {listOrder.map((list) => (
-                  <BoardList key={list} listId={list} boardId={currentBoard._id} />
-                ))}
+        <DndContext
+          sensors={sensors}
+          collisionDetection={customCollisionDetectionStrategy}
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
+          onDragEnd={handleDragEnd}
+        >
+          <section className="relative flex gap-4 overflow-x-auto pb-4 items-start min-h-[calc(100vh-200px)]">
+            <SortableContext items={listOrder} strategy={horizontalListSortingStrategy}>
+              {listOrder.map((listId) => (
+                <BoardList key={listId} listId={listId} boardId={currentBoard._id} />
+              ))}
+            </SortableContext>
 
-                {/* Add List Button */}
-                <AddListButton boardId={currentBoard._id} />
-              </section>
-            )}
+            {/* Add List Button */}
+            {canEdit && <AddListButton boardId={currentBoard._id} />}
+          </section>
 
-            {/* Empty State */}
-            {listOrder.length === 0 && (
-              <section className="text-center py-16">
-                <section className="flex flex-col items-center justify-center bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-lg p-8 max-w-md mx-auto border border-gray-200 dark:border-gray-700 shadow-sm">
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                    Bảng trống
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400 mb-4">
-                    Thêm danh sách đầu tiên để bắt đầu tổ chức công việc của bạn
-                  </p>
-                  <AddListButton boardId={currentBoard._id} />
-                </section>
-              </section>
-            )}
-          </>
-        )}
+          <DragOverlay>
+            {activeId ? (
+              <div className="opacity-80 rotate-3 shadow-2xl">
+                {activeType === 'list' ? (
+                  <BoardList listId={activeId} boardId={currentBoard._id} isOverlay />
+                ) : (
+                  <CardItem cardId={activeId} listId={activeData?.listId} boardId={currentBoard._id} isOverlay />
+                )}
+              </div>
+            ) : null}
+          </DragOverlay>
+        </DndContext>
       </section>
     </section>
   );

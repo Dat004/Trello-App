@@ -31,8 +31,7 @@ function Board() {
     handleDragStart,
     handleDragOver,
     handleDragEnd,
-  } = useBoardDnD();
-  const { canEdit } = usePermissions({ board: currentBoard });
+  } = useBoardDnD(currentBoard?._id);
 
   useEffect(() => {
     if (!id) {
@@ -140,7 +139,7 @@ function Board() {
             </SortableContext>
 
             {/* Add List Button */}
-            {canEdit && <AddListButton boardId={currentBoard._id} />}
+            <AddListButton boardId={currentBoard._id} />
           </section>
 
           <DragOverlay>

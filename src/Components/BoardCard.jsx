@@ -1,10 +1,11 @@
+import { Clock, Users } from "lucide-react";
 import { Link } from "react-router-dom";
-import { Users, Clock } from "lucide-react";
 
-import { Badge, Card, CardContent, CardHeader, CardTitle, Button } from "./UI";
+import { Badge, Card, CardContent, CardHeader, CardTitle } from "./UI";
 import { getRoleText, getRoleVariant } from "@/helpers/role";
 import { formatRelativeTime } from "@/helpers/formatTime";
 import BoardActions from "@/Pages/Boards/BoardActions";
+import { getBoardGradient } from "@/helpers/board";
 import { usePermissions } from "@/hooks";
 import { cn } from "@/lib/utils";
 
@@ -34,35 +35,48 @@ function BoardCard({ index, board, view = "grid" }) {
   if (view === "grid") {
     return (
       <div {...animationProps}>
-        <Link to={`/board/${board._id}`}>
-          <Card className="group cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-1">
-            <CardHeader className="pb-3">
-              <div
-                className={`h-12 w-full rounded-md ${board.color} mb-3 relative overflow-hidden`}
-              ></div>
-              <div className="flex items-start justify-between">
-                <CardTitle className="text-lg font-semibold text-card-foreground group-hover:text-primary transition-colors line-clamp-2">
-                  <section className="flex items-center">
-                    <h3>{board.title}</h3>
-                    {renderRoleBadge()}
+        <Link to={`/board/${board._id}`} className="block h-full">
+          <Card className="group relative h-full cursor-pointer overflow-hidden border-none bg-card/60 backdrop-blur-sm transition-all duration-300 hover:shadow-2xl hover:shadow-primary/20 hover:-translate-y-2 ring-1 ring-border/50 hover:ring-primary/40">
+            {/* Gradient Header Overlay */}
+            <div
+              className={cn(
+                "h-16 w-full bg-gradient-to-br transition-all duration-300 group-hover:h-24 group-hover:saturate-150",
+                getBoardGradient(board.color)
+              )}
+            >
+              <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors" />
+              <span className="absolute top-2 right-2">
+                {renderRoleBadge()}
+              </span>
+            </div>
+
+            <CardHeader className="relative -mt-8 sm:p-5 p-3 bg-transparent">
+              <div className="flex items-start justify-between gap-2">
+                <CardTitle className="text-lg font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2 drop-shadow-sm">
+                  <section className="flex items-center flex-wrap gap-2">
+                    <span className="bg-background/95 backdrop-blur-md px-3 py-1 rounded-lg border border-border shadow-sm">
+                      {board.title}
+                    </span>
                   </section>
                 </CardTitle>
-                <div className="flex items-center gap-1">
+                <div className="bg-background/80 backdrop-blur-md rounded-full shadow-sm translate-y-0">
                   <BoardActions board={board} canDelete={canDelete} />
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="pt-0">
-              <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                {board.description}
+
+            <CardContent className="sm:p-5 p-3">
+              <p className="text-sm text-muted-foreground mb-6 line-clamp-2 font-medium leading-relaxed">
+                {board.description || "Chưa có mô tả cho bảng này."}
               </p>
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <div className="flex items-center gap-1">
-                  <Users className="h-3 w-3" />
+              
+              <div className="flex items-center justify-between pt-4 border-t border-border/40 text-[11px] font-semibold tracking-wide uppercase text-muted-foreground/80">
+                <div className="flex items-start gap-1.5 px-2 py-1 rounded-md bg-muted/40 transition-colors group-hover:bg-primary/5 group-hover:text-primary">
+                  <Users className="h-3.5 w-3.5" />
                   <span>{board.members.length} thành viên</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
+                <div className="flex items-start gap-1.5">
+                  <Clock className="h-3.5 w-3.5" />
                   <span>{formatRelativeTime(board.updated_at)}</span>
                 </div>
               </div>

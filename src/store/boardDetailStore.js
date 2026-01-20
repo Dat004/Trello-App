@@ -131,6 +131,24 @@ const useBoardDetailStore = create((set) => ({
     });
   },
 
+  moveList: (activeId, overId) => {
+    set((state) => {
+      const { listOrder } = state;
+      const oldIndex = listOrder.indexOf(activeId);
+      const newIndex = listOrder.indexOf(overId);
+
+      if (oldIndex !== -1 && newIndex !== -1) {
+        const newListOrder = [...listOrder];
+        const [movedItem] = newListOrder.splice(oldIndex, 1);
+        newListOrder.splice(newIndex, 0, movedItem);
+
+        return { listOrder: newListOrder };
+      }
+      
+      return state;
+    });
+  },
+
   // Card
   addCard: (card) => {
     set((state) => {
@@ -141,7 +159,7 @@ const useBoardDetailStore = create((set) => ({
       const listId = card.list;
       const newLists = { ...state.lists };
       const targetList = newLists[listId];
-      
+
       if (targetList) {
         const updatedCardOrderIds = [...targetList.cardOrderIds, card._id];
         newLists[listId] = {
@@ -202,6 +220,64 @@ const useBoardDetailStore = create((set) => ({
         cards: newCards,
         lists: newLists,
       };
+    });
+  },
+
+  moveCard: (activeId, overId, activeListId, overListId) => {
+    set((state) => {
+      const { lists, cards } = state;
+      const newLists = { ...lists };
+
+      // 1. Trường hợp cùng List
+      if (activeListId === overListId) {
+        const targetList = newLists[activeListId];
+        const oldIndex = targetList.cardOrderIds.indexOf(activeId);
+        const newIndex = targetList.cardOrderIds.indexOf(overId);
+
+        if (oldIndex !== -1 && newIndex !== -1) {
+          const newCardOrderIds = [...targetList.cardOrderIds];
+          const [movedCardId] = newCardOrderIds.splice(oldIndex, 1);
+          newCardOrderIds.splice(newIndex, 0, movedCardId);
+
+          newLists[activeListId] = {
+            ...targetList,
+            cardOrderIds: newCardOrderIds,
+          };
+        }
+        return { lists: newLists };
+      }
+
+      // 2. Trường hợp khác List
+      const sourceList = newLists[activeListId];
+      const destList = newLists[overListId];
+
+      if (sourceList && destList) {
+        const sourceCardOrderIds = [...sourceList.cardOrderIds];
+        const destCardOrderIds = [...destList.cardOrderIds];
+
+        const oldIndex = sourceCardOrderIds.indexOf(activeId);
+        // Nếu overId không tồn tại chèn vào cuối
+        let newIndex = destCardOrderIds.indexOf(overId);
+        if (newIndex === -1) newIndex = destCardOrderIds.length;
+
+        if (oldIndex !== -1) {
+          const [movedCardId] = sourceCardOrderIds.splice(oldIndex, 1);
+          destCardOrderIds.splice(newIndex, 0, movedCardId);
+
+          // Cập nhật mapping cards
+          const newCards = { ...cards };
+          if (newCards[movedCardId]) {
+            newCards[movedCardId] = { ...newCards[movedCardId], list: overListId };
+          }
+
+          newLists[activeListId] = { ...sourceList, cardOrderIds: sourceCardOrderIds };
+          newLists[overListId] = { ...destList, cardOrderIds: destCardOrderIds };
+
+          return { lists: newLists, cards: newCards };
+        }
+      }
+
+      return state;
     });
   },
 

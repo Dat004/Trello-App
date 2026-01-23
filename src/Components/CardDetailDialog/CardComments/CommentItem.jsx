@@ -125,9 +125,9 @@ function CommentItem({
               <span className="font-medium text-sm">{comment.author?.full_name}</span>
               <p className="text-sm whitespace-pre-wrap">
                 {/* Hiển thị tên người được reply - chỉ khi là reply và có thông tin parent author */}
-                {isReply && comment.author?.full_name && (
+                {isReply && comment.reply_to?.full_name && (
                   <span className="text-primary font-medium bg-primary/10 rounded px-1 mr-1">
-                    @{comment.author.full_name}
+                    @{comment.reply_to.full_name}
                   </span>
                 )}
                 {comment.text}

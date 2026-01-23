@@ -27,6 +27,28 @@ function useSocket() {
         socket.emit("leave-card", roomId);
     }, [socket, isConnected]);
 
+    // Join board room
+    const joinBoard = useCallback((boardId) => {
+        if (!socket || !isConnected) {
+            console.warn("Không thể join board: Socket không kết nối");
+            return;
+        }
+
+        console.log(`Joining board: ${boardId}`);
+        socket.emit("join-board", boardId);
+    }, [socket, isConnected]);
+
+    // Leave board room
+    const leaveBoard = useCallback((boardId) => {
+        if (!socket || !isConnected) {
+            console.warn("Không thể leave board: Socket không kết nối");
+            return;
+        }
+
+        console.log(`Leaving board: ${boardId}`);
+        socket.emit("leave-board", boardId);
+    }, [socket, isConnected]);
+
     // Emit một event tùy chỉnh
     const emit = useCallback((event, data) => {
         if (!socket || !isConnected) {
@@ -63,6 +85,8 @@ function useSocket() {
         isConnected,
         joinRoom,
         leaveRoom,
+        joinBoard,
+        leaveBoard,
         emit,
         on,
         off,

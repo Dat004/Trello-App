@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { commentsApi } from "@/api/comments";
 import { Button, Label } from "@/Components/UI";
 import { resolvePermissions } from "@/helpers/permission";
-import { useAuthStore, useCommentsStore, useWorkspaceStore } from "@/store";
+import { useAuthStore, useBoardDetailStore, useCommentsStore, useWorkspaceStore } from "@/store";
 import CommentInput from "./CommentInput";
 import CommentItem from "./CommentItem";
 
@@ -24,6 +24,8 @@ function CardComments({ card, boardId, board }) {
     deleteComment: deleteCommentFromStore,
     reset: resetComments,
   } = useCommentsStore();
+  const updateCommentCount = useBoardDetailStore((state) => state.addCommentFromSocket);
+  const decrementCommentCount = useBoardDetailStore((state) => state.removeCommentFromSocket);
 
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
@@ -81,6 +83,7 @@ function CardComments({ card, boardId, board }) {
       const response = await commentsApi.addComment(boardId, card._id, data);
       if (response.data.success) {
         addCommentToStore(response.data.data.comment);
+        updateCommentCount(card._id);
       }
     } catch (error) {
       console.error("Error adding comment:", error);
@@ -107,6 +110,7 @@ function CardComments({ card, boardId, board }) {
       const response = await commentsApi.deleteComment(boardId, card._id, commentId);
       if (response.data.success) {
         deleteCommentFromStore(commentId, parentCommentId);
+        decrementCommentCount(card._id);
       }
     } catch (error) {
       console.error("Error deleting comment:", error);

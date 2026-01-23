@@ -390,6 +390,70 @@ const useBoardDetailStore = create((set) => ({
     });
   },
 
+  moveListFromSocket: (data) => {
+    const { listId, pos } = data;
+
+    set((state) => {
+      const newLists = { ...state.lists };
+      const currentList = newLists[listId];
+
+      if (!currentList) return state;
+
+      const updatedList = {
+        ...currentList,
+        pos: pos,
+      }
+
+      newLists[listId] = updatedList;
+
+      return { 
+        lists: newLists,
+        listOrder: state.listOrder.sort((a, b) => newLists[a].pos - newLists[b].pos),
+      };
+    });
+  },
+
+  // Card/List Movement from Socket
+  moveCardFromSocket: (data) => {
+    const { cardId, sourceListId, targetListId, pos } = data;
+    
+    set((state) => {
+      const newLists = { ...state.lists };
+      const newCards = { ...state.cards };
+      const currentCard = newCards[cardId];
+
+      if (!currentCard) return state;
+      
+      newCards[cardId] = {
+        ...currentCard,
+        pos: pos,
+      };
+
+      if (sourceListId !== targetListId) {
+        const sourceList = newLists[sourceListId];
+        newLists[sourceListId] = {
+          ...sourceList,
+          cardOrderIds: sourceList.cardOrderIds.filter(id => id !== cardId),
+        };
+      }
+
+      const targetList = newLists[targetListId];
+      const newCardIds = sourceListId === targetListId 
+        ? targetList.cardOrderIds 
+        : [...targetList.cardOrderIds, cardId];
+      
+      newLists[targetListId] = {
+        ...targetList,
+        cardOrderIds: newCardIds.sort((a, b) => newCards[a].pos - newCards[b].pos),
+      };
+
+      return { 
+        lists: newLists,
+        cards: newCards,
+      };
+    });
+  },
+
   // Reset store
   reset: () =>
     set({

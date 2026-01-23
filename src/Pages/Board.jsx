@@ -5,7 +5,7 @@ import { DndContext, DragOverlay } from "@dnd-kit/core";
 import { horizontalListSortingStrategy, SortableContext } from "@dnd-kit/sortable";
 
 import AddListButton from "@/Components/AddListButton";
-import { useBoardDnD, usePermissions } from "@/hooks";
+import { useBoardDnD, useSocket } from "@/hooks";
 import BoardList from "@/Components/BoardList";
 import { useBoardDetailStore } from "@/store";
 import CardItem from "@/Components/CardItem";
@@ -21,7 +21,10 @@ function Board() {
   const isLoading = useBoardDetailStore((state) => state.isLoading);
   const listOrder = useBoardDetailStore((state) => state.listOrder);
   const setCurrentBoard = useBoardDetailStore((state) => state.setCurrentBoard);
+  const moveCardFromSocket = useBoardDetailStore((state) => state.moveCardFromSocket);
+  const moveListFromSocket = useBoardDetailStore((state) => state.moveListFromSocket);
 
+  const { joinBoard, leaveBoard, on, off, isConnected } = useSocket();
   const {
     sensors,
     activeId,
@@ -50,6 +53,37 @@ function Board() {
 
     fetchBoardDetail();
   }, [id, navigate, setCurrentBoard]);
+
+  // Socket: Join/Leave board room và listen events
+  useEffect(() => {
+    if (!currentBoard?._id || !isConnected) return;
+
+    console.log(`[Board] Joining board room: ${currentBoard._id}`);
+    joinBoard(currentBoard._id);
+
+    // Listen card movement
+    const handleCardMoved = (data) => {
+      console.log("[Socket] Card moved:", data);
+      moveCardFromSocket(data);
+    };
+
+    // Listen list movement
+    const handleListMoved = (data) => {
+      console.log("[Socket] List moved:", data);
+      moveListFromSocket(data);
+    };
+
+    on("card-moved", handleCardMoved);
+    on("list-moved", handleListMoved);
+
+    // Cleanup
+    return () => {
+      console.log(`[Board] Leaving board room: ${currentBoard._id}`);
+      off("card-moved", handleCardMoved);
+      off("list-moved", handleListMoved);
+      leaveBoard(currentBoard._id);
+    };
+  }, [currentBoard?._id, isConnected, joinBoard, leaveBoard, on, off, moveCardFromSocket, moveListFromSocket]);
 
   if (isLoading || !currentBoard) {
     return (

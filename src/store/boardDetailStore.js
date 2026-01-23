@@ -144,7 +144,7 @@ const useBoardDetailStore = create((set) => ({
 
         return { listOrder: newListOrder };
       }
-      
+
       return state;
     });
   },
@@ -340,6 +340,47 @@ const useBoardDetailStore = create((set) => ({
       const updatedCard = {
         ...currentCard,
         checklist: updatedChecklist,
+      };
+      newCards[cardId] = updatedCard;
+
+      return {
+        cards: newCards,
+      };
+    });
+  },
+
+  // SOCKET REALTIME ACTIONS
+  addCommentFromSocket: (cardId) => {
+    set((state) => {
+      const newCards = { ...state.cards };
+      const currentCard = newCards[cardId];
+
+      if (!currentCard) return state;
+
+      // Tăng comment_count
+      const updatedCard = {
+        ...currentCard,
+        comment_count: (currentCard.comment_count || 0) + 1,
+      };
+      newCards[cardId] = updatedCard;
+
+      return {
+        cards: newCards,
+      };
+    });
+  },
+
+  removeCommentFromSocket: (cardId) => {
+    set((state) => {
+      const newCards = { ...state.cards };
+      const currentCard = newCards[cardId];
+
+      if (!currentCard) return state;
+
+      // Giảm comment_count
+      const updatedCard = {
+        ...currentCard,
+        comment_count: Math.max((currentCard.comment_count || 1) - 1, 0),
       };
       newCards[cardId] = updatedCard;
 

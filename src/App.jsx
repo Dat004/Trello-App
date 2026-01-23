@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 import AppInitializer from "./initializers/AppInitializer";
+import SocketProvider from "./providers/ContextProvider";
 import ToastProvider from "./providers/ToastProvider";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import PublicRoute from "./routes/PublicRoute";
@@ -11,36 +12,38 @@ function App() {
     <Router>
       <AppInitializer>
         <ToastProvider>
-          <Routes>
-            {routes.map((route) => (
-              <Route
-                path={route.path}
-                element={
-                  route.auth === "protected" ? (
-                    <ProtectedRoute>
-                      {route.layout ? (
-                        <route.layout>
+          <SocketProvider>
+            <Routes>
+              {routes.map((route) => (
+                <Route
+                  path={route.path}
+                  element={
+                    route.auth === "protected" ? (
+                      <ProtectedRoute>
+                        {route.layout ? (
+                          <route.layout>
+                            <route.page />
+                          </route.layout>
+                        ) : (
                           <route.page />
-                        </route.layout>
-                      ) : (
-                        <route.page />
-                      )}
-                    </ProtectedRoute>
-                  ) : (
-                    <PublicRoute>
-                      {route.layout ? (
-                        <route.layout>
+                        )}
+                      </ProtectedRoute>
+                    ) : (
+                      <PublicRoute>
+                        {route.layout ? (
+                          <route.layout>
+                            <route.page />
+                          </route.layout>
+                        ) : (
                           <route.page />
-                        </route.layout>
-                      ) : (
-                        <route.page />
-                      )}
-                    </PublicRoute>
-                  )
-                }
-              />
-            ))}
-          </Routes>
+                        )}
+                      </PublicRoute>
+                    )
+                  }
+                />
+              ))}
+            </Routes>
+          </SocketProvider>
         </ToastProvider>
       </AppInitializer>
     </Router>

@@ -153,6 +153,15 @@ const useCommentsStore = create((set, get) => ({
             nextSkip: 0,
             isLoading: false,
         }),
+
+    // SOCKET REALTIME ACTIONS
+    addCommentFromSocket: (comment) => {
+        get().addComment(comment);
+    },
+
+    deleteCommentFromSocket: (commentId, parentId) => {
+        get().deleteComment(commentId, parentId);
+    },
 }));
 
 export default useCommentsStore;

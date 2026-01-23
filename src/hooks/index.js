@@ -5,6 +5,7 @@ export { default as useBoard } from "./useBoard";
 export { default as useBoardDnD } from "./useBoardDnD";
 export { default as useBoardInit } from "./useBoardInit";
 export { default as usePermissions } from "./usePermissions";
+export { default as useSocket } from "./useSocket";
 export { default as useUpdateUserSettings } from "./useUpdateUserSettings";
 export { default as useWorkspace } from "./useWorkspace";
 export { default as useWorkspaceInit } from "./useWorkspaceInit";

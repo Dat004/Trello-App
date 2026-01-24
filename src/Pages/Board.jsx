@@ -23,6 +23,10 @@ function Board() {
   const setCurrentBoard = useBoardDetailStore((state) => state.setCurrentBoard);
   const moveCardFromSocket = useBoardDetailStore((state) => state.moveCardFromSocket);
   const moveListFromSocket = useBoardDetailStore((state) => state.moveListFromSocket);
+  const updateCardFromSocket = useBoardDetailStore((state) => state.updateCardFromSocket);
+  const addChecklistItemFromSocket = useBoardDetailStore((state) => state.addChecklistItemFromSocket);
+  const toggleChecklistItemFromSocket = useBoardDetailStore((state) => state.toggleChecklistItemFromSocket);
+  const deleteChecklistItemFromSocket = useBoardDetailStore((state) => state.deleteChecklistItemFromSocket);
 
   const { joinBoard, leaveBoard, on, off, isConnected } = useSocket();
   const {
@@ -73,17 +77,63 @@ function Board() {
       moveListFromSocket(data);
     };
 
+    // Listen card updates
+    const handleCardUpdated = (data) => {
+      console.log("[Socket] Card updated:", data);
+      updateCardFromSocket(data);
+    };
+
+    // Listen checklist operations
+    const handleChecklistItemAdded = (data) => {
+      console.log("[Socket] Checklist item added:", data);
+      addChecklistItemFromSocket(data);
+    };
+
+    const handleChecklistItemToggled = (data) => {
+      console.log("[Socket] Checklist item toggled:", data);
+      toggleChecklistItemFromSocket(data);
+    };
+
+    const handleChecklistItemDeleted = (data) => {
+      console.log("[Socket] Checklist item deleted:", data);
+      deleteChecklistItemFromSocket(data);
+    };
+
+    // Listen card movement
     on("card-moved", handleCardMoved);
     on("list-moved", handleListMoved);
+
+    // Listen card updates
+    on("card-updated", handleCardUpdated);
+    on("checklist-item-added", handleChecklistItemAdded);
+    on("checklist-item-toggled", handleChecklistItemToggled);
+    on("checklist-item-deleted", handleChecklistItemDeleted);
 
     // Cleanup
     return () => {
       console.log(`[Board] Leaving board room: ${currentBoard._id}`);
       off("card-moved", handleCardMoved);
       off("list-moved", handleListMoved);
+      off("card-updated", handleCardUpdated);
+      off("checklist-item-added", handleChecklistItemAdded);
+      off("checklist-item-toggled", handleChecklistItemToggled);
+      off("checklist-item-deleted", handleChecklistItemDeleted);
       leaveBoard(currentBoard._id);
     };
-  }, [currentBoard?._id, isConnected, joinBoard, leaveBoard, on, off, moveCardFromSocket, moveListFromSocket]);
+  }, [
+    currentBoard?._id, 
+    isConnected, 
+    joinBoard, 
+    leaveBoard, 
+    on, 
+    off, 
+    moveCardFromSocket, 
+    moveListFromSocket,
+    updateCardFromSocket,
+    addChecklistItemFromSocket,
+    toggleChecklistItemFromSocket,
+    deleteChecklistItemFromSocket
+  ]);
 
   if (isLoading || !currentBoard) {
     return (

@@ -428,6 +428,16 @@ const useBoardDetailStore = create((set, get) => ({
     get().removeList(listId);
   },
 
+  addCardFromSocket: (data) => {
+    const { card } = data;
+    get().addCard(card);
+  },
+
+  deleteCardFromSocket: (data) => {
+    const { cardId } = data;
+    get().removeCard(cardId);
+  },
+
   // Card/List Movement from Socket
   moveCardFromSocket: (data) => {
     const { cardId, sourceListId, targetListId, pos } = data;

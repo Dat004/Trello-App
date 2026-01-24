@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-const useBoardDetailStore = create((set) => ({
+const useBoardDetailStore = create((set, get) => ({
   currentBoard: null,
   lists: {},
   cards: {},
@@ -411,6 +411,21 @@ const useBoardDetailStore = create((set) => ({
         listOrder: state.listOrder.sort((a, b) => newLists[a].pos - newLists[b].pos),
       };
     });
+  },
+
+  addListFromSocket: (data) => {
+    const { list } = data;
+    get().addList(list);
+  },
+
+  updateListFromSocket: (data) => {
+    const { listId, list: updatedData } = data;
+    get().updateList(listId, updatedData);
+  },
+
+  deleteListFromSocket: (data) => {
+    const { listId } = data;
+    get().removeList(listId);
   },
 
   // Card/List Movement from Socket

@@ -406,7 +406,7 @@ const useBoardDetailStore = create((set) => ({
 
       newLists[listId] = updatedList;
 
-      return { 
+      return {
         lists: newLists,
         listOrder: state.listOrder.sort((a, b) => newLists[a].pos - newLists[b].pos),
       };
@@ -416,14 +416,14 @@ const useBoardDetailStore = create((set) => ({
   // Card/List Movement from Socket
   moveCardFromSocket: (data) => {
     const { cardId, sourceListId, targetListId, pos } = data;
-    
+
     set((state) => {
       const newLists = { ...state.lists };
       const newCards = { ...state.cards };
       const currentCard = newCards[cardId];
 
       if (!currentCard) return state;
-      
+
       newCards[cardId] = {
         ...currentCard,
         pos: pos,
@@ -438,19 +438,100 @@ const useBoardDetailStore = create((set) => ({
       }
 
       const targetList = newLists[targetListId];
-      const newCardIds = sourceListId === targetListId 
-        ? targetList.cardOrderIds 
+      const newCardIds = sourceListId === targetListId
+        ? targetList.cardOrderIds
         : [...targetList.cardOrderIds, cardId];
-      
+
       newLists[targetListId] = {
         ...targetList,
         cardOrderIds: newCardIds.sort((a, b) => newCards[a].pos - newCards[b].pos),
       };
 
-      return { 
+      return {
         lists: newLists,
         cards: newCards,
       };
+    });
+  },
+
+  // Card Info Updates from Socket
+  updateCardFromSocket: (data) => {
+    const { cardId, updates } = data;
+
+    set((state) => {
+      const newCards = { ...state.cards };
+      const currentCard = newCards[cardId];
+
+      if (!currentCard) return state;
+
+      newCards[cardId] = {
+        ...currentCard,
+        ...updates,
+      };
+
+      return { cards: newCards };
+    });
+  },
+
+  // Checklist from Socket
+  addChecklistItemFromSocket: (data) => {
+    const { cardId, checklist } = data;
+
+    set((state) => {
+      const newCards = { ...state.cards };
+      const currentCard = newCards[cardId];
+
+      if (!currentCard) return state;
+
+      const updatedChecklist = [...(currentCard.checklist || []), checklist];
+      newCards[cardId] = {
+        ...currentCard,
+        checklist: updatedChecklist,
+      };
+
+      return { cards: newCards };
+    });
+  },
+
+  toggleChecklistItemFromSocket: (data) => {
+    const { cardId, checklist } = data;
+
+    set((state) => {
+      const newCards = { ...state.cards };
+      const currentCard = newCards[cardId];
+
+      if (!currentCard) return state;
+
+      const updatedChecklist = currentCard.checklist.map((item) =>
+        item._id === checklist._id ? { ...item, ...checklist } : item
+      );
+      newCards[cardId] = {
+        ...currentCard,
+        checklist: updatedChecklist,
+      };
+
+      return { cards: newCards };
+    });
+  },
+
+  deleteChecklistItemFromSocket: (data) => {
+    const { cardId, checklistId } = data;
+
+    set((state) => {
+      const newCards = { ...state.cards };
+      const currentCard = newCards[cardId];
+
+      if (!currentCard) return state;
+
+      const updatedChecklist = currentCard.checklist.filter(
+        (item) => item._id !== checklistId
+      );
+      newCards[cardId] = {
+        ...currentCard,
+        checklist: updatedChecklist,
+      };
+
+      return { cards: newCards };
     });
   },
 

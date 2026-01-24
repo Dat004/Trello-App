@@ -30,6 +30,8 @@ function Board() {
   const addListFromSocket = useBoardDetailStore((state) => state.addListFromSocket);
   const updateListFromSocket = useBoardDetailStore((state) => state.updateListFromSocket);
   const deleteListFromSocket = useBoardDetailStore((state) => state.deleteListFromSocket);
+  const addCardFromSocket = useBoardDetailStore((state) => state.addCardFromSocket);
+  const deleteCardFromSocket = useBoardDetailStore((state) => state.deleteCardFromSocket);
 
   const { joinBoard, leaveBoard, on, off, isConnected } = useSocket();
   const {
@@ -122,6 +124,17 @@ function Board() {
       deleteListFromSocket(data);
     };
 
+    // Listen card addition/deletion
+    const handleCardCreated = (data) => {
+      console.log("[Socket] Card created:", data);
+      addCardFromSocket(data);
+    };
+
+    const handleCardDeleted = (data) => {
+      console.log("[Socket] Card deleted:", data);
+      deleteCardFromSocket(data);
+    };
+
     on("card-updated", handleCardUpdated);
     on("checklist-item-added", handleChecklistItemAdded);
     on("checklist-item-toggled", handleChecklistItemToggled);
@@ -129,6 +142,8 @@ function Board() {
     on("list-created", handleListCreated);
     on("list-updated", handleListUpdated);
     on("list-deleted", handleListDeleted);
+    on("card-created", handleCardCreated);
+    on("card-deleted", handleCardDeleted);
 
     // Cleanup
     return () => {
@@ -142,6 +157,8 @@ function Board() {
       off("list-created", handleListCreated);
       off("list-updated", handleListUpdated);
       off("list-deleted", handleListDeleted);
+      off("card-created", handleCardCreated);
+      off("card-deleted", handleCardDeleted);
       leaveBoard(currentBoard._id);
     };
   }, [
@@ -159,7 +176,9 @@ function Board() {
     deleteChecklistItemFromSocket,
     addListFromSocket,
     updateListFromSocket,
-    deleteListFromSocket
+    deleteListFromSocket,
+    addCardFromSocket,
+    deleteCardFromSocket
   ]);
 
   if (isLoading || !currentBoard) {

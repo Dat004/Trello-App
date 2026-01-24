@@ -1,5 +1,6 @@
 import { axiosClient } from "./axiosClient";
 
+const workspaceRoute = "/workspace";
 const createRoute = "/create";
 const boardsRoute = "/boards";
 
@@ -7,6 +8,13 @@ export const boardApi = {
   async getMyBoards() {
     try {
       return await axiosClient.get(boardsRoute);
+    } catch (err) {
+      return err.response;
+    }
+  },
+  async getBoardsInWorkspace(workspaceId) {
+    try {
+      return await axiosClient.get(`${boardsRoute}${workspaceRoute}/${workspaceId}`);
     } catch (err) {
       return err.response;
     }

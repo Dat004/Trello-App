@@ -8,6 +8,7 @@ import {
   Trash2,
 } from "lucide-react";
 
+import BoardsInWorkspaceDialog from "@/Components/BoardsInWorkspaceDialog";
 import SettingWorkspaceDialog from "@/Components/SettingWorkspaceDialog";
 import { getMyRole, getRoleText, getRoleVariant } from "@/helpers/role";
 import { formatDateOnly } from "@/helpers/formatTime";
@@ -139,12 +140,16 @@ function WorkspaceItem({ workspace, onDelete }) {
           </div>
 
           <div className="flex items-center gap-2 pt-2">
-            <Button
-              size="sm"
-              className="flex-1 h-8 sm:h-9 font-normal sm:font-medium"
-            >
-              Xem bảng
-            </Button>
+            <BoardsInWorkspaceDialog 
+              workspace={workspace}
+              trigger={
+                <Button
+                  size="sm"
+                  className="flex-1 h-8 sm:h-9 font-normal sm:font-medium"
+                >
+                  Xem bảng
+                </Button>
+              } />
             <Button variant="outline" size="sm">
               <Users className="h-4 w-4" />
             </Button>

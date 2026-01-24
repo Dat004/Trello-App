@@ -29,6 +29,16 @@ const useBoardStore = create((set) => ({
       boards: state.boards.filter((b) => b._id !== boardId),
     })),
 
+  mergeBoardsFromWorkspace: (workspaceBoards) =>
+    set((state) => {
+      const existingIds = new Set(state.boards.map(b => b._id));
+      const newBoards = workspaceBoards.filter(b => !existingIds.has(b._id));
+
+      return {
+        boards: [...state.boards, ...newBoards]
+      };
+    }),
+
   clearBoards: () =>
     set(() => ({
       boards: [],

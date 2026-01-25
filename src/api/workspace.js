@@ -4,6 +4,7 @@ const creatWorkspaceRoute = "/workspaces/create";
 const memberRoleRoute = "/members/role";
 const workspacesRoute = "/workspaces";
 const membersRoute = "/members";
+const joinRoute = "/join";
 
 export const workspaceApi = {
   async getMyWorkspaces() {
@@ -64,4 +65,26 @@ export const workspaceApi = {
       return err.response;
     }
   },
+  // JOIN
+  async getJoinRequests(id) {
+    try {
+      return await axiosClient.get(`${workspacesRoute}/${id}${joinRoute}`);
+    } catch (err) {
+      return err.response;
+    }
+  },
+  async joinWorkspace(id, data) {
+    try {
+      return await axiosClient.post(`${workspacesRoute}/${id}${joinRoute}`, data);
+    } catch (err) {
+      return err.response;
+    }
+  },
+  async handleJoinRequest(workspaceId, requestId, data) {
+    try {
+      return await axiosClient.patch(`${workspacesRoute}/${workspaceId}${joinRoute}/${requestId}`, data);
+    } catch (err) {
+      return err.response;
+    }
+  }
 };

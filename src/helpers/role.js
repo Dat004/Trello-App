@@ -15,7 +15,11 @@ export const getMyRole = (members) => {
   return member ? member.role : null;
 };
 
-export const getRoleText = (role) => {
+export const getRoleText = (role, memberId, owner) => {
+  if (memberId?.toString() === owner?.toString()) {
+    return "Chủ sở hữu";
+  }
+
   switch (role) {
     case "admin":
       return "Quản trị";

@@ -1,25 +1,25 @@
 import { useState, useEffect } from "react"
-import { LayoutGrid, Calendar, Users } from "lucide-react"
+import { LayoutGrid } from "lucide-react"
 import { formatRelative } from "date-fns"
 import { vi } from "date-fns/locale"
 
+import { useAuthStore, useBoardStore, useWorkspaceStore } from "@/store"
 import { getRoleVariant, getRoleText } from "@/helpers/role"
 import { resolvePermissions } from "@/helpers/permission"
 import BoardActions from "@/Pages/Boards/BoardActions"
-import { useAuthStore, useBoardStore } from "@/store"
 import { boardApi } from "@/api/board"
 import {
-    Badge,
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
+  Badge,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from "@/Components/UI"
 
 function BoardsInWorkspaceDialog({ workspace, trigger }) {
@@ -28,6 +28,7 @@ function BoardsInWorkspaceDialog({ workspace, trigger }) {
   const currentUser = useAuthStore((state) => state.user);
   const allBoards = useBoardStore((state) => state.boards);
   const mergeBoardsFromWorkspace = useBoardStore((state) => state.mergeBoardsFromWorkspace);
+  const members = useWorkspaceStore((state) => state.membersMap[workspace._id] || []);
   
   // Filter các board theo workspace
   const boards = allBoards.filter(b => b.workspace === workspace._id);
@@ -106,7 +107,7 @@ function BoardsInWorkspaceDialog({ workspace, trigger }) {
                 <section className="flex items-center gap-3">
                     <div className="flex items-center gap-1 text-xs">
                         Số thành viên:
-                        <Badge className="px-1.5 py-0" variant="secondary">{board.members.length > 0 ? board.members.length : workspace.members.length}</Badge>
+                        <Badge className="px-1.5 py-0" variant="secondary">{board.members.length > 0 ? board.members.length : members.length}</Badge>
                     </div>
                     <div className="flex items-center gap-1 text-xs ml-auto">
                         Cập nhật lần cuối:

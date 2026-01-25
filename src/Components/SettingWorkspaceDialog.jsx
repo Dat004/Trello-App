@@ -2,12 +2,12 @@ import { Settings, Trash2, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { workspaceSchema } from "@/schemas/workspaceSchema";
+import { useAuthStore, useWorkspaceStore } from "@/store";
 import { useWorkspace, useZodForm } from "@/hooks";
 import { UserToast } from "@/context/ToastContext";
 import { BACKGROUND_COLORS } from "@/config/theme";
 import { workspaceApi } from "@/api/workspace";
 import { getRoleText } from "@/helpers/role";
-import { useAuthStore } from "@/store";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,9 +42,13 @@ function SettingWorkspaceDialog({ workspace, trigger }) {
   const [activeTab, setActiveTab] = useState("general");
   const [isLoadingMembers, setIsLoadingMembers] = useState(false);
   const [open, setOpen] = useState(false);
-  const [members, setMembers] = useState([]);
   const [selectedColor, setSelectedColor] = useState(workspace.color);
-  const [editingRoles, setEditingRoles] = useState({});
+
+  // Global Store
+  const members = useWorkspaceStore((state) => state.membersMap[workspace._id] || []);
+  const setMembersStore = useWorkspaceStore((state) => state.setMembers);
+  const updateMemberInStore = useWorkspaceStore((state) => state.updateMemberInStore);
+  const removeMemberFromStore = useWorkspaceStore((state) => state.removeMemberFromStore);
 
   const { user } = useAuthStore();
   const { addToast } = UserToast();
@@ -68,24 +72,26 @@ function SettingWorkspaceDialog({ workspace, trigger }) {
   const isAdminWorkspace = myMember?.role === "admin";
 
   useEffect(() => {
-    if (activeTab === "members" && members.length === 0) {
+    if (open && activeTab === "members") {
+      const currentMembers = members;
+      if (currentMembers.length > 0) return;
+
       (async () => {
         setIsLoadingMembers(true);
         try {
           const result = await workspaceApi.getMemberInWorkspace(workspace._id);
           if (result.data.success) {
-            setMembers(result.data.data.members);
+            setMembersStore(workspace._id, result.data.data.members);
           }
         } finally {
           setIsLoadingMembers(false);
         }
       })();
     }
-  }, [activeTab, workspace._id]);
+  }, [activeTab, open, workspace._id]);
 
   useEffect(() => {
     setSelectedColor(workspace.color);
-
     setValue("name", workspace.name);
     setValue("description", workspace.description);
     setValue("max_members", workspace.max_members);
@@ -116,11 +122,7 @@ function SettingWorkspaceDialog({ workspace, trigger }) {
     });
 
     if (result.data.success) {
-      setMembers((prevMembers) =>
-        prevMembers.map((m) =>
-          m.user._id === member.user._id ? { ...m, role: role } : m
-        )
-      );
+      updateMemberInStore(workspace._id, member._id, { role });
     }
   };
 
@@ -137,9 +139,10 @@ function SettingWorkspaceDialog({ workspace, trigger }) {
     });
 
     if (result.data.success) {
-      setMembers((prevMembers) => [
-        ...prevMembers.filter((m) => m.user._id !== member_id),
-      ]);
+      const targetMember = members.find(m => m.user._id === member_id);
+      if (targetMember) {
+        removeMemberFromStore(workspace._id, targetMember._id);
+      }
     }
   };
 
@@ -349,12 +352,7 @@ function SettingWorkspaceDialog({ workspace, trigger }) {
                         <section className="flex items-center gap-3">
                           <div className="flex items-center gap-2">
                             {isOwner || isMe ? (
-                              <>
-                                {isOwner && <Badge>Chủ sở hữu</Badge>}
-                                {isMe && !isOwner && (
-                                  <Badge>{getRoleText(member.role)}</Badge>
-                                )}
-                              </>
+                              <Badge>{getRoleText(member.role, member.user._id, workspace.owner)}</Badge>
                             ) : (
                               <Select
                                 value={member.role}

@@ -1,4 +1,5 @@
 import { getMyRole } from "@/helpers/role";
+import { useWorkspaceStore } from "@/store";
 
 export function resolvePermissions({
   userId,
@@ -8,19 +9,24 @@ export function resolvePermissions({
 }) {
   const isBoardOwner = board.owner.toString() === userId;
 
+  // Workspace members from store
+  const workspaceMembers = workspace
+    ? (useWorkspaceStore.getState().membersMap[workspace._id] || [])
+    : [];
+
   // Workspace role
   const isWsOwner =
     workspace && workspace.owner.toString() === userId;
 
   const isWsAdmin =
     workspace &&
-    workspace.members.some(
-      (m) => m.user.toString() === userId && m.role === "admin"
+    workspaceMembers.some(
+      (m) => (m.user?._id || m.user).toString() === userId && m.role === "admin"
     );
 
   // Board role
   const boardRole = getMyRole(board.members);
-  const wsRole = workspace ? getMyRole(workspace.members) : null;
+  const wsRole = workspace ? getMyRole(workspaceMembers) : null;
   const role = boardRole || wsRole;
 
   let canDelete = isBoardOwner || isWsOwner || isWsAdmin;

@@ -9,10 +9,11 @@ import {
 } from "lucide-react";
 
 import BoardsInWorkspaceDialog from "@/Components/BoardsInWorkspaceDialog";
+import WorkspaceMembersDialog from "@/Components/WorkspaceMembersDialog";
 import SettingWorkspaceDialog from "@/Components/SettingWorkspaceDialog";
 import { getMyRole, getRoleText, getRoleVariant } from "@/helpers/role";
+import { useAuthStore, useWorkspaceStore } from "@/store";
 import { formatDateOnly } from "@/helpers/formatTime";
-import { useAuthStore } from "@/store";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,8 +33,10 @@ import {
 
 function WorkspaceItem({ workspace, onDelete }) {
   const { user } = useAuthStore();
+  const members = useWorkspaceStore((state) => state.membersMap[workspace._id] || []);
+  
   const isOwner = user._id === workspace.owner;
-  const role = getMyRole(workspace.members);
+  const role = getMyRole(members);
   const roleVariant = getRoleVariant(role);
 
   return (
@@ -129,7 +132,7 @@ function WorkspaceItem({ workspace, onDelete }) {
               </div>
               <div className="flex items-center gap-1">
                 <Users className="h-4 w-4 text-muted-foreground" />
-                <span>{workspace.members.length} thành viên</span>
+                <span>{members.length} thành viên</span>
               </div>
             </div>
           </div>
@@ -150,9 +153,15 @@ function WorkspaceItem({ workspace, onDelete }) {
                   Xem bảng
                 </Button>
               } />
-            <Button variant="outline" size="sm">
-              <Users className="h-4 w-4" />
-            </Button>
+          
+            <WorkspaceMembersDialog
+              workspace={workspace}
+              trigger={
+                <Button variant="outline" size="sm">
+                  <Users className="h-4 w-4" />
+                </Button>
+              }
+            />
           </div>
         </div>
       </CardContent>

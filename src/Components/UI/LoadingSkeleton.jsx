@@ -166,3 +166,40 @@ export function MembersSkeleton() {
     </div>
   );
 }
+
+export function WorkspaceMembersSkeleton({ count = 3 }) {
+  return (
+    <div className="space-y-2 max-h-[55vh] overflow-y-auto pr-2">
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className="flex items-center gap-3 p-3 rounded-lg border border-border/50 animate-pulse">
+          <div className="h-10 w-10 rounded-full bg-muted" />
+          <div className="flex-1 space-y-2">
+            <div className="h-4 w-24 bg-muted rounded" />
+            <div className="h-3 w-32 bg-muted rounded" />
+          </div>
+          <div className="h-5 w-16 bg-muted rounded" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function PendingRequestsSkeleton({ count = 2 }) {
+  return (
+    <div className="space-y-2 max-h-[55vh] overflow-y-auto pr-2">
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className="flex items-center gap-3 p-3 rounded-lg border border-border/50 animate-pulse">
+          <div className="h-10 w-10 rounded-full bg-muted" />
+          <div className="flex-1 space-y-2">
+            <div className="h-4 w-24 bg-muted rounded" />
+            <div className="h-3 w-32 bg-muted rounded" />
+          </div>
+          <div className="flex gap-2">
+            <div className="h-8 w-8 bg-muted rounded" />
+            <div className="h-8 w-8 bg-muted rounded" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}

@@ -99,7 +99,7 @@ const useWorkspaceStore = create((set) => ({
   updateWorkspace: (workspace) =>
     set((state) => ({
       workspaces: state.workspaces.map((ws) =>
-        ws._id === workspace._id ? workspace : ws
+        ws._id === workspace._id ? { ...ws, ...workspace } : ws
       ),
     })),
 

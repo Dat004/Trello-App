@@ -4,10 +4,12 @@ import { formatRelative } from "date-fns"
 import { vi } from "date-fns/locale"
 
 import { useAuthStore, useBoardStore, useWorkspaceStore } from "@/store"
+import AddBoardToWorkspaceDialog from "./AddBoardToWorkspaceDialog"
 import { getRoleVariant, getRoleText } from "@/helpers/role"
 import { resolvePermissions } from "@/helpers/permission"
 import BoardActions from "@/Pages/Boards/BoardActions"
 import { boardApi } from "@/api/board"
+import { cn } from "@/lib/utils"
 import {
   Badge,
   Card,
@@ -85,26 +87,27 @@ function BoardsInWorkspaceDialog({ workspace, trigger }) {
             <p className="text-muted-foreground">Chưa có bảng nào trong workspace này</p>
           </div>
         ) : (
-          <div className="space-y-4">
-            {boards.map((board) => (
-              <Card key={board._id} className="hover:shadow-md transition-shadow">
-                <CardHeader className="sm:pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <div className={`h-3 w-3 rounded ${board.color}`} />
-                        <CardTitle className="text-base">{board.title}</CardTitle>
+          <section className={cn("overflow-y-auto max-h-[300px]", boards.length > 2 && "pr-1.5")}>
+            <div className="space-y-4">
+              {boards.map((board) => (
+                <Card key={board._id} className="hover:shadow-md transition-shadow">
+                  <CardHeader className="sm:pb-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <div className={`h-3 w-3 rounded ${board.color}`} />
+                          <CardTitle className="text-base">{board.title}</CardTitle>
+                        </div>
                       </div>
+                      <section className="ml-auto flex items-center gap-2 flex-shrink-0">
+                          <Badge variant={getRoleVariant(currentUserRole(board))}>{getRoleText(currentUserRole(board))}</Badge>
+                          <BoardActions canDelete={canDelete} board={board} />
+                      </section>
                     </div>
-                    <section className="ml-auto flex items-center gap-2 flex-shrink-0">
-                        <Badge variant={getRoleVariant(currentUserRole(board))}>{getRoleText(currentUserRole(board))}</Badge>
-                        <BoardActions canDelete={canDelete} board={board} />
-                    </section>
-                  </div>
-                  {board.description && <p className="text-xs text-muted-foreground my-1.5">{board.description}</p>}
-                </CardHeader>
-                <CardContent className="sm:pt-3">
-                <section className="flex items-center gap-3">
+                    {board.description && <p className="text-xs text-muted-foreground my-1.5">{board.description}</p>}
+                  </CardHeader>
+                  <CardContent className="sm:pt-3">
+                  <section className="flex items-center gap-3">
                     <div className="flex items-center gap-1 text-xs">
                         Số thành viên:
                         <Badge className="px-1.5 py-0" variant="secondary">{board.members.length > 0 ? board.members.length : members.length}</Badge>
@@ -113,12 +116,17 @@ function BoardsInWorkspaceDialog({ workspace, trigger }) {
                         Cập nhật lần cuối:
                         <Badge className="px-1.5 py-0 capitalize" variant="destructive">{formatRelative(board.updated_at, new Date(), { locale: vi })}</Badge>
                     </div>
-                </section>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                  </section>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </section>
         )}
+
+        <section className="mt-4 flex">
+          <AddBoardToWorkspaceDialog workspaceId={workspace._id} />
+        </section>
       </DialogContent>
     </Dialog>
   )

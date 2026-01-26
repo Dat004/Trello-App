@@ -1,8 +1,37 @@
-import { useWorkspaceStore } from "@/store";
+import { useEffect } from "react";
+
+import { useAuthStore, useWorkspaceStore } from "@/store";
 import { UserToast } from "@/context/ToastContext";
 import { workspaceApi } from "@/api/workspace";
 
-function useWorkspace() {
+export const useWorkspaceInit = () => {
+  const setWorkspaces = useWorkspaceStore((s) => s.setWorkspaces);
+  const clearWorkspaces = useWorkspaceStore((s) => s.clearWorkspaces);
+  const user = useAuthStore((s) => s.user);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchWorkspaces = async () => {
+      try {
+        const res = await workspaceApi.getMyWorkspaces();
+
+        if (res.data?.success) {
+          setWorkspaces(res.data.data.workspaces);
+          return;
+        }
+
+        clearWorkspaces();
+      } catch {
+        clearWorkspaces();
+      }
+    };
+
+    fetchWorkspaces();
+  }, [user]);
+};
+
+export const useWorkspace = () => {
   const addWorkspace = useWorkspaceStore((s) => s.addWorkspace);
   const updateWorkspaceInStore = useWorkspaceStore((s) => s.updateWorkspace);
   const removeWorkspaceInStore = useWorkspaceStore((s) => s.removeWorkspace);
@@ -51,6 +80,4 @@ function useWorkspace() {
   };
 
   return { createWorkspace, updateWorkspace, removeWorkspace };
-}
-
-export default useWorkspace;
+};

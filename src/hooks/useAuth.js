@@ -1,8 +1,31 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { UserToast } from "@/context/ToastContext";
 import { useAuthStore } from "@/store";
 import { authApi } from "@/api/auth";
+import { userApi } from "@/api/user";
+
+export const useAuthInit = () => {
+  const setUser = useAuthStore((s) => s.setUser);
+  const clearUser = useAuthStore((s) => s.clearUser);
+
+  useEffect(() => {
+    const initAuth = async () => {
+      const res = await userApi.me();
+
+      if (res.data.success) {
+        setUser(res.data.data.user);
+
+        return;
+      }
+
+      clearUser();
+    };
+
+    initAuth();
+  }, []);
+};
 
 export const useAuth = () => {
   const navigate = useNavigate();
@@ -81,5 +104,3 @@ export const useAuth = () => {
 
   return { login, register, logout };
 };
-
-export default useAuth;

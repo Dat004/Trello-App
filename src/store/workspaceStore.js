@@ -34,6 +34,14 @@ const useWorkspaceStore = create((set) => ({
       },
     })),
 
+  addMemberToStore: (workspaceId, member) =>
+    set((state) => ({
+      membersMap: {
+        ...state.membersMap,
+        [workspaceId]: [...(state.membersMap[workspaceId] || []), member],
+      },
+    })),
+
   updateMemberInStore: (workspaceId, memberId, updatedData) =>
     set((state) => ({
       membersMap: {

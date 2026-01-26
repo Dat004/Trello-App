@@ -2,8 +2,11 @@ import { useAuthInit, useWorkspaceInit, useBoardInit } from "@/hooks";
 
 const AppInitializer = ({ children }) => {
   useAuthInit();
-  useWorkspaceInit();
-  useBoardInit();
+
+  Promise.all([
+    useWorkspaceInit(),
+    useBoardInit(),
+  ])
   
   return children;
 };

@@ -4,6 +4,7 @@ const creatWorkspaceRoute = "/workspaces/create";
 const memberRoleRoute = "/members/role";
 const workspacesRoute = "/workspaces";
 const membersRoute = "/members";
+const boardsRoute = "/boards";
 const joinRoute = "/join";
 
 export const workspaceApi = {
@@ -31,6 +32,13 @@ export const workspaceApi = {
   async delete(id) {
     try {
       return await axiosClient.delete(`${workspacesRoute}/${id}`);
+    } catch (err) {
+      return err.response;
+    }
+  },
+  async addBoardsToWorkspace(id, data) {
+    try {
+      return await axiosClient.post(`${workspacesRoute}/${id}${boardsRoute}`, data);
     } catch (err) {
       return err.response;
     }

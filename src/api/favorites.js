@@ -14,14 +14,14 @@ export const favoritesApi = {
     },
     async toggleStarWorkspace(workspaceId) {
         try {
-            return await axiosClient.post(`${favoritesRoute}${workspacesRoute}/${workspaceId}`);
+            return await axiosClient.patch(`${favoritesRoute}${workspacesRoute}/${workspaceId}`);
         } catch (err) {
             return err.response;
         }
     },
     async toggleStarBoard(boardId) {
         try {
-            return await axiosClient.post(`${favoritesRoute}${boardsRoute}/${boardId}`);
+            return await axiosClient.patch(`${favoritesRoute}${boardsRoute}/${boardId}`);
         } catch (err) {
             return err.response;
         }

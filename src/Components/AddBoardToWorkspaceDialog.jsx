@@ -1,8 +1,8 @@
 import { useState } from "react"
 import { Check, LayoutGrid, Plus, X } from "lucide-react"
 
+import { useZodForm, useBoard, useApiMutation, useBoardsWithFavorites } from "@/hooks";
 import { useBoardStore, useAuthStore, useWorkspaceStore } from "@/store";
-import { useZodForm, useBoard, useApiMutation } from "@/hooks";
 import { boardSchema } from "@/schemas/boardSchema";
 import { BACKGROUND_COLORS } from "@/config/theme";
 import { workspaceApi } from "@/api/workspace";
@@ -35,7 +35,7 @@ function AddBoardToWorkspaceDialog({ trigger, workspaceId }) {
   const [selectedBoards, setSelectedBoards] = useState(new Set())
 
   const user = useAuthStore((s) => s.user);
-  const boards = useBoardStore((s) => s.boards || []);
+  const boards = useBoardsWithFavorites();
   const updateBoard = useBoardStore((s) => s.updateBoard);
   const availableBoards = boards.filter((board) => {
     // Phải là bảng chưa thuộc workspace nào

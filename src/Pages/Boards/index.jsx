@@ -3,6 +3,7 @@ import { Search, Star, Grid3x3, List, X } from "lucide-react";
 
 import { BoardSkeleton } from "@/Components/UI/LoadingSkeleton";
 import BoardFormDialog from "@/Components/BoardFormDialog";
+import { useBoardsWithFavorites } from "@/hooks";
 import { Input, Button } from "@/Components/UI";
 import BoardCard from "@/Components/BoardCard";
 import CreateNewBoard from "./CreateNewBoard";
@@ -13,7 +14,7 @@ function Boards() {
   const [filterStarred, setFilterStarred] = useState(false);
   const [viewMode, setViewMode] = useState("grid");
 
-  const boards = useBoardStore(s => s.boards);
+  const boards = useBoardsWithFavorites();
   const loading = useBoardStore(s => s.loading);
 
   return (

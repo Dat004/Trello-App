@@ -3,10 +3,10 @@ import {
 } from "lucide-react";
 
 import CreateWorkspaceDialog from "@/Components/CreateWorkspaceDialog";
+import { useWorkspace, useWorkspacesWithFavorites } from "@/hooks";
 import WorkspaceStats from "./WorkspaceStats";
 import WorkspaceItem from "./WorkspaceItem";
 import { useWorkspaceStore } from "@/store";
-import { useWorkspace } from "@/hooks";
 import {
   Card,
   CardContent,
@@ -15,16 +15,13 @@ import {
 } from "@/Components/UI";
 
 function Workspaces() {
-  const { loading, workspaces } = useWorkspaceStore();
+  const workspaces = useWorkspacesWithFavorites();
+  const loading = useWorkspaceStore((s) => s.loading);
   const { removeWorkspace } = useWorkspace();
-
-  const handleToggleStar = (id) => {};
 
   const handleDeleteWorkspace = async (id) => {
     await removeWorkspace(id);
   };
-
-  const handleUpdateWorkspace = (id) => {};
 
   return (
     <>

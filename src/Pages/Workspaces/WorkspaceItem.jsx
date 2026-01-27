@@ -6,6 +6,7 @@ import {
   MoreHorizontal,
   Activity,
   Trash2,
+  Loader2
 } from "lucide-react";
 
 import BoardsInWorkspaceDialog from "@/Components/BoardsInWorkspaceDialog";
@@ -14,6 +15,8 @@ import SettingWorkspaceDialog from "@/Components/SettingWorkspaceDialog";
 import { getMyRole, getRoleText, getRoleVariant } from "@/helpers/role";
 import { useAuthStore, useWorkspaceStore } from "@/store";
 import { formatDateOnly } from "@/helpers/formatTime";
+import { useFavorites } from "@/hooks";
+import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,6 +36,9 @@ import {
 
 function WorkspaceItem({ workspace, onDelete }) {
   const { user } = useAuthStore();
+  const { toggleWorkspaceStar, isTogglingWorkspace } = useFavorites({
+    workspaceId: workspace._id
+  });
   const members = useWorkspaceStore((state) => state.membersMap[workspace._id] || []);
   
   const isOwner = user._id === workspace.owner;
@@ -63,54 +69,62 @@ function WorkspaceItem({ workspace, onDelete }) {
                 >
                   {isOwner ? "Chủ sở hữu" : getRoleText(role)}
                 </Badge>
-                {workspace.is_starred && (
-                  <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                )}
               </div>
             </div>
           </div>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <SettingWorkspaceDialog
-                workspace={workspace}
-                onUpdateWorkspace={(data) =>
-                  handleUpdateWorkspace(workspace._id, data)
-                }
-                trigger={
-                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                    <Settings className="h-4 w-4 mr-2" />
-                    Cài đặt
-                  </DropdownMenuItem>
-                }
-              />
-              <DropdownMenuItem onClick={() => handleToggleStar(workspace._id)}>
-                <Star className="h-4 w-4 mr-2" />
-                {workspace.is_starred ? "Bỏ yêu thích" : "Yêu thích"}
-              </DropdownMenuItem>
-              {workspace.owner === user._id && (
-                <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    className="text-destructive"
-                    onClick={() => onDelete(workspace._id)}
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Xóa workspace
-                  </DropdownMenuItem>
-                </>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <section className="flex items-center gap-2">
+            {workspace.is_starred && (
+              <span className="cursor-pointer" onClick={() => toggleWorkspaceStar(workspace)}>
+                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+              </span>
+            )}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                >
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <SettingWorkspaceDialog
+                  workspace={workspace}
+                  onUpdateWorkspace={(data) =>
+                    handleUpdateWorkspace(workspace._id, data)
+                  }
+                  trigger={
+                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                      <Settings className="h-4 w-4 mr-2" />
+                      Cài đặt
+                    </DropdownMenuItem>
+                  }
+                />
+                <DropdownMenuItem onClick={() => toggleWorkspaceStar(workspace)}>
+                  {isTogglingWorkspace ? (
+                    <Loader2 className="h-3 w-3 animate-spin text-primary" />
+                  ) : (
+                    <Star className={cn("h-4 w-4 mr-2", workspace.is_starred && "fill-yellow-400 text-yellow-400")} />
+                  )}
+                  {workspace.is_starred ? "Bỏ yêu thích" : "Yêu thích"}
+                </DropdownMenuItem>
+                {workspace.owner === user._id && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      className="text-destructive"
+                      onClick={() => onDelete(workspace._id)}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Xóa workspace
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </section>
         </div>
       </CardHeader>
 

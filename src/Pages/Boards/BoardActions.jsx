@@ -1,9 +1,8 @@
-import { useState } from "react";
 import { Star, MoreHorizontal, Edit, Trash2, Loader2 } from "lucide-react";
 
 import BoardFormDialog from "@/Components/BoardFormDialog";
 import DeleteDialog from "@/Components/DeleteDialog";
-import { useBoard } from "@/hooks";
+import { useBoard, useFavorites } from "@/hooks";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
@@ -16,12 +15,13 @@ import {
 
 const BoardActions = ({ board, canDelete }) => {
   const { removeBoard } = useBoard();
-  const [isStarLoading, setIsStarLoading] = useState(false);
+  const { toggleBoardStar, isTogglingBoard } = useFavorites();
 
-  // Xử lý Star
-  const handleToggleStar = async (e) => {
-    e.stopPropagation();
+  const handleToggleStar = (e) => {
     e.preventDefault();
+    e.stopPropagation();
+
+    toggleBoardStar(board);
   };
 
   return (
@@ -30,11 +30,11 @@ const BoardActions = ({ board, canDelete }) => {
       <Button
         size="sm"
         variant="ghost"
-        className="h-6 w-6 p-0 hover:bg-transparent"
-        onClick={handleToggleStar}
-        disabled={isStarLoading}
+        className="h-6 w-6 p-0 cursor-pointer hover:bg-transparent"
+        onClick={(e) => handleToggleStar(e)}
+        disabled={isTogglingBoard}
       >
-        {isStarLoading ? (
+        {isTogglingBoard ? (
           <Loader2 className="h-3 w-3 animate-spin text-primary" />
         ) : (
           <Star

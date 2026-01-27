@@ -8,6 +8,7 @@ import AddBoardToWorkspaceDialog from "./AddBoardToWorkspaceDialog"
 import { getRoleVariant, getRoleText } from "@/helpers/role"
 import { resolvePermissions } from "@/helpers/permission"
 import BoardActions from "@/Pages/Boards/BoardActions"
+import { useBoardsWithFavorites } from "@/hooks"
 import { boardApi } from "@/api/board"
 import { cn } from "@/lib/utils"
 import {
@@ -28,7 +29,7 @@ function BoardsInWorkspaceDialog({ workspace, trigger }) {
   const [open, setOpen] = useState(false);
 
   const currentUser = useAuthStore((state) => state.user);
-  const allBoards = useBoardStore((state) => state.boards);
+  const allBoards = useBoardsWithFavorites();
   const mergeBoardsFromWorkspace = useBoardStore((state) => state.mergeBoardsFromWorkspace);
   const members = useWorkspaceStore((state) => state.membersMap[workspace._id] || []);
   

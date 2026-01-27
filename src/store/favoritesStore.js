@@ -7,24 +7,32 @@ const useFavoritesStore = create((set) => ({
 
     setFavorites: (data) =>
         set({
-            favoriteWorkspaces: data.workspaces || [],
-            favoriteBoards: data.boards || [],
+            favoriteWorkspaces: data.starred_workspaces || [],
+            favoriteBoards: data.starred_boards || [],
             loading: false,
         }),
 
-    toggleWorkspaceFavorite: (workspaceId) =>
-        set((state) => ({
-            favoriteWorkspaces: state.favoriteWorkspaces.includes(workspaceId)
-                ? state.favoriteWorkspaces.filter((id) => id !== workspaceId)
-                : [...state.favoriteWorkspaces, workspaceId],
-        })),
+    toggleWorkspaceFavorite: (workspace) =>
+        set((state) => {
+            const exists = state.favoriteWorkspaces.some(ws => ws._id === workspace._id);
 
-    toggleBoardFavorite: (boardId) =>
-        set((state) => ({
-            favoriteBoards: state.favoriteBoards.includes(boardId)
-                ? state.favoriteBoards.filter((id) => id !== boardId)
-                : [...state.favoriteBoards, boardId],
-        })),
+            return {
+                favoriteWorkspaces: exists
+                    ? state.favoriteWorkspaces.filter((ws) => ws._id !== workspace._id)
+                    : [...state.favoriteWorkspaces, workspace],
+            };
+        }),
+
+    toggleBoardFavorite: (board) =>
+        set((state) => {
+            const exists = state.favoriteBoards.some(b => b._id === board._id);
+
+            return {
+                favoriteBoards: exists
+                    ? state.favoriteBoards.filter((b) => b._id !== board._id)
+                    : [...state.favoriteBoards, board],
+            };
+        }),
 
     clearFavorites: () =>
         set({

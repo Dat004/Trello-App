@@ -1,6 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 
-import { useAuthStore, useWorkspaceStore } from "@/store";
+import { useAuthStore, useFavoritesStore, useWorkspaceStore } from "@/store";
 import { UserToast } from "@/context/ToastContext";
 import { workspaceApi } from "@/api/workspace";
 
@@ -29,6 +29,20 @@ export const useWorkspaceInit = () => {
 
     fetchWorkspaces();
   }, [user]);
+};
+
+export const useWorkspacesWithFavorites = () => {
+  const workspaces = useWorkspaceStore((s) => s.workspaces);
+  const favoriteWorkspaces = useFavoritesStore((s) => s.favoriteWorkspaces);
+
+  return useMemo(
+    () =>
+      workspaces.map((ws) => ({
+        ...ws,
+        is_starred: favoriteWorkspaces.some((fw) => fw._id === ws._id),
+      })),
+    [workspaces, favoriteWorkspaces]
+  );
 };
 
 export const useWorkspace = () => {

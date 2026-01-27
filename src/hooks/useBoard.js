@@ -1,6 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 
-import { useAuthStore, useBoardStore } from "@/store";
+import { useAuthStore, useBoardStore, useFavoritesStore } from "@/store";
 import { UserToast } from "@/context/ToastContext";
 import { boardApi } from "@/api/board";
 
@@ -25,6 +25,20 @@ export const useBoardInit = () => {
 
     fetchBoards();
   }, [user]);
+};
+
+export const useBoardsWithFavorites = () => {
+  const boards = useBoardStore((s) => s.boards);
+  const favoriteBoards = useFavoritesStore((s) => s.favoriteBoards);
+
+  return useMemo(
+    () =>
+      boards.map((board) => ({
+        ...board,
+        is_starred: favoriteBoards.some((fb) => fb._id === board._id),
+      })),
+    [boards, favoriteBoards]
+  );
 };
 
 export const useBoard = () => {

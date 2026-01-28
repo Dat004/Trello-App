@@ -1,77 +1,76 @@
 import { useState, useEffect } from "react";
-import { Search, Filter, Star, Eye, Copy, TrendingUp } from "lucide-react";
+import { Search, Star, TrendingUp } from "lucide-react";
 
 import {
   Button,
-  Input,
-  Badge,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   TemplatesSkeleton,
   PopularTemplatesSkeleton,
 } from "@/Components/UI";
-import CreateBoardFromTemplateDialog from "@/Components/CreateBoardFromTemplateDialog";
-import TemplatePreviewDialog from "@/Components/TemplatePreviewDialog";
-import { templateData } from "./data";
+import { templatesApi } from "@/api/templates";
+import TemplateItems from "./TemplateItems";
 
 function Templates() {
   const [isLoading, setIsLoading] = useState(true);
+  const [templates, setTemplates] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [popularTemplates, setPopularTemplates] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [templates, setTemplates] = useState(templateData || []);
 
-  // Simulate loading
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1000);
-    return () => clearTimeout(timer);
+    setIsLoading(true);
+
+    const fetchTemplates = async () => {
+      const [templates, popularTemplates] = await Promise.all([
+        templatesApi.getAllTemplates(),
+        templatesApi.getPopularTemplates(),
+      ])
+      
+      setTemplates(templates.data.data.templates);
+      setPopularTemplates(popularTemplates.data.data.templates);
+      
+      setIsLoading(false);
+    };
+
+    fetchTemplates();
   }, []);
 
-  const categories = [
-    { value: "all", label: "Tất cả" },
-    { value: "project-management", label: "Quản lý dự án" },
-    { value: "development", label: "Phát triển" },
-    { value: "marketing", label: "Marketing" },
-    { value: "personal", label: "Cá nhân" },
-    { value: "team", label: "Nhóm" },
-    { value: "event", label: "Sự kiện" },
-    { value: "product", label: "Sản phẩm" },
-    { value: "content", label: "Nội dung" },
-    { value: "hr", label: "Nhân sự" },
-  ];
+  // const categories = [
+  //   { value: "all", label: "Tất cả" },
+  //   { value: "project-management", label: "Quản lý dự án" },
+  //   { value: "development", label: "Phát triển" },
+  //   { value: "marketing", label: "Marketing" },
+  //   { value: "personal", label: "Cá nhân" },
+  //   { value: "team", label: "Nhóm" },
+  //   { value: "event", label: "Sự kiện" },
+  //   { value: "product", label: "Sản phẩm" },
+  //   { value: "content", label: "Nội dung" },
+  //   { value: "hr", label: "Nhân sự" },
+  // ];
 
-  const handleUseTemplate = (template, boardName, workspaceId) => {
-    // Tăng usage count
-    setTemplates((prev) =>
-      prev.map((t) =>
-        t.id === template.id ? { ...t, usageCount: (t.usageCount || 0) + 1 } : t
-      )
-    );
+  // const handleUseTemplate = (template, boardName, workspaceId) => {
+  //   // Tăng usage count
+  //   setTemplates((prev) =>
+  //     prev.map((t) =>
+  //       t.id === template.id ? { ...t, usageCount: (t.usageCount || 0) + 1 } : t
+  //     )
+  //   );
 
-    // Navigate to the new board
-  };
+  //   // Navigate to the new board
+  // };
 
-  const filteredTemplates = templates.filter((template) => {
-    const matchesSearch =
-      template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      template.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      template.tags.some((tag) =>
-        tag.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    const matchesCategory =
-      selectedCategory === "all" || template.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  // const filteredTemplates = templates.filter((template) => {
+  //   const matchesSearch =
+  //     template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //     template.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //     template.tags.some((tag) =>
+  //       tag.toLowerCase().includes(searchQuery.toLowerCase())
+  //     );
+  //   const matchesCategory =
+  //     selectedCategory === "all" || template.category === selectedCategory;
+  //   return matchesSearch && matchesCategory;
+  // });
 
-  const popularTemplates = templates.filter((t) => t.isPopular).slice(0, 3);
-  const totalUsage = templates.reduce((sum, t) => sum + (t.usageCount || 0), 0);
+  const totalUsage = popularTemplates.reduce((sum, t) => sum + (t.usage_count || 0), 0);
 
   return (
     <>
@@ -88,7 +87,7 @@ function Templates() {
         </section>
         <section className="sm:ml-auto flex items-center gap-2 text-sm text-muted-foreground">
           <TrendingUp className="h-4 w-4" />
-          <span>{totalUsage.toLocaleString()} lượt sử dụng</span>
+          <span>{totalUsage} lượt sử dụng</span>
         </section>
       </div>
 
@@ -109,78 +108,7 @@ function Templates() {
             </h2>
             <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {popularTemplates.map((template) => (
-                <Card
-                  key={template.id}
-                  className="group hover:shadow-lg transition-all duration-200 hover:-translate-y-1"
-                >
-                  <CardHeader className="pb-3">
-                    <section className="flex items-center gap-3">
-                      <section
-                        className={`h-10 w-10 rounded-lg ${template.color} flex items-center justify-center`}
-                      >
-                        <div className="text-white">
-                          {<template.icon className="h-5 w-5" />}
-                        </div>
-                      </section>
-                      <section className="flex-1">
-                        <CardTitle className="text-lg">
-                          {template.name}
-                        </CardTitle>
-                        <section className="flex items-center gap-2 mt-1">
-                          <Badge variant="secondary" className="text-xs leading-[1.15]">
-                            {template.popularity}% phổ biến
-                          </Badge>
-                          <span className="text-xs text-muted-foreground">
-                            {template.usageCount?.toLocaleString()} lượt dùng
-                          </span>
-                        </section>
-                      </section>
-                    </section>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <CardDescription className="mb-4 line-clamp-2">
-                      {template.description}
-                    </CardDescription>
-                    <section className="flex gap-2 mb-4">
-                      <TemplatePreviewDialog
-                        template={template}
-                        trigger={
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="leading-1.5 gap-2 text-xs bg-transparent h-8 sm:h-9"
-                          >
-                            <Eye className="h-4 w-4" />
-                            Xem trước
-                          </Button>
-                        }
-                      />
-                      <CreateBoardFromTemplateDialog
-                        template={template}
-                        onCreateBoard={handleUseTemplate}
-                      >
-                        <Button
-                          size="sm"
-                          className="leading-1.5 gap-2 text-xs flex-1 h-8 sm:h-9"
-                        >
-                          <Copy className="h-4 w-4" />
-                          Sử dụng mẫu
-                        </Button>
-                      </CreateBoardFromTemplateDialog>
-                    </section>
-                    <div className="flex flex-wrap gap-1">
-                      {template.tags.slice(0, 3).map((tag) => (
-                        <Badge
-                          key={tag}
-                          variant="outline"
-                          className="text-xs leading-[1.15]"
-                        >
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
+                <TemplateItems key={template._id} template={template} isPopular />
               ))}
             </section>
           </section>
@@ -188,7 +116,7 @@ function Templates() {
       </section>
 
       {/* Search and Filter */}
-      <section className="mb-6">
+      {/* <section className="mb-6">
         <section className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -213,7 +141,7 @@ function Templates() {
             </SelectContent>
           </Select>
         </section>
-      </section>
+      </section> */}
 
       {/* All Templates */}
       <section>
@@ -229,12 +157,12 @@ function Templates() {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold">
                 {searchQuery || selectedCategory !== "all"
-                  ? `Kết quả (${filteredTemplates.length})`
+                  ? `Kết quả (${templates.length})`
                   : "Tất cả mẫu"}
               </h2>
             </div>
 
-            {filteredTemplates.length === 0 ? (
+            {templates.length === 0 ? (
               <section className="text-center py-12">
                 <section className="max-w-md mx-auto">
                   <div className="h-24 w-24 rounded-full bg-muted flex items-center justify-center mx-auto mb-6">
@@ -259,99 +187,14 @@ function Templates() {
               </section>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {filteredTemplates.map((template, index) => (
-                  <Card
-                    key={template.id}
-                    className="group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 animate-slide-in-up"
+                {templates.map((template, index) => (
+                  <section
+                    key={template._id}
+                    className="group transition-all duration-200 hover:-translate-y-1 animate-slide-in-up"
                     style={{ animationDelay: `${index * 50}ms` }}
                   >
-                    <CardHeader className="pb-3">
-                      <section className="flex items-start justify-between">
-                        <section className="flex items-center gap-3">
-                          <section
-                            className={`h-10 w-10 rounded-lg ${template.color} flex items-center justify-center`}
-                          >
-                            <div className="text-white">
-                              {<template.icon className="h-5 w-5" />}
-                            </div>
-                          </section>
-                          <section className="flex-1">
-                            <CardTitle className="text-base">
-                              {template.name}
-                            </CardTitle>
-                            <div className="flex items-center gap-2 mt-1">
-                              {template.isPopular && (
-                                <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                              )}
-                              <span className="text-xs text-muted-foreground">
-                                {template.usageCount?.toLocaleString()} lượt
-                                dùng
-                              </span>
-                            </div>
-                          </section>
-                        </section>
-                      </section>
-                    </CardHeader>
-
-                    <CardContent className="pt-0">
-                      <CardDescription className="mb-3 line-clamp-2 text-sm">
-                        {template.description}
-                      </CardDescription>
-
-                      <section className="mb-3">
-                        <p className="text-xs text-muted-foreground mb-2">
-                          Các cột:
-                        </p>
-                        <section className="flex flex-wrap gap-1">
-                          {template.lists.slice(0, 3).map((list) => (
-                            <Badge
-                              key={list.id}
-                              variant="outline"
-                              className="text-xs leading-[1.15]"
-                            >
-                              {list.name}
-                            </Badge>
-                          ))}
-                          {template.lists.length > 3 && (
-                            <Badge
-                              variant="outline"
-                              className="text-xs leading-[1.15]"
-                            >
-                              +{template.lists.length - 3}
-                            </Badge>
-                          )}
-                        </section>
-                      </section>
-
-                      <section className="flex gap-2">
-                        <TemplatePreviewDialog
-                          template={template}
-                          trigger={
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="leading-1.5 gap-1 text-xs flex-1 bg-transparent h-8 sm:h-9"
-                            >
-                              <Eye className="h-3 w-3" />
-                              Xem
-                            </Button>
-                          }
-                        />
-                        <CreateBoardFromTemplateDialog
-                          template={template}
-                          onCreateBoard={handleUseTemplate}
-                        >
-                          <Button
-                            size="sm"
-                            className="leading-1.5 text-xs gap-1 flex-1 h-8 sm:h-9"
-                          >
-                            <Copy className="h-3 w-3" />
-                            Dùng
-                          </Button>
-                        </CreateBoardFromTemplateDialog>
-                      </section>
-                    </CardContent>
-                  </Card>
+                    <TemplateItems template={template} />
+                  </section>
                 ))}
               </div>
             )}

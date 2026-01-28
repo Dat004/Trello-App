@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { Copy, Building2 } from "lucide-react";
 
+import { useWorkspaceStore, useBoardStore } from "@/store";
+import { getCategoryIcon } from "@/helpers/fileIcon";
+import { templatesApi } from "@/api/templates";
+import { useApiMutation } from "@/hooks";
 import {
   Button,
   Input,
@@ -20,37 +24,56 @@ import {
   SelectValue,
 } from "./UI";
 
-function CreateBoardFromTemplateDialog({ template, children, onCreateBoard }) {
+function CreateBoardFromTemplateDialog({ template, trigger }) {
   const [open, setOpen] = useState(false);
-  const [boardName, setBoardName] = useState(
+  const [boardTitle, setBoardTitle] = useState(
     `${template.name} - ${new Date().toLocaleDateString()}`
   );
-  const [selectedWorkspace, setSelectedWorkspace] = useState("1");
+  const [selectedWorkspace, setSelectedWorkspace] = useState(null);
 
-  // Mock workspaces data
-  const workspaces = [
-    { id: "1", name: "Công ty ABC", color: "bg-blue-500" },
-    { id: "2", name: "Dự án cá nhân", color: "bg-green-500" },
-    { id: "3", name: "Team Marketing", color: "bg-purple-500" },
-  ];
+  const ICON = getCategoryIcon[template.category];
+  const addBoard = useBoardStore(state => state.addBoard);
+  const workspaces = useWorkspaceStore(state => state.workspaces);
+  const updateWorkspace = useWorkspaceStore(state => state.updateWorkspace);
+
+  const { mutate: createBoardFromTemplate } = useApiMutation(
+    (data) => templatesApi.createBoardFromTemplate(template._id, data),
+    (response) => {
+      // Add board to store
+      addBoard(response.board)
+      
+      // Update board count in workspace
+      if (selectedWorkspace) {
+        updateWorkspace({
+          _id: selectedWorkspace,
+          board_count: workspaces.find(ws => ws._id === selectedWorkspace)?.board_count + 1
+        })
+      }
+
+      setOpen(false);
+    }
+  );
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!boardName.trim()) return;
+    if (!boardTitle.trim()) return;
 
-    onCreateBoard(template, boardName.trim(), selectedWorkspace);
-    setOpen(false);
+    createBoardFromTemplate({
+      title: boardTitle,
+      workspaceId: selectedWorkspace,
+    });
   };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
             <section
               className={`h-8 w-8 rounded-lg ${template.color} flex items-center justify-center`}
             >
-              <div className="text-white text-sm">{<template.icon className="h-5 w-5" />}</div>
+              <div className="text-white text-sm">{<ICON className="h-5 w-5" />}</div>
             </section>
             Tạo bảng từ mẫu
           </DialogTitle>
@@ -71,7 +94,7 @@ function CreateBoardFromTemplateDialog({ template, children, onCreateBoard }) {
             </section>
             <section className="flex flex-wrap gap-1">
               {template.lists.map((list) => (
-                <Badge key={list.id} variant="outline" className="text-xs">
+                <Badge key={list._id} variant="outline" className="text-xs">
                   {list.name}
                 </Badge>
               ))}
@@ -79,12 +102,12 @@ function CreateBoardFromTemplateDialog({ template, children, onCreateBoard }) {
           </section>
 
           <div className="space-y-2">
-            <Label htmlFor="boardName">Tên bảng</Label>
+            <Label htmlFor="boardTitle">Tên bảng</Label>
             <Input
-              id="boardName"
+              id="boardTitle"
               placeholder="Nhập tên bảng..."
-              value={boardName}
-              onChange={(e) => setBoardName(e.target.value)}
+              value={boardTitle}
+              onChange={(e) => setBoardTitle(e.target.value)}
               required
             />
           </div>
@@ -101,7 +124,7 @@ function CreateBoardFromTemplateDialog({ template, children, onCreateBoard }) {
               </SelectTrigger>
               <SelectContent>
                 {workspaces.map((workspace) => (
-                  <SelectItem key={workspace.id} value={workspace.id}>
+                  <SelectItem key={workspace._id} value={workspace._id}>
                     <div className="flex items-center gap-2">
                       <div
                         className={`h-3 w-3 rounded-full ${workspace.color}`}
@@ -125,7 +148,7 @@ function CreateBoardFromTemplateDialog({ template, children, onCreateBoard }) {
             </Button>
             <Button
               type="submit"
-              disabled={!boardName.trim()}
+              disabled={!boardTitle.trim()}
               className="leading-1.5 gap-2"
             >
               <Copy className="h-4 w-4" />

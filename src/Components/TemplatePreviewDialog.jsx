@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Copy, Eye, Star } from "lucide-react";
 
+import CreateBoardFromTemplateDialog from "@/Components/CreateBoardFromTemplateDialog";
+import { getCategoryIcon } from "@/helpers/fileIcon";
 import {
   Button,
   Badge,
@@ -18,10 +20,11 @@ import {
 } from "./UI";
 
 function TemplatePreviewDialog({ trigger, template }) {
+  const ICON = getCategoryIcon[template.category];
   const [open, setOpen] = useState(false);
 
   const useTemplate = () => {
-    console.log("Using template:", template.id);
+    console.log("Using template:", template._id);
     setOpen(false);
   };
 
@@ -31,16 +34,17 @@ function TemplatePreviewDialog({ trigger, template }) {
 
       <DialogContent className="sm:max-w-[800px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
+          {/* <section className={cn("h-2", list.color)} /> */}
           <DialogTitle className="flex items-center gap-3">
             <section
               className={`h-8 w-8 rounded-lg ${template.color} flex items-center justify-center`}
             >
               <div className="text-white text-sm">
-                {<template.icon className="h-5 w-5" />}
+                {<ICON className="h-5 w-5" />}
               </div>
             </section>
             {template.name}
-            {template.isPopular && (
+            {template.is_popular && (
               <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
             )}
           </DialogTitle>
@@ -50,7 +54,7 @@ function TemplatePreviewDialog({ trigger, template }) {
         <section className="space-y-4">
           {/* Template Info */}
           <section className="flex items-center gap-4">
-            <Badge variant="secondary">{template.popularity}% phổ biến</Badge>
+            <Badge variant="secondary">{template.popularity_score}% phổ biến</Badge>
             <section className="flex gap-1">
               {template.tags.map((tag) => (
                 <Badge key={tag} variant="outline" className="text-xs">
@@ -71,7 +75,7 @@ function TemplatePreviewDialog({ trigger, template }) {
               <section className="flex gap-4 overflow-x-auto pb-2">
                 {template.lists.map((listName) => (
                   <Card
-                    key={listName.id}
+                    key={listName._id}
                     className="min-w-[250px] bg-background"
                   >
                     <CardHeader className="pb-3">
@@ -83,7 +87,7 @@ function TemplatePreviewDialog({ trigger, template }) {
                       <div className="space-y-2">
                         {listName.example_cards.map((card) => (
                           <div
-                            key={card.id}
+                            key={card._id}
                             className="p-2 bg-card border rounded text-xs text-card-foreground"
                           >
                             {card.title}
@@ -108,7 +112,7 @@ function TemplatePreviewDialog({ trigger, template }) {
             <section className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {template.lists.map((list, index) => (
                 <section
-                  key={list.id}
+                  key={list._id}
                   className="flex items-center gap-2 p-2 border rounded"
                 >
                   <div className="h-2 w-2 rounded-full bg-primary" />
@@ -134,10 +138,15 @@ function TemplatePreviewDialog({ trigger, template }) {
           <Button variant="outline" onClick={() => setOpen(false)}>
             Đóng
           </Button>
-          <Button onClick={useTemplate} className="leading-1.5 gap-2">
-            <Copy className="h-4 w-4" />
-            Sử dụng mẫu này
-          </Button>
+          <CreateBoardFromTemplateDialog
+            template={template}
+            trigger={
+              <Button className="leading-1.5 gap-2">
+                <Copy className="h-4 w-4" />
+                Sử dụng mẫu này
+              </Button>
+            }
+          />
         </DialogFooter>
       </DialogContent>
     </Dialog>

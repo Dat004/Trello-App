@@ -82,7 +82,7 @@ const BoardActions = ({ board, canDelete }) => {
               <DeleteDialog
                 title="Xóa bảng này?"
                 description={`Bạn có chắc muốn xóa bảng "${board.title}"? Hành động này không thể hoàn tác.`}
-                onConfirm={() => removeBoard(board._id)}
+                onConfirm={() => removeBoard(board._id, board.workspace)}
                 trigger={
                   <DropdownMenuItem
                     className="text-destructive focus:text-destructive focus:bg-destructive/10"

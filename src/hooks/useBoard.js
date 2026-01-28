@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from "react";
 
-import { useAuthStore, useBoardStore, useFavoritesStore } from "@/store";
+import { useAuthStore, useWorkspaceStore, useBoardStore, useFavoritesStore } from "@/store";
 import { UserToast } from "@/context/ToastContext";
 import { boardApi } from "@/api/board";
 
@@ -45,6 +45,8 @@ export const useBoard = () => {
   const addBoard = useBoardStore((s) => s.addBoard);
   const updateBoardStore = useBoardStore((s) => s.updateBoard);
   const removeBoardStore = useBoardStore((s) => s.removeBoard);
+  const workspaces = useWorkspaceStore((s) => s.workspaces);
+  const updateWorkspace = useWorkspaceStore((s) => s.updateWorkspace);
 
   const { addToast } = UserToast();
 
@@ -76,10 +78,17 @@ export const useBoard = () => {
     return res;
   };
 
-  const removeBoard = async (id) => {
+  const removeBoard = async (id, workspaceId) => {
     const res = await boardApi.delete(id);
     if (res.data?.success) {
       removeBoardStore(id);
+    }
+
+    if (workspaceId) {
+      updateWorkspace({
+        _id: workspaceId,
+        board_count: Math.max(workspaces.find(ws => ws._id === workspaceId)?.board_count - 1, 0)
+      })
     }
 
     addToast({

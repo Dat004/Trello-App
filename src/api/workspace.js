@@ -15,6 +15,13 @@ export const workspaceApi = {
       return err.response;
     }
   },
+  async getWorkspaceById(id) {
+    try {
+      return await axiosClient.get(`${workspacesRoute}/${id}`);
+    } catch (err) {
+      return err.response;
+    }
+  },
   async create(data) {
     try {
       return await axiosClient.post(creatWorkspaceRoute, data);
@@ -39,6 +46,15 @@ export const workspaceApi = {
   async addBoardsToWorkspace(id, data) {
     try {
       return await axiosClient.post(`${workspacesRoute}/${id}${boardsRoute}`, data);
+    } catch (err) {
+      return err.response;
+    }
+  },
+  async removeBoardsFromWorkspace(id, data) {
+    try {
+      return await axiosClient.delete(`${workspacesRoute}/${id}${boardsRoute}`, {
+        data,
+      });
     } catch (err) {
       return err.response;
     }

@@ -1,4 +1,5 @@
 import Workspaces from "@/Pages/Workspaces";
+import Workspace from "@/Pages/Workspace";
 import Settings from "@/Pages/Settings";
 import Register from "@/Pages/Register";
 import Members from "@/Pages/Members";
@@ -10,6 +11,7 @@ import Home from "@/Pages/Home";
 
 const pages = {
   Workspaces,
+  Workspace,
   Templates,
   Settings,
   Register,

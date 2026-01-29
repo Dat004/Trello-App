@@ -1,6 +1,7 @@
 const paths = {
   home: "/",
   settings: "/settings/:step?",
+  workspace: "/workspaces/:id",
   workspaces: "/workspaces",
   templates: "/templates",
   register: "/register",

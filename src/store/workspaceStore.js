@@ -2,6 +2,7 @@ import { create } from "zustand";
 
 const useWorkspaceStore = create((set) => ({
   workspaces: [],
+  currentWorkspace: null,
   loading: true,
   membersMap: {},
   joinRequestsMap: {},
@@ -24,6 +25,11 @@ const useWorkspaceStore = create((set) => ({
         loading: false,
       };
     }),
+
+  setCurrentWorkspace: (workspace) =>
+    set(() => ({
+      currentWorkspace: workspace,
+    })),
 
   // Members
   setMembers: (workspaceId, members) =>
@@ -116,6 +122,11 @@ const useWorkspaceStore = create((set) => ({
       workspaces: [],
       membersMap: {},
       joinRequestsMap: {},
+    })),
+
+  clearCurrentWorkspace: () =>
+    set(() => ({
+      currentWorkspace: null,
     })),
 }));
 

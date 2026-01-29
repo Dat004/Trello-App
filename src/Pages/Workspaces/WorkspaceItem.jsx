@@ -8,6 +8,7 @@ import {
   Trash2,
   Loader2
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 import BoardsInWorkspaceDialog from "@/Components/BoardsInWorkspaceDialog";
 import WorkspaceMembersDialog from "@/Components/WorkspaceMembersDialog";
@@ -61,7 +62,11 @@ function WorkspaceItem({ workspace, onDelete }) {
               </AvatarFallback>
             </Avatar>
             <div className="flex-1">
-              <CardTitle className="text-base">{workspace.name}</CardTitle>
+              <CardTitle className="text-base">
+                <Link to={`/workspaces/${workspace._id}`}>
+                  {workspace.name}
+                </Link>
+              </CardTitle>
               <div className="flex items-center gap-2 mt-1">
                 <Badge
                   variant={isOwner ? "destructive" : roleVariant}

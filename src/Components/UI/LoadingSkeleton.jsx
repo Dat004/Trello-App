@@ -116,7 +116,7 @@ export function TemplatesSkeleton() {
               <div className="flex items-center gap-1">
                 {Array.from({ length: Math.random() * (5 - 2) + 2 }).map(
                   (_, i) => (
-                    <div className="w-16 h-4 bg-muted rounded-md"></div>
+                    <div key={i} className="w-16 h-4 bg-muted rounded-md"></div>
                   )
                 )}
               </div>

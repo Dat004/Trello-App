@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Plus, Settings, LogOut, Users } from "lucide-react"
+import { Plus, Settings, LogOut } from "lucide-react"
 
 import { useAuthStore, useWorkspaceStore } from "@/store";
 import { workspaceApi } from "@/api/workspace";
@@ -23,7 +23,10 @@ import {
 } from "@/Components/UI";
 
 function WorkspaceMembers({ workspace }) {
-  const members = useWorkspaceStore((state) => state.membersMap[workspace._id] || []);
+  const members = useWorkspaceStore(
+    (state) => state.membersMap[workspace._id],
+    (a, b) => a === b
+  ) || [];
   const updateMemberInStore = useWorkspaceStore((state) => state.updateMemberInStore);
   const removeMemberFromStore = useWorkspaceStore((state) => state.removeMemberFromStore);
   const setMembers = useWorkspaceStore((state) => state.setMembers);

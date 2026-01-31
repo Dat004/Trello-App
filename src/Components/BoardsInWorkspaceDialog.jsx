@@ -31,7 +31,10 @@ function BoardsInWorkspaceDialog({ workspace, trigger }) {
   const currentUser = useAuthStore((state) => state.user);
   const allBoards = useBoardsWithFavorites();
   const mergeBoardsFromWorkspace = useBoardStore((state) => state.mergeBoardsFromWorkspace);
-  const members = useWorkspaceStore((state) => state.membersMap[workspace._id] || []);
+  const members = useWorkspaceStore(
+    (state) => state.membersMap[workspace._id],
+    (a, b) => a === b
+  ) || [];
   
   // Filter các board theo workspace
   const boards = allBoards.filter(b => b.workspace === workspace._id);

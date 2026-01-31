@@ -45,7 +45,10 @@ function SettingWorkspaceDialog({ workspace, trigger }) {
   const [selectedColor, setSelectedColor] = useState(workspace.color);
 
   // Global Store
-  const members = useWorkspaceStore((state) => state.membersMap[workspace._id] || []);
+  const members = useWorkspaceStore(
+    (state) => state.membersMap[workspace._id],
+    (a, b) => a === b
+  ) || [];
   const setMembersStore = useWorkspaceStore((state) => state.setMembers);
   const updateMemberInStore = useWorkspaceStore((state) => state.updateMemberInStore);
   const removeMemberFromStore = useWorkspaceStore((state) => state.removeMemberFromStore);

@@ -40,7 +40,10 @@ function WorkspaceItem({ workspace, onDelete }) {
   const { toggleWorkspaceStar, isTogglingWorkspace } = useFavorites({
     workspaceId: workspace._id
   });
-  const members = useWorkspaceStore((state) => state.membersMap[workspace._id] || []);
+  const members = useWorkspaceStore(
+    (state) => state.membersMap[workspace._id],
+    (a, b) => a === b
+  ) || [];
   
   const isOwner = user._id === workspace.owner;
   const role = getMyRole(members);

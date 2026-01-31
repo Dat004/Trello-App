@@ -30,8 +30,14 @@ function WorkspaceMembersDialog({ workspace, trigger }) {
   const [isLoadingData, setIsLoadingData] = useState(false)
 
   // Global Store
-  const allMembers = useWorkspaceStore((state) => state.membersMap[workspace._id] || []);
-  const pendingMembers = useWorkspaceStore((state) => state.joinRequestsMap[workspace._id] || []);
+  const allMembers = useWorkspaceStore(
+    (state) => state.membersMap[workspace._id],
+    (a, b) => a === b
+  ) || [];
+  const pendingMembers = useWorkspaceStore(
+    (state) => state.joinRequestsMap[workspace._id],
+    (a, b) => a === b
+  ) || [];
   const setMembers = useWorkspaceStore((state) => state.setMembers);
   const addMemberToStore = useWorkspaceStore((state) => state.addMemberToStore);
   const setJoinRequests = useWorkspaceStore((state) => state.setJoinRequests);

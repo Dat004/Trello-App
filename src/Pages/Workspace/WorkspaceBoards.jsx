@@ -16,7 +16,7 @@ function WorkspaceBoards({ workspace }) {
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Tất cả bảng ({boardsInWorkspace.length})</h3>
         <AddBoardToWorkspaceDialog 
-            workspace={workspace}
+            workspaceId={workspace._id}
             trigger={
                 <Button size="sm" className="gap-2">
                     <Plus className="h-4 w-4" />
@@ -32,7 +32,7 @@ function WorkspaceBoards({ workspace }) {
           <p className="text-muted-foreground font-medium mb-1">Chưa có bảng nào</p>
           <p className="text-sm text-muted-foreground mb-4">Tạo bảng mới để bắt đầu quản lý dự án</p>
           <AddBoardToWorkspaceDialog
-            workspace={workspace}
+            workspaceId={workspace._id}
             trigger={
                 <Button size="sm" className="gap-2">
                     <Plus className="h-4 w-4" />

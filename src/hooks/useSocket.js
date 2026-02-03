@@ -1,52 +1,33 @@
 import { useCallback } from "react";
 
+import { ROOM_TYPES, getRoomEvents } from "@/constants/socketEvents";
 import { UserSocket } from "@/context/SocketContext";
 
 function useSocket() {
     const { socket, socketId, isConnected } = UserSocket();
 
-    // Join vào một room cụ thể (ví dụ: card room)
-    const joinRoom = useCallback((roomId) => {
+    // Join room
+    const joinRoom = useCallback((roomType, roomId) => {
         if (!socket || !isConnected) {
             console.warn("Không thể join room: Socket không kết nối");
             return;
         }
 
-        console.log(`Joining room: ${roomId}`);
-        socket.emit("join-card", roomId);
+        const { join } = getRoomEvents(roomType);
+        console.log(`Joining ${roomType}: ${roomId}`);
+        socket.emit(join, roomId);
     }, [socket, isConnected]);
 
-    // Leave khỏi một room
-    const leaveRoom = useCallback((roomId) => {
+    // Leave room
+    const leaveRoom = useCallback((roomType, roomId) => {
         if (!socket || !isConnected) {
             console.warn("Không thể leave room: Socket không kết nối");
             return;
         }
 
-        console.log(`Leaving room: ${roomId}`);
-        socket.emit("leave-card", roomId);
-    }, [socket, isConnected]);
-
-    // Join board room
-    const joinBoard = useCallback((boardId) => {
-        if (!socket || !isConnected) {
-            console.warn("Không thể join board: Socket không kết nối");
-            return;
-        }
-
-        console.log(`Joining board: ${boardId}`);
-        socket.emit("join-board", boardId);
-    }, [socket, isConnected]);
-
-    // Leave board room
-    const leaveBoard = useCallback((boardId) => {
-        if (!socket || !isConnected) {
-            console.warn("Không thể leave board: Socket không kết nối");
-            return;
-        }
-
-        console.log(`Leaving board: ${boardId}`);
-        socket.emit("leave-board", boardId);
+        const { leave } = getRoomEvents(roomType);
+        console.log(`Leaving ${roomType}: ${roomId}`);
+        socket.emit(leave, roomId);
     }, [socket, isConnected]);
 
     // Emit một event tùy chỉnh
@@ -85,8 +66,6 @@ function useSocket() {
         isConnected,
         joinRoom,
         leaveRoom,
-        joinBoard,
-        leaveBoard,
         emit,
         on,
         off,

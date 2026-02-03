@@ -1,0 +1,41 @@
+// Socket Room Types
+// Định nghĩa các loại phòng (room) trong hệ thống real-time
+export const ROOM_TYPES = {
+    WORKSPACE: 'workspace',
+    BOARD: 'board',
+    CARD: 'card',
+};
+
+// Socket Events
+// Định nghĩa các event names được sử dụng trong socket communication
+export const SOCKET_EVENTS = {
+    // Activity events
+    ACTIVITY_CREATED: 'activity-created',
+
+    // List events
+    LIST_CREATED: 'list-created',
+    LIST_UPDATED: 'list-updated',
+    LIST_DELETED: 'list-deleted',
+    LIST_MOVED: 'list-moved',
+
+    // Card events
+    CARD_CREATED: 'card-created',
+    CARD_UPDATED: 'card-updated',
+    CARD_DELETED: 'card-deleted',
+    CARD_MOVED: 'card-moved',
+
+    // Checklist events
+    CHECKLIST_ITEM_ADDED: 'checklist-item-added',
+    CHECKLIST_ITEM_TOGGLED: 'checklist-item-toggled',
+    CHECKLIST_ITEM_DELETED: 'checklist-item-deleted',
+
+    // Comment events
+    COMMENT_ADDED: 'comment-added',
+    COMMENT_DELETED: 'comment-deleted',
+};
+
+// Helper function để tạo join/leave event names
+export const getRoomEvents = (roomType) => ({
+    join: `join-${roomType}`,
+    leave: `leave-${roomType}`,
+});

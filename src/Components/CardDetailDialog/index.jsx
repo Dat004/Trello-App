@@ -10,6 +10,7 @@ import {
   DialogTrigger,
   Separator,
 } from "@/Components/UI";
+import { ROOM_TYPES, SOCKET_EVENTS } from "@/constants/socketEvents";
 import { useBoardDetailStore, useCommentsStore } from "@/store";
 import CardDescription from "./CardDescription";
 import CardAttachments from "./CardAttachments";
@@ -22,7 +23,6 @@ import { useSocket } from "@/hooks";
 
 function CardDetailDialog({ card, listId, boardId, trigger }) {
   const currentBoard = useBoardDetailStore((state) => state.currentBoard);
-  const cards = useBoardDetailStore((state) => state.cards);
   
   const addCommentToStore = useCommentsStore((state) => state.addCommentFromSocket);
   const deleteCommentFromStore = useCommentsStore((state) => state.deleteCommentFromSocket);
@@ -35,32 +35,32 @@ function CardDetailDialog({ card, listId, boardId, trigger }) {
     if (!open || !card._id || !isConnected) return;
 
     console.log(`[CardDetailDialog] Joining room for card: ${card._id}`);
-    joinRoom(card._id);
+    joinRoom(ROOM_TYPES.CARD, card._id);
 
     // Listen socket events
     const handleCommentAdded = (newComment) => {
       console.log("[Socket] Comment added:", newComment);
-      
       // Update comment data trong commentsStore
       addCommentToStore(newComment);
     };
 
     const handleCommentDeleted = (data) => {
       console.log("[Socket] Comment deleted:", data);
-      
       // Delete comment từ commentsStore
       deleteCommentFromStore(data.commentId, data.parentId);
     };
 
-    on("comment-added", handleCommentAdded);
-    on("comment-deleted", handleCommentDeleted);
+    // Listen socket events
+    on(SOCKET_EVENTS.COMMENT_ADDED, handleCommentAdded);
+    on(SOCKET_EVENTS.COMMENT_DELETED, handleCommentDeleted);
 
     // Cleanup khi dialog đóng
     return () => {
       console.log(`[CardDetailDialog] Leaving room for card: ${card._id}`);
-      off("comment-added", handleCommentAdded);
-      off("comment-deleted", handleCommentDeleted);
-      leaveRoom(card._id);
+      off(SOCKET_EVENTS.COMMENT_ADDED, handleCommentAdded);
+      off(SOCKET_EVENTS.COMMENT_DELETED, handleCommentDeleted);
+
+      leaveRoom(ROOM_TYPES.CARD, card._id);
     };
   }, [open, card._id, isConnected, joinRoom, leaveRoom, on, off, addCommentToStore, deleteCommentFromStore]);
 

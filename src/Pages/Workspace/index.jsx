@@ -2,15 +2,16 @@ import { useEffect, useState } from "react"
 import { useNavigate, useParams} from 'react-router-dom'
 import { ArrowLeft, Share2, Users, Star, Loader2 } from "lucide-react"
 
+import { useActivityStore, useAuthStore, useFavoritesStore, useWorkspaceStore } from "@/store"
 import RequestWorkspaceAccessDialog from "@/Components/RequestWorkspaceAccessDialog"
-import { useAuthStore, useWorkspaceStore, useFavoritesStore } from "@/store"
+import { useFavorites, useSocket, useWorkspaceActivities } from "@/hooks"
 import WorkspaceMembersDialog from "@/Components/WorkspaceMembersDialog"
+import { ROOM_TYPES, SOCKET_EVENTS } from "@/constants/socketEvents"
 import WorkspaceActivity from "./WorkspaceActivities"
 import WorkspaceSettings from "./WorkspaceSettings"
 import WorkspaceMembers from "./WorkspaceMembers"
 import WorkspaceBoards from "./WorkspaceBoards"
 import { workspaceApi } from "@/api/workspace"
-import { useFavorites } from "@/hooks"
 import { cn } from "@/lib/utils"
 import {
   Button,
@@ -19,7 +20,7 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-} from '@/Components/UI';
+} from '@/Components/UI'
 
 function Workspace() {
   const { id } = useParams()
@@ -39,6 +40,12 @@ function Workspace() {
   const favoriteWorkspaces = useFavoritesStore((state) => state.favoriteWorkspaces);
 
   const { toggleWorkspaceStar, isTogglingWorkspace  } = useFavorites();
+  const { joinRoom, leaveRoom, on, off, isConnected } = useSocket();
+  const addWorkspaceActivity = useActivityStore((state) => state.addWorkspaceActivity);
+  const clearWorkspaceActivities = useActivityStore((state) => state.clearWorkspaceActivities);
+
+  // Pre-fetch activities
+  useWorkspaceActivities(id);
 
   useEffect(() => {
     if (!id) {
@@ -74,8 +81,33 @@ function Workspace() {
 
     return () => {
       clearCurrentWorkspace();
+      clearWorkspaceActivities(id);
     }
   }, [id, user])
+
+  // Socket: Join/Leave workspace room và listen events
+  useEffect(() => {
+    if (!currentWorkspace?._id || !isConnected) return;
+
+    console.log("[Workspace] Joining workspace room:", currentWorkspace._id);
+    joinRoom(ROOM_TYPES.WORKSPACE, currentWorkspace._id);
+
+    // Listen for new activities
+    const handleActivityCreated = (activity) => {
+      console.log("[Socket] New activity received:", activity);
+      addWorkspaceActivity(currentWorkspace._id, activity);
+    };
+
+    // Listen socket events
+    on(SOCKET_EVENTS.ACTIVITY_CREATED, handleActivityCreated);
+
+    return () => {
+      console.log("[Workspace] Leaving workspace room:", currentWorkspace._id);
+      off(SOCKET_EVENTS.ACTIVITY_CREATED, handleActivityCreated);
+
+      leaveRoom(ROOM_TYPES.WORKSPACE, currentWorkspace._id);
+    };
+  }, [currentWorkspace?._id, isConnected, joinRoom, leaveRoom, on, off, addWorkspaceActivity]);
 
   if (loading && !currentWorkspace) {
     return (

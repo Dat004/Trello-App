@@ -12,6 +12,25 @@ export const SOCKET_EVENTS = {
     // Activity events
     ACTIVITY_CREATED: 'activity-created',
 
+    // Workspace events
+    WORKSPACE_UPDATED: 'workspace-updated',
+    WORKSPACE_PERMISSIONS_UPDATED: 'workspace-permissions-updated',
+    WORKSPACE_DELETED: 'workspace-deleted',
+
+    // Member events
+    MEMBER_JOINED: 'member-joined',
+    MEMBER_ROLE_UPDATED: 'member-role-updated',
+    MEMBER_REMOVED: 'member-removed',
+
+    // Board events
+    BOARD_UPDATED: 'board-updated',
+    BOARD_MEMBER_REMOVED: 'board-member-removed',
+    BOARDS_ADDED: 'boards-added',
+    BOARDS_REMOVED: 'boards-removed',
+    BOARD_CREATED: 'board-created',
+    BOARD_UPDATED_IN_WORKSPACE: 'board-updated-in-workspace',
+    BOARD_DELETED: 'board-deleted',
+
     // List events
     LIST_CREATED: 'list-created',
     LIST_UPDATED: 'list-updated',

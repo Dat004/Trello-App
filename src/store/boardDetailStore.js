@@ -46,6 +46,11 @@ const useBoardDetailStore = create((set, get) => ({
     });
   },
 
+  updateCurrentBoard: (updates) =>
+    set((state) => ({
+      currentBoard: { ...state.currentBoard, ...updates },
+    })),
+
   // List
   addList: (list) => {
     set((state) => {

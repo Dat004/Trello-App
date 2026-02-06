@@ -22,6 +22,9 @@ export const SOCKET_EVENTS = {
     MEMBER_ROLE_UPDATED: 'member-role-updated',
     MEMBER_REMOVED: 'member-removed',
 
+    // Join request events
+    JOIN_REQUEST_RECEIVED: 'join-request-received',
+
     // Board events
     BOARD_UPDATED: 'board-updated',
     BOARD_MEMBER_REMOVED: 'board-member-removed',

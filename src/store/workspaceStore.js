@@ -77,6 +77,14 @@ const useWorkspaceStore = create((set) => ({
       },
     })),
 
+  addJoinRequest: (workspaceId, request) =>
+    set((state) => ({
+      joinRequestsMap: {
+        ...state.joinRequestsMap,
+        [workspaceId]: [...(state.joinRequestsMap[workspaceId] || []), request],
+      },
+    })),
+
   removeJoinRequestFromStore: (workspaceId, requestId) =>
     set((state) => ({
       joinRequestsMap: {

@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { Plus, Settings, LogOut } from "lucide-react"
 
 import { useAuthStore, useWorkspaceStore } from "@/store";
@@ -41,12 +40,6 @@ function WorkspaceMembers({ workspace }) {
   const { mutate: kickMember } = useApiMutation(
     (data) => workspaceApi.kickMember(workspace._id, data),
   );
-
-  useEffect(() => {
-    if (!workspace) return;
-
-    setMembers(workspace._id, workspace.members);
-  }, [workspace]);
 
   const handleUpdateRoleMember = async (role, member) => {
     if (!canMangementMember(member)) return;

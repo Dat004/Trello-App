@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { workspaceSchema } from "@/schemas/workspaceSchema";
 import DeleteDialog from "@/Components/DeleteDialog";
 import { BACKGROUND_COLORS } from "@/config/theme";
 import { useWorkspace, useZodForm } from "@/hooks";
+import { useWorkspaceStore } from "@/store";
 import { 
     Button,
     Card,
@@ -20,6 +21,7 @@ function WorkspaceSettings({ workspace }) {
     const [selectedColor, setSelectedColor] = useState(workspace.color);
     const [visibility, setVisibility] = useState(workspace.visibility || "private");
 
+    const setCurrentWorkspace = useWorkspaceStore((state) => state.setCurrentWorkspace);
     const { updateWorkspace, removeWorkspace } = useWorkspace();
     const form = useZodForm(workspaceSchema, {
         defaultValues: {
@@ -35,6 +37,17 @@ function WorkspaceSettings({ workspace }) {
         formState: { errors },
     } = form;
 
+    useEffect(() => {
+        if (workspace) {
+            setSelectedColor(workspace.color);
+            setVisibility(workspace.visibility || "private");
+
+            setValue("name", workspace.name);
+            setValue("description", workspace.description);
+            setValue("max_members", workspace.max_members);
+        }
+    }, [workspace]);
+
     const handleUpdateWorkspace = async (data) => {
         const res = await updateWorkspace(workspace._id, {
             ...data,
@@ -46,7 +59,11 @@ function WorkspaceSettings({ workspace }) {
             setValue("description", workspace.description);
             setValue("max_members", workspace.max_members);
             setSelectedColor(workspace.color);
+
+            return;
         }
+
+        setCurrentWorkspace(res.data.data.workspace);
     };
 
     const handleUpdateVisibility = async () => {
@@ -57,7 +74,11 @@ function WorkspaceSettings({ workspace }) {
 
         if (!res.data.success) {
             setVisibility(workspace.visibility || "private");
+
+            return;
         }
+
+        setCurrentWorkspace(res.data.data.workspace);
     };
 
     const handleRemoveWorkspace = async () => {

@@ -11,12 +11,13 @@ import {
 import { Link } from "react-router-dom";
 
 import BoardsInWorkspaceDialog from "@/Components/BoardsInWorkspaceDialog";
-import WorkspaceMembersDialog from "@/Components/WorkspaceMembersDialog";
 import SettingWorkspaceDialog from "@/Components/SettingWorkspaceDialog";
 import { getMyRole, getRoleText, getRoleVariant } from "@/helpers/role";
 import { useAuthStore, useWorkspaceStore } from "@/store";
+import { useApiMutation, useFavorites } from "@/hooks";
+import MembersDialog from "@/Components/MembersDialog";
 import { formatDateOnly } from "@/helpers/formatTime";
-import { useFavorites } from "@/hooks";
+import { workspaceApi } from "@/api/workspace";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
@@ -44,10 +45,41 @@ function WorkspaceItem({ workspace, onDelete }) {
     (state) => state.membersMap[workspace._id],
     (a, b) => a === b
   ) || [];
+  const pendingMembers = useWorkspaceStore(
+    (state) => state.joinRequestsMap[workspace._id] || [],
+    (a, b) => a === b
+  );
+  const addMemberToStore = useWorkspaceStore((state) => state.addMemberToStore);
+  const removeJoinRequestFromStore = useWorkspaceStore((state) => state.removeJoinRequestFromStore);
   
   const isOwner = user._id === workspace.owner;
   const role = getMyRole(members);
   const roleVariant = getRoleVariant(role);
+
+  const { mutate: handleJoinRequest } = useApiMutation(
+    (requestId, data) => workspaceApi.handleJoinRequest(workspace._id, requestId, data),
+  );
+
+  const handleAcceptRequest = async (requestId) => {
+    const res = await handleJoinRequest(requestId, {
+      status: "accepted"
+    })
+
+    if (res.success) {
+      removeJoinRequestFromStore(workspace._id, requestId);
+      addMemberToStore(workspace._id, res.data.data.member);
+    }
+  }
+
+  const handleRejectRequest = async (requestId) => {
+    const res = await handleJoinRequest(requestId, {
+      status: "declined"
+    })
+
+    if (res.success) {
+      removeJoinRequestFromStore(workspace._id, requestId);
+    }
+  }
 
   return (
     <Card
@@ -176,8 +208,13 @@ function WorkspaceItem({ workspace, onDelete }) {
                 </Button>
               } />
           
-            <WorkspaceMembersDialog
-              workspace={workspace}
+            <MembersDialog
+              type="workspace"
+              entity={workspace}
+              members={members}
+              pendingMembers={pendingMembers}
+              onAcceptRequest={handleAcceptRequest}
+              onRejectRequest={handleRejectRequest}
               trigger={
                 <Button variant="outline" size="sm">
                   <Users className="h-4 w-4" />

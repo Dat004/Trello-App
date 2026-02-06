@@ -40,7 +40,7 @@ const useBoardStore = create((set) => ({
       const newBoards = workspaceBoards.filter(b => !existingIds.has(b._id));
 
       return {
-        boards: [...state.boards, ...newBoards]
+        boards: [...newBoards, ...state.boards]
       };
     }),
 

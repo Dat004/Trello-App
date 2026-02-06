@@ -3,10 +3,10 @@ import { useEffect, useState } from "react"
 import { useNavigate, useParams } from 'react-router-dom'
 
 import { useActivityStore, useAuthStore, useBoardStore, useFavoritesStore, useWorkspaceStore } from "@/store"
+import { useFavorites, useSocket, useWorkspaceActivities, useApiMutation } from "@/hooks"
 import RequestWorkspaceAccessDialog from "@/Components/RequestWorkspaceAccessDialog"
-import { useFavorites, useSocket, useWorkspaceActivities } from "@/hooks"
-import WorkspaceMembersDialog from "@/Components/WorkspaceMembersDialog"
 import { ROOM_TYPES, SOCKET_EVENTS } from "@/constants/socketEvents"
+import MembersDialog from "@/Components/MembersDialog"
 import WorkspaceActivity from "./WorkspaceActivities"
 import WorkspaceSettings from "./WorkspaceSettings"
 import { UserToast } from "@/context/ToastContext"
@@ -40,26 +40,37 @@ function Workspace() {
   const currentWorkspace = useWorkspaceStore((state) => state.currentWorkspace);
   const updateWorkspace = useWorkspaceStore((state) => state.updateWorkspace);
   const removeWorkspace = useWorkspaceStore((state) => state.removeWorkspace);
-  const favoriteWorkspaces = useFavoritesStore((state) => state.favoriteWorkspaces);
+  const workspaceMembers = useWorkspaceStore(
+    (state) => state.membersMap[currentWorkspace?._id],
+    (a, b) => a === b
+  ) || [];
+  const pendingMembers = useWorkspaceStore(
+    (state) => state.joinRequestsMap[currentWorkspace?._id],
+    (a, b) => a === b
+  ) || [];
 
+  const favoriteWorkspaces = useFavoritesStore((state) => state.favoriteWorkspaces);
   const { toggleWorkspaceStar, isTogglingWorkspace  } = useFavorites();
   const { joinRoom, leaveRoom, on, off, isConnected } = useSocket();
   const addWorkspaceActivity = useActivityStore((state) => state.addWorkspaceActivity);
   const clearWorkspaceActivities = useActivityStore((state) => state.clearWorkspaceActivities);
 
-  const members = useWorkspaceStore(
-    (state) => state.membersMap[currentWorkspace?._id],
-    (a, b) => a === b
-  ) || [];
   const setMembers = useWorkspaceStore((state) => state.setMembers);
+  const addMemberToStore = useWorkspaceStore((state) => state.addMemberToStore);
   const updateMemberInStore = useWorkspaceStore((state) => state.updateMemberInStore);
   const removeMemberFromStore = useWorkspaceStore((state) => state.removeMemberFromStore);
+  const removeJoinRequestFromStore = useWorkspaceStore((state) => state.removeJoinRequestFromStore);
   const removeBoardsFromWorkspace = useWorkspaceStore((state) => state.removeBoardsFromWorkspace);
+  const addJoinRequest = useWorkspaceStore((state) => state.addJoinRequest);
 
   const addBoard = useBoardStore((state) => state.addBoard);
   const updateBoard = useBoardStore((state) => state.updateBoard);
   const removeBoard = useBoardStore((state) => state.removeBoard);
   const mergeBoardsFromWorkspace = useBoardStore((state) => state.mergeBoardsFromWorkspace);
+
+  const { mutate: handleJoinRequest } = useApiMutation(
+    (requestId, data) => workspaceApi.handleJoinRequest(currentWorkspace._id, requestId, data),
+  );
 
   // Pre-fetch activities
   useWorkspaceActivities(id);
@@ -88,6 +99,7 @@ function Workspace() {
         setRequestedAt(null);
         setHasPendingRequest(false);
         updateWorkspace(res.data.data.workspace);
+        setMembers(res.data.data.workspace._id, res.data.data.workspace.members);
         return;
       }
 
@@ -109,24 +121,29 @@ function Workspace() {
     console.log("[Workspace] Joining workspace room:", currentWorkspace._id);
     joinRoom(ROOM_TYPES.WORKSPACE, currentWorkspace._id);
 
-    // Listen for new activities
+    // Listen for new activities Oke
     const handleActivityCreated = (activity) => {
       console.log("[Socket] New activity received:", activity);
       addWorkspaceActivity(currentWorkspace._id, activity);
     };
 
-    // Listen for workspace updates
+    // Listen for workspace updates Oke
     const handleWorkspaceUpdated = (updatedWorkspace) => {
       console.log("[Socket] Workspace updated:", updatedWorkspace);
-      updateWorkspace(updatedWorkspace);
+      clearCurrentWorkspace();
+
       setCurrentWorkspace(updatedWorkspace);
+      updateWorkspace(updatedWorkspace);
     };
 
+    // Oke
     const handleWorkspacePermissionsUpdated = (permissions) => {
       console.log("[Socket] Workspace permissions updated:", permissions);
+      clearCurrentWorkspace();
+
       const updatedWorkspace = { ...currentWorkspace, ...permissions };
-      updateWorkspace(updatedWorkspace);
       setCurrentWorkspace(updatedWorkspace);
+      updateWorkspace(updatedWorkspace);
     };
 
     const handleWorkspaceDeleted = (workspaceId) => {
@@ -135,6 +152,7 @@ function Workspace() {
 
       if (workspaceId === currentWorkspace._id) {
         clearCurrentWorkspace();
+        removeBoardsFromWorkspace(workspaceId);
 
         addToast({
           type: "warning",
@@ -145,50 +163,88 @@ function Workspace() {
       }
     };
 
-    // Member events
-    const handleMemberJoined = (members) => {
-      console.log("[Socket] Member joined:", members);
-      setMembers(currentWorkspace._id, members);
+    // Member events Oke
+    const handleMemberJoined = (member) => {
+      console.log("[Socket] Member joined:", member);
+      addMemberToStore(currentWorkspace._id, member);
     };
 
+    // Oke
     const handleMemberRemoved = (member_id) => {
       console.log("[Socket] Member removed:", member_id);
 
-      const targetMember = members.find((m) => m.user._id === member_id);
+      const targetMember = workspaceMembers.find((m) => m.user._id === member_id);
       if (targetMember) {
         removeMemberFromStore(currentWorkspace._id, targetMember._id);
+
+        setIsMember(false);
+        setRequestedAt(null);
+        setHasPendingRequest(false);
+
+        addToast({
+          type: "warning",
+          title: "Bạn đã bị xóa khỏi không gian làm việc"
+        });
       }
     };
 
+    // Oke
     const handleMemberRoleUpdated = ({ member_id, role }) => {
       console.log("[Socket] Member role updated:", { member_id, role });
-      updateMemberInStore(currentWorkspace._id, member_id, { role });
+
+      const targetMember = workspaceMembers.find((m) => m.user._id === member_id);
+      if (targetMember) {
+        updateMemberInStore(currentWorkspace._id, targetMember._id, { role });
+      }
     };
 
-    // Board events within workspace
+    // Join request events Oke
+    const handleJoinRequestReceived = (joinRequest) => {
+      console.log("[Socket] Join request received:", joinRequest);
+      addJoinRequest(currentWorkspace._id, joinRequest);
+    };
+
+    // Board events within workspace Oke
     const handleBoardCreated = (newBoard) => {
       console.log("[Socket] Board created:", newBoard);
       addBoard(newBoard);
+      updateWorkspace({
+        _id: currentWorkspace._id,
+        board_count: currentWorkspace.board_count + 1
+      })
     };
 
+    // Oke
     const handleBoardUpdated = (updatedBoard) => {
       console.log("[Socket] Board updated:", updatedBoard);
       updateBoard(updatedBoard);
     };
 
+    // Oke
     const handleBoardDeleted = (boardId) => {
       console.log("[Socket] Board deleted:", boardId);
       removeBoard(boardId);
+      updateWorkspace({
+        _id: currentWorkspace._id,
+        board_count: Math.max(currentWorkspace.board_count - 1, 0)
+      })
     };
 
+    // Oke
     const handleBoardsAdded = (boards) => {
       console.log("[Socket] Boards added:", boards);
       mergeBoardsFromWorkspace(boards);
+      updateWorkspace({
+        _id: currentWorkspace._id,
+        board_count: currentWorkspace.board_count + boards.length
+      })
     };
 
-    const handleBoardsRemoved = (workspaceId) => {
-      console.log("[Socket] Boards removed:", workspaceId);
-      removeBoardsFromWorkspace(workspaceId);
+    const handleBoardsRemoved = (boardIds) => {
+      console.log("[Socket] Boards removed:", boardIds);
+      boardIds.forEach(boardId => {
+        removeBoard(boardId);
+      })
     };
 
     // Listen socket events
@@ -199,6 +255,7 @@ function Workspace() {
     on(SOCKET_EVENTS.MEMBER_JOINED, handleMemberJoined);
     on(SOCKET_EVENTS.MEMBER_REMOVED, handleMemberRemoved);
     on(SOCKET_EVENTS.MEMBER_ROLE_UPDATED, handleMemberRoleUpdated);
+    on(SOCKET_EVENTS.JOIN_REQUEST_RECEIVED, handleJoinRequestReceived);
     on(SOCKET_EVENTS.BOARD_CREATED, handleBoardCreated);
     on(SOCKET_EVENTS.BOARD_UPDATED_IN_WORKSPACE, handleBoardUpdated);
     on(SOCKET_EVENTS.BOARD_DELETED, handleBoardDeleted);
@@ -214,6 +271,7 @@ function Workspace() {
       off(SOCKET_EVENTS.MEMBER_JOINED, handleMemberJoined);
       off(SOCKET_EVENTS.MEMBER_REMOVED, handleMemberRemoved);
       off(SOCKET_EVENTS.MEMBER_ROLE_UPDATED, handleMemberRoleUpdated);
+      off(SOCKET_EVENTS.JOIN_REQUEST_RECEIVED, handleJoinRequestReceived);
       off(SOCKET_EVENTS.BOARD_CREATED, handleBoardCreated);
       off(SOCKET_EVENTS.BOARD_UPDATED_IN_WORKSPACE, handleBoardUpdated);
       off(SOCKET_EVENTS.BOARD_DELETED, handleBoardDeleted);
@@ -241,6 +299,27 @@ function Workspace() {
     addToast,
     navigate
   ]);
+
+  const handleAcceptRequest = async (requestId) => {
+    const res = await handleJoinRequest(requestId, {
+      status: "accepted"
+    })
+
+    if (res.success) {
+      removeJoinRequestFromStore(currentWorkspace._id, requestId);
+      addMemberToStore(currentWorkspace._id, res.data.member);
+    }
+  }
+
+  const handleRejectRequest = async (requestId) => {
+    const res = await handleJoinRequest(requestId, {
+      status: "declined"
+    })
+
+    if (res.success) {
+      removeJoinRequestFromStore(currentWorkspace._id, requestId);
+    }
+  }
 
   if (loading && !currentWorkspace) {
     return (
@@ -337,8 +416,13 @@ function Workspace() {
                 <span className="hidden md:inline text-xs">Chia sẻ</span>
               </Button>
 
-              <WorkspaceMembersDialog
-                workspace={currentWorkspace}
+              <MembersDialog
+                type="workspace"
+                entity={currentWorkspace}
+                members={workspaceMembers}
+                pendingMembers={pendingMembers}
+                onAcceptRequest={handleAcceptRequest}
+                onRejectRequest={handleRejectRequest}
                 trigger={
                   <Button
                     variant="ghost"
@@ -347,7 +431,7 @@ function Workspace() {
                     title="Thành viên"
                   >
                     <Users className="h-4 w-4" />
-                    <span className="text-xs">{currentWorkspace.members.length}</span>
+                    <span className="text-xs">{workspaceMembers.length}</span>
                   </Button>
                 }
               />

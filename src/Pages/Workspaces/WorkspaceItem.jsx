@@ -67,7 +67,7 @@ function WorkspaceItem({ workspace, onDelete }) {
 
     if (res.success) {
       removeJoinRequestFromStore(workspace._id, requestId);
-      addMemberToStore(workspace._id, res.data.data.member);
+      addMemberToStore(workspace._id, res.data.member);
     }
   }
 

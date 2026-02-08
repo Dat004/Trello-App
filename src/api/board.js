@@ -84,16 +84,16 @@ export const boardApi = {
       return err.response;
     }
   },
-  async joinWorkspace(id, data) {
+  async joinBoard(id, data) {
     try {
       return await axiosClient.post(`${boardsRoute}/${id}${joinRoute}`, data);
     } catch (err) {
       return err.response;
     }
   },
-  async handleJoinRequest(workspaceId, requestId, data) {
+  async handleJoinRequest(boardId, requestId, data) {
     try {
-      return await axiosClient.patch(`${boardsRoute}/${workspaceId}${joinRoute}/${requestId}`, data);
+      return await axiosClient.patch(`${boardsRoute}/${boardId}${joinRoute}/${requestId}`, data);
     } catch (err) {
       return err.response;
     }

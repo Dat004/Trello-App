@@ -7,6 +7,7 @@ const useBoardDetailStore = create((set, get) => ({
   listOrder: [],
   isLoading: true,
   boardMembers: [],
+  joinRequests: [],
 
   setCurrentBoard: (boardDetail) => {
     const listsMap = {};
@@ -44,6 +45,7 @@ const useBoardDetailStore = create((set, get) => ({
       cards: cardsMap,
       listOrder: listOrderIds,
       boardMembers: boardDetail.members || [],
+      joinRequests: boardDetail.join_requests || [],
       isLoading: false,
     });
   },
@@ -74,6 +76,21 @@ const useBoardDetailStore = create((set, get) => ({
   removeBoardMember: (memberId) =>
     set((state) => ({
       boardMembers: state.boardMembers.filter((m) => m._id !== memberId),
+    })),
+
+  setJoinRequests: (requests) =>
+    set(() => ({
+      joinRequests: requests,
+    })),
+
+  addJoinRequest: (request) =>
+    set((state) => ({
+      joinRequests: [...state.joinRequests, request],
+    })),
+
+  removeJoinRequest: (requestId) =>
+    set((state) => ({
+      joinRequests: state.joinRequests.filter((r) => r._id !== requestId),
     })),
 
   // List
@@ -598,6 +615,7 @@ const useBoardDetailStore = create((set, get) => ({
       cards: {},
       listOrder: [],
       boardMembers: [],
+      joinRequests: [],
       isLoading: true,
     }),
 }));

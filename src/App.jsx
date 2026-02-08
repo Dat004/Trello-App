@@ -1,11 +1,19 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 
+import routes from "@/config/routes";
+import { useGlobalRealtimeSync } from "@/hooks";
+import ConnectionIndicator from "./Components/ConnectionIndicator";
 import AppInitializer from "./initializers/AppInitializer";
 import SocketProvider from "./providers/ContextProvider";
 import ToastProvider from "./providers/ToastProvider";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import PublicRoute from "./routes/PublicRoute";
-import routes from "@/config/routes";
+
+// Component to initialize global real-time sync
+function GlobalRealtimeSync() {
+  useGlobalRealtimeSync();
+  return null;
+}
 
 function App() {
   return (
@@ -13,6 +21,9 @@ function App() {
       <AppInitializer>
         <ToastProvider>
           <SocketProvider>
+            <GlobalRealtimeSync />
+            <ConnectionIndicator />
+            
             <Routes>
               {routes.map((route) => (
                 <Route

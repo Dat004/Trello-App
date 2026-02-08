@@ -40,6 +40,31 @@ const useFavoritesStore = create((set) => ({
             favoriteBoards: [],
             loading: false,
         }),
+
+    // Real-time sync methods
+    syncFavoriteWorkspace: (workspace) =>
+        set((state) => ({
+            favoriteWorkspaces: state.favoriteWorkspaces.map(ws =>
+                ws._id === workspace._id ? { ...ws, ...workspace } : ws
+            )
+        })),
+
+    removeFavoriteWorkspace: (workspaceId) =>
+        set((state) => ({
+            favoriteWorkspaces: state.favoriteWorkspaces.filter(ws => ws._id !== workspaceId)
+        })),
+
+    syncFavoriteBoard: (board) =>
+        set((state) => ({
+            favoriteBoards: state.favoriteBoards.map(b =>
+                b._id === board._id ? { ...b, ...board } : b
+            )
+        })),
+
+    removeFavoriteBoard: (boardId) =>
+        set((state) => ({
+            favoriteBoards: state.favoriteBoards.filter(b => b._id !== boardId)
+        })),
 }));
 
 export default useFavoritesStore;

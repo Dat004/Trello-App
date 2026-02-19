@@ -1,5 +1,6 @@
 import { axiosClient } from "./axiosClient";
 
+const membersRoute = "/members";
 const boardsRoute = "/boards";
 const listsRoute = "/lists";
 const cardsRoute = "/cards";
@@ -56,6 +57,29 @@ export const cardApi = {
       return await axiosClient.delete(`${boardsRoute}/${boardId}${listsRoute}/${listId}${cardsRoute}/${id}/checklist`, {
         data: data || {},
       });
+    } catch (err) {
+      return err.response;
+    }
+  },
+
+  // Member
+  async getMembersInCard(boardId, listId, cardId) {
+    try {
+      return await axiosClient.get(`${boardsRoute}/${boardId}${listsRoute}/${listId}${cardsRoute}/${cardId}${membersRoute}`);
+    } catch (err) {
+      return err.response;
+    }
+  },
+  async assignMemberToCard(boardId, listId, cardId, data) {
+    try {
+      return await axiosClient.post(`${boardsRoute}/${boardId}${listsRoute}/${listId}${cardsRoute}/${cardId}${membersRoute}`, data);
+    } catch (err) {
+      return err.response;
+    }
+  },
+  async unassignMemberFromCard(boardId, listId, cardId, userId) {
+    try {
+      return await axiosClient.delete(`${boardsRoute}/${boardId}${listsRoute}/${listId}${cardsRoute}/${cardId}${membersRoute}/${userId}`);
     } catch (err) {
       return err.response;
     }

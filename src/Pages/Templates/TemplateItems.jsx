@@ -1,7 +1,7 @@
 import { Copy, Eye } from "lucide-react";
 
-import CreateBoardFromTemplateDialog from "@/Components/CreateBoardFromTemplateDialog";
-import TemplatePreviewDialog from "@/Components/TemplatePreviewDialog";
+import CreateBoardFromTemplateDialog from "@/features/boards/components/Dialogs/CreateBoardFromTemplateDialog";
+import TemplatePreviewDialog from "@/features/boards/components/Dialogs/TemplatePreviewDialog";
 import { getCategoryIcon } from "@/helpers/fileIcon";
 import {
     Badge,

@@ -1,27 +1,31 @@
 import { Filter, Plus, Search, Users } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 
-import BoardCard from "@/Components/BoardCard";
-import BoardFormDialog from "@/Components/BoardFormDialog";
 import { BoardSkeleton, Button, Input } from "@/Components/UI";
-import { initialBoards } from "@/config/data";
+import { useMyBoards } from "@/features/boards/api/useBoards";
+import BoardFormDialog from "@/features/boards/components/Dialogs/BoardFormDialog";
+import BoardCard from "@/features/boards/components/List/BoardCard";
+import { useFavoritesStore } from "@/store";
 
 function Home() {
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: boards = [], isLoading } = useMyBoards();
+  const favoriteBoards = useFavoritesStore((s) => s.favoriteBoards);
+  
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStarred, setFilterStarred] = useState(false);
 
-  // Simulate loading
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1000);
-    return () => clearTimeout(timer);
-  }, []);
+  const processedBoards = useMemo(() => {
+       return boards.map(b => ({
+           ...b,
+           is_starred: favoriteBoards.some(fb => fb._id === b._id)
+       }));
+  }, [boards, favoriteBoards]);
 
-  const filteredBoards = initialBoards.filter((board) => {
+  const filteredBoards = processedBoards.filter((board) => {
     const matchesSearch =
-      board.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      board.description?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesFilter = !filterStarred || board.starred;
+      (board.title?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+      (board.description?.toLowerCase() || "").includes(searchQuery.toLowerCase());
+    const matchesFilter = !filterStarred || board.is_starred;
     return matchesSearch && matchesFilter;
   });
 
@@ -106,7 +110,7 @@ function Home() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
             {filteredBoards.map((board, index) => (
               <div
-                key={board.id}
+                key={board._id}
                 className="animate-slide-in-up"
                 style={{ animationDelay: `${index * 50}ms` }}
               >

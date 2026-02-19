@@ -1,8 +1,8 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Search, Plus, User, LogOut, Settings } from "lucide-react";
 
+import BoardFormDialog from "@/features/boards/components/Dialogs/BoardFormDialog";
 import NotificationsPanel from "@/Components/NotificationsPanel";
-import BoardFormDialog from "@/Components/BoardFormDialog";
 import { headerMenuData } from "@/config/data";
 import { useAuthStore } from "@/store";
 import { useAuth } from "@/hooks";

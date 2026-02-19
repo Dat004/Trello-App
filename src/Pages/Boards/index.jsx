@@ -1,25 +1,37 @@
+import { Grid3x3, List, Search, Star, X } from "lucide-react";
 import { useState } from "react";
-import { Search, Star, Grid3x3, List, X } from "lucide-react";
 
+import { Button, Input } from "@/Components/UI";
 import { BoardSkeleton } from "@/Components/UI/LoadingSkeleton";
-import BoardFormDialog from "@/Components/BoardFormDialog";
-import { useBoardsWithFavorites } from "@/hooks";
-import { Input, Button } from "@/Components/UI";
-import BoardCard from "@/Components/BoardCard";
-import CreateNewBoard from "./CreateNewBoard";
-import { useBoardStore } from "@/store";
+import BoardFormDialog from "@/features/boards/components/Dialogs/BoardFormDialog";
+import BoardCard from "@/features/boards/components/List/BoardCard";
+import CreateNewBoard from "@/features/boards/components/List/CreateNewBoard";
+
+import { useMyBoards } from "@/features/boards/api/useBoards";
+import { useFavoritesStore } from "@/store";
 
 function Boards() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStarred, setFilterStarred] = useState(false);
   const [viewMode, setViewMode] = useState("grid");
 
-  const boards = useBoardsWithFavorites();
-  const loading = useBoardStore(s => s.loading);
+  const { data: rawBoards = [], isLoading: loading } = useMyBoards();
+  const favoriteBoards = useFavoritesStore(s => s.favoriteBoards);
+
+  const boards = rawBoards.map(board => ({
+    ...board,
+    is_starred: favoriteBoards.some(fav => fav._id === board._id)
+  })).filter(board => {
+     if (filterStarred && !board.is_starred) return false;
+     if (searchQuery) {
+         return board.title.toLowerCase().includes(searchQuery.toLowerCase());
+     }
+     return true;
+  });
+
 
   return (
     <>
-      {/* Welcome Section */}
       <div className="flex flex-col mb-6 md:mb-8 sm:flex-row sm:items-center sm:justify-between gap-4">
         <section>
           <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1 sm:mb-2">
@@ -36,7 +48,6 @@ function Boards() {
 
       <div className="mb-6 md:mb-8">
         <div className="flex flex-col gap-4">
-          {/* Search and Filters */}
           <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -94,7 +105,6 @@ function Boards() {
         </div>
       </div>
 
-      {/* Boards Grid/List */}
       {loading ? (
         <BoardSkeleton count={8} />
       ) : boards.length > 0 ? (
@@ -152,8 +162,8 @@ function Boards() {
               Không tìm thấy bảng nào
             </h3>
             <p className="text-sm text-muted-foreground mb-6">
-              {searchQuery
-                ? `Không có bảng nào khớp với "${searchQuery}"`
+              {searchQuery || filterStarred
+                ? `Không có bảng nào khớp với bộ lọc`
                 : "Bạn chưa tạo bảng nào. Hãy tạo bảng đầu tiên của bạn."}
             </p>
             <BoardFormDialog trigger={<Button>Tạo bảng mới</Button>} />

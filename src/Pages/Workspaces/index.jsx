@@ -1,27 +1,30 @@
 import {
   Plus,
 } from "lucide-react";
+import { useMemo } from "react";
 
-import CreateWorkspaceDialog from "@/Components/CreateWorkspaceDialog";
-import { useWorkspace, useWorkspacesWithFavorites } from "@/hooks";
-import WorkspaceStats from "./WorkspaceStats";
-import WorkspaceItem from "./WorkspaceItem";
-import { useWorkspaceStore } from "@/store";
 import {
   Card,
   CardContent,
   StatsSkeleton,
   WorkspacesSkeleton,
 } from "@/Components/UI";
+import { useWorkspacesList } from "@/features/workspaces/api/useWorkspacesList";
+import CreateWorkspaceDialog from "@/features/workspaces/components/Dialogs/CreateWorkspaceDialog";
+import WorkspaceItem from "@/features/workspaces/components/List/WorkspaceItem";
+import WorkspaceStats from "@/features/workspaces/components/List/WorkspaceStats";
+import { useFavoritesStore } from "@/store";
 
 function Workspaces() {
-  const workspaces = useWorkspacesWithFavorites();
-  const loading = useWorkspaceStore((s) => s.loading);
-  const { removeWorkspace } = useWorkspace();
+  const { data: workspacesList = [], isLoading } = useWorkspacesList();
+  const favoriteWorkspaces = useFavoritesStore((s) => s.favoriteWorkspaces);
 
-  const handleDeleteWorkspace = async (id) => {
-    await removeWorkspace(id);
-  };
+  const workspaces = useMemo(() => {
+    return workspacesList.map(ws => ({
+       ...ws,
+       is_starred: favoriteWorkspaces.some(fw => fw._id === ws._id)
+    }));
+  }, [workspacesList, favoriteWorkspaces]);
 
   return (
     <>
@@ -42,7 +45,7 @@ function Workspaces() {
 
       {/* Stats Cards */}
       <section className="mb-6 md:mb-8">
-        {loading ? (
+        {isLoading ? (
           <StatsSkeleton />
         ) : (
           <WorkspaceStats workspaces={workspaces} />
@@ -50,8 +53,8 @@ function Workspaces() {
       </section>
 
       {/* Workspaces Grid */}
-      {loading ? (
-        <WorkspacesSkeleton />
+      {isLoading ? (
+        <WorkspacesSkeleton /> // Assuming WorkspacesSkeleton handles layout or creates a grid
       ) : (
         <div
           className="animate-slide-in-up"
@@ -59,7 +62,7 @@ function Workspaces() {
         >
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {workspaces.map((workspace) => (
-              <WorkspaceItem key={workspace._id} workspace={workspace} onDelete={handleDeleteWorkspace} />
+              <WorkspaceItem key={workspace._id} workspace={workspace} />
             ))}
 
             {/* Create New Workspace Card */}

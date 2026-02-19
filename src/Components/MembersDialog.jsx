@@ -1,8 +1,6 @@
-import { Check, Users, X } from "lucide-react"
-import { useState } from "react"
+import { Check, Users, X } from "lucide-react";
+import { useState } from "react";
 
-import { PendingRequestsSkeleton, WorkspaceMembersSkeleton } from "./UI/LoadingSkeleton"
-import { getRoleText, getRoleVariant } from "@/helpers/role"
 import {
   Avatar,
   AvatarFallback,
@@ -19,7 +17,12 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@/Components/UI"
+} from "@/Components/UI";
+import { useKickBoardMember, useUpdateBoardMemberRole } from "@/features/boards/api/useBoardMembers";
+import { useKickMember as useKickWorkspaceMember, useUpdateMemberRole as useUpdateWorkspaceRole } from "@/features/workspaces/api/useWorkspaceMembers";
+import { useAuthStore } from "@/store";
+import MemberItem from "./MemberItem";
+import { PendingRequestsSkeleton, WorkspaceMembersSkeleton } from "./UI/LoadingSkeleton";
 
 function MembersDialog({ 
   type = 'workspace', 
@@ -34,8 +37,50 @@ function MembersDialog({
   const [open, setOpen] = useState(false)
   const [tab, setTab] = useState("active")
 
+  const user = useAuthStore((state) => state.user);
   const isWorkspace = type === 'workspace';
   const entityName = isWorkspace ? entity?.name : entity?.title;
+
+  const isMyEntity = (entity.owner?._id || entity.owner) === user._id;
+  const myMemberInfo = members.find(m => (m.user?._id || m.user) === user._id);
+  const isAdmin = myMemberInfo?.role === "admin";
+
+  const { mutate: updateRoleWorkspace } = useUpdateWorkspaceRole();
+  const { mutate: kickMemberWorkspace } = useKickWorkspaceMember();
+
+  const { mutate: updateRoleBoard } = useUpdateBoardMemberRole();
+  const { mutate: kickMemberBoard } = useKickBoardMember();
+
+  const handleUpdateRoleMember = (role, member) => {
+    const memberId = member.user?._id || member.user;
+    if (isWorkspace) {
+        updateRoleWorkspace({
+            workspaceId: entity._id,
+            member_id: memberId,
+            role,
+        });
+    } else {
+        updateRoleBoard({
+            boardId: entity._id,
+            member_id: memberId,
+            role,
+        });
+    }
+  };
+
+  const handleKickMember = (targetUserId) => {
+    if (isWorkspace) {
+        kickMemberWorkspace({
+            workspaceId: entity._id,
+            member_id: targetUserId,
+        });
+    } else {
+        kickMemberBoard({
+            boardId: entity._id,
+            member_id: targetUserId,
+        });
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -74,28 +119,16 @@ function MembersDialog({
             ) : (
               <div className="space-y-2 max-h-[55vh] overflow-y-auto pr-2">
                 {members.map((member) => (
-                  <div
+                  <MemberItem
                     key={member._id}
-                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors duration-200 border border-border/50"
-                  >
-                    <div className="relative flex-shrink-0">
-                      <Avatar className="h-10 w-10 ring-2 ring-background">
-                        <AvatarImage src={member.user.avatar.url} alt={member.user.full_name} />
-                        <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground font-semibold text-sm">
-                          {member.user.full_name.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm text-foreground truncate">{member.user.full_name}</p>
-                      <p className="text-xs text-muted-foreground truncate">{member.user.email}</p>
-                    </div>
-
-                    <Badge variant={getRoleVariant(member.role)}>
-                        {getRoleText(member.role, member.user._id, entity.owner)}
-                    </Badge>
-                  </div>
+                    member={member}
+                    workspace={entity}
+                    isMe={member.user?._id === user._id}
+                    isAdmin={isAdmin}
+                    isOwner={isMyEntity}
+                    onUpdateRoleMember={handleUpdateRoleMember}
+                    onKickMember={handleKickMember}
+                  />
                 ))}
               </div>
             )}

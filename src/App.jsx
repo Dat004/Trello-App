@@ -1,15 +1,14 @@
+import routes from "@/config/routes";
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 
-import routes from "@/config/routes";
-import { useGlobalRealtimeSync } from "@/hooks";
 import ConnectionIndicator from "./Components/ConnectionIndicator";
 import AppInitializer from "./initializers/AppInitializer";
 import SocketProvider from "./providers/ContextProvider";
 import ToastProvider from "./providers/ToastProvider";
 import ProtectedRoute from "./routes/ProtectedRoute";
+import { useGlobalRealtimeSync } from "@/hooks";
 import PublicRoute from "./routes/PublicRoute";
 
-// Component to initialize global real-time sync
 function GlobalRealtimeSync() {
   useGlobalRealtimeSync();
   return null;
@@ -27,6 +26,7 @@ function App() {
             <Routes>
               {routes.map((route) => (
                 <Route
+                  key={route.path}
                   path={route.path}
                   element={
                     route.auth === "protected" ? (

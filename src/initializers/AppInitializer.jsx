@@ -1,13 +1,8 @@
-import { useAuthInit, useWorkspaceInit, useBoardInit, useFavoritesInit } from "@/hooks";
+import { useAuthInit, useFavoritesInit } from "@/hooks";
 
 const AppInitializer = ({ children }) => {
   useAuthInit();
-
-  Promise.all([
-    useWorkspaceInit(),
-    useBoardInit(),
-    useFavoritesInit(),
-  ])
+  useFavoritesInit();
   
   return children;
 };

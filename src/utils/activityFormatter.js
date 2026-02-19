@@ -125,6 +125,14 @@ export const formatActivityMessage = (activity) => {
         case ACTIVITY_ACTIONS.CARD_RESTORED:
             return `đã khôi phục thẻ "${metadata.card_title}"`;
 
+        // ===== CARD MEMBER =====
+        case ACTIVITY_ACTIONS.CARD_MEMBER_ASSIGNED:
+            return `đã gán ${metadata.member_name} vào thẻ "${metadata.card_title}"`;
+
+        case ACTIVITY_ACTIONS.CARD_MEMBER_REMOVED:
+            return `đã xóa ${metadata.member_name} khỏi thẻ "${metadata.card_title}"`;
+
+
         // ===== COMMENT =====
         case ACTIVITY_ACTIONS.COMMENT_CREATED:
             return `đã bình luận trong thẻ "${metadata.card_title}"`;
@@ -164,6 +172,8 @@ export const getActivityContext = (activity) => {
         ACTIVITY_ACTIONS.CARD_MOVED,
         ACTIVITY_ACTIONS.CARD_ARCHIVED,
         ACTIVITY_ACTIONS.CARD_RESTORED,
+        ACTIVITY_ACTIONS.CARD_MEMBER_ASSIGNED,
+        ACTIVITY_ACTIONS.CARD_MEMBER_REMOVED,
         ACTIVITY_ACTIONS.COMMENT_CREATED,
         ACTIVITY_ACTIONS.COMMENT_UPDATED,
         ACTIVITY_ACTIONS.COMMENT_DELETED,

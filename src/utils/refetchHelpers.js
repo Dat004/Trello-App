@@ -1,22 +1,14 @@
-import { boardApi } from "@/api/board";
-import { workspaceApi } from "@/api/workspace";
-import { useBoardDetailStore, useBoardStore, useWorkspaceStore } from "@/store";
+import { WORKSPACES_KEYS } from "@/features/workspaces/api/useWorkspacesList";
+import { BOARD_KEYS } from "@/features/boards/api/useBoardDetail";
+import { queryClient } from "@/lib/react-query";
 
 // Refetch danh sách workspaces và cập nhật store
 export const refetchWorkspaces = async () => {
     try {
         console.log("[Refetch] Fetching workspaces...");
-        const res = await workspaceApi.getMyWorkspaces();
-
-        if (res.data.success) {
-            const { workspaces } = res.data.data;
-
-            useWorkspaceStore.getState().setWorkspaces(workspaces);
-
-            console.log("[Refetch] Workspaces updated:", workspaces.length);
-            return true;
-        }
-        return false;
+        
+        await queryClient.invalidateQueries(WORKSPACES_KEYS.all);
+        return true;
     } catch (error) {
         console.error("[Refetch] Failed to fetch workspaces:", error);
         return false;
@@ -27,17 +19,9 @@ export const refetchWorkspaces = async () => {
 export const refetchBoards = async () => {
     try {
         console.log("[Refetch] Fetching boards...");
-        const res = await boardApi.getMyBoards();
-
-        if (res.data.success) {
-            const { boards } = res.data.data;
-
-            useBoardStore.getState().setBoards(boards);
-
-            console.log("[Refetch] Boards updated:", boards.length);
-            return true;
-        }
-        return false;
+        
+        await queryClient.invalidateQueries(['boards']);
+        return true;
     } catch (error) {
         console.error("[Refetch] Failed to fetch boards:", error);
         return false;
@@ -50,50 +34,25 @@ export const refetchCurrentWorkspace = async (workspaceId) => {
 
     try {
         console.log("[Refetch] Fetching current workspace:", workspaceId);
-        const res = await workspaceApi.getWorkspaceById(workspaceId);
-
-        if (res.data.success) {
-            const workspace = res.data.data.workspace;
-
-            const { clearCurrentWorkspace, setCurrentWorkspace, updateWorkspace, setMembers } =
-                useWorkspaceStore.getState();
-
-            clearCurrentWorkspace();
-            setCurrentWorkspace(workspace);
-            updateWorkspace(workspace);
-            setMembers(workspace._id, workspace.members);
-
-            console.log("[Refetch] Current workspace updated");
-            return true;
-        }
-        return false;
+        
+        await queryClient.invalidateQueries(['workspace', workspaceId]);
+        
+        return true;
     } catch (error) {
         console.error("[Refetch] Failed to fetch current workspace:", error);
         return false;
     }
 };
 
-// Refetch board hiện tại và cập nhật store
+// Refetch board hiện tại và cập nhật React Query Cache (thay vì store)
 export const refetchCurrentBoard = async (boardId) => {
     if (!boardId) return false;
 
-    try {
-        console.log("[Refetch] Fetching current board:", boardId);
-        const res = await boardApi.detailBoard(boardId);
+    console.log("[Refetch] Invalidating board detail query:", boardId);
+    
+    await queryClient.invalidateQueries(BOARD_KEYS.detail(boardId));
 
-        if (res.data.success) {
-            const board = res.data.data.board;
-
-            useBoardDetailStore.getState().setCurrentBoard(board);
-
-            console.log("[Refetch] Current board updated");
-            return true;
-        }
-        return false;
-    } catch (error) {
-        console.error("[Refetch] Failed to fetch current board:", error);
-        return false;
-    }
+    return true;
 };
 
 // Refetch tất cả dữ liệu quan trọng

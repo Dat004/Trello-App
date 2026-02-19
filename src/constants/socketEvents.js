@@ -51,6 +51,10 @@ export const SOCKET_EVENTS = {
     CHECKLIST_ITEM_TOGGLED: 'checklist-item-toggled',
     CHECKLIST_ITEM_DELETED: 'checklist-item-deleted',
 
+    // Card member events
+    CARD_MEMBER_ASSIGNED: 'card-member-assigned',
+    CARD_MEMBER_REMOVED: 'card-member-removed',
+
     // Comment events
     COMMENT_ADDED: 'comment-added',
     COMMENT_DELETED: 'comment-deleted',

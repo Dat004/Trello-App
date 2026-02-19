@@ -1,39 +1,49 @@
 import { getMyRole } from "@/helpers/role";
-import { useWorkspaceStore } from "@/store";
 
 export function resolvePermissions({
   userId,
   workspace,
   board,
   entity,
+  workspaceMembers = [] // Add optional members arg
 }) {
-  const isBoardOwner = board.owner.toString() === userId;
+  const currentUserId = userId?.toString();
 
-  // Workspace members from store
-  const workspaceMembers = workspace
-    ? (useWorkspaceStore.getState().membersMap[workspace._id] || [])
-    : [];
+  const getBoardOwnerId = (b) => {
+    if (!b || !b.owner) return null;
+    return (b.owner?._id || b.owner).toString();
+  };
 
-  // Workspace role
-  const isWsOwner =
-    workspace && workspace.owner.toString() === userId;
+  const getWsOwnerId = (w) => {
+    if (!w || !w.owner) return null;
+    return (w.owner?._id || w.owner).toString();
+  };
 
+  const boardOwnerId = getBoardOwnerId(board);
+  const wsOwnerId = workspace ? getWsOwnerId(workspace) : null;
+
+  const isBoardOwner = boardOwnerId === currentUserId;
+  const isWsOwner = wsOwnerId === currentUserId;
+
+  // Check from passed members or fallback to empty (removed store dependency)
   const isWsAdmin =
     workspace &&
     workspaceMembers.some(
-      (m) => (m.user?._id || m.user).toString() === userId && m.role === "admin"
+      (m) => (m.user?._id || m.user).toString() === currentUserId && m.role === "admin"
     );
 
   // Board role
-  const boardRole = getMyRole(board.members);
+  const boardRole = board ? getMyRole(board.members) : null;
   const wsRole = workspace ? getMyRole(workspaceMembers) : null;
   const role = boardRole || wsRole;
 
+  // Admin/Owner rights
   let canDelete = isBoardOwner || isWsOwner || isWsAdmin;
 
-  // (Card / Comment / Attachment)
+  // (Card / Comment / Attachment) Owner rights
   if (!canDelete && entity?.ownerId) {
-    canDelete = entity.ownerId.toString() === userId;
+    const entityOwnerId = (entity.ownerId?._id || entity.ownerId).toString();
+    canDelete = entityOwnerId === currentUserId;
   }
 
   return {

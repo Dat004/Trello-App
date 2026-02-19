@@ -74,6 +74,10 @@ export const ACTIVITY_ACTIONS = {
     CARD_ARCHIVED: 'card_archived',
     CARD_RESTORED: 'card_restored',
 
+    // Card member actions
+    CARD_MEMBER_ASSIGNED: 'card_member_assigned',
+    CARD_MEMBER_REMOVED: 'card_member_removed',
+
     // Comment actions
     COMMENT_CREATED: 'comment_created',
     COMMENT_UPDATED: 'comment_updated',
@@ -254,6 +258,20 @@ export const ACTIVITY_CONFIG = {
         color: "text-green-600",
         bgColor: "bg-green-50 dark:bg-green-950",
         label: "Khôi phục thẻ"
+    },
+
+    // Card member actions
+    [ACTIVITY_ACTIONS.CARD_MEMBER_ASSIGNED]: {
+        icon: UserPlus,
+        color: "text-green-600",
+        bgColor: "bg-green-50 dark:bg-green-950",
+        label: "Gán thành viên vào thẻ"
+    },
+    [ACTIVITY_ACTIONS.CARD_MEMBER_REMOVED]: {
+        icon: UserMinus,
+        color: "text-red-600",
+        bgColor: "bg-red-50 dark:bg-red-950",
+        label: "Xóa thành viên khỏi thẻ"
     },
 
     // Comment actions

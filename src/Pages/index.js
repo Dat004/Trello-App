@@ -1,3 +1,4 @@
+import Notifications from "@/Pages/Notifications";
 import Workspaces from "@/Pages/Workspaces";
 import Workspace from "@/Pages/Workspace";
 import Settings from "@/Pages/Settings";
@@ -10,6 +11,7 @@ import Login from "@/Pages/Login";
 import Home from "@/Pages/Home";
 
 const pages = {
+  Notifications,
   Workspaces,
   Workspace,
   Templates,

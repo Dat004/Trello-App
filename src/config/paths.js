@@ -1,5 +1,6 @@
 const paths = {
   home: "/",
+  notifications: "/notifications",
   settings: "/settings/:step?",
   workspace: "/workspaces/:id",
   workspaces: "/workspaces",

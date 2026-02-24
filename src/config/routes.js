@@ -69,6 +69,14 @@ const routes = [
   },
   {
     id: 9,
+    name: "Thông báo",
+    path: paths.notifications,
+    page: pages.Notifications,
+    layout: DefaultLayout,
+    auth: "protected",
+  },
+  {
+    id: 10,
     name: "Đăng nhập",
     path: paths.login,
     page: pages.Login,
@@ -76,7 +84,7 @@ const routes = [
     auth: "guest",
   },
   {
-    id: 10,
+    id: 11,
     name: "Đăng ký",
     path: paths.register,
     page: pages.Register,

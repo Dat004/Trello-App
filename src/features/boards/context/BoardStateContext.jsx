@@ -12,9 +12,9 @@ export const BoardStateProvider = ({ serverBoard, children }) => {
     );
 };
 
-export const useBoardContext = () => {
+export const useBoardContext = (required = true) => {
     const context = useContext(BoardStateContext);
-    if (!context) {
+    if (!context && required) {
         throw new Error("useBoardContext must be used within BoardStateProvider");
     }
     return context;

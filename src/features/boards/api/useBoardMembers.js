@@ -39,7 +39,8 @@ export function useBoardJoinRequests(boardId) {
 export function useUpdateBoardMemberRole() {
     const queryClient = useQueryClient();
     const { addToast } = UserToast();
-    const { updateBoardMember } = useBoardContext();
+    const boardContext = useBoardContext(false); // ✅ Safe for non-board pages
+    const updateBoardMember = boardContext?.updateBoardMember;
 
     return useMutation({
         mutationFn: ({ boardId, member_id, role }) =>
@@ -57,8 +58,8 @@ export function useUpdateBoardMemberRole() {
 
         onSuccess: (res, variables) => {
             if (res.data?.success) {
-                // ✅ Update context with new role
-                updateBoardMember(variables.member_id, { role: variables.role });
+                // ✅ Update context with new role if exists
+                updateBoardMember?.(variables.member_id, { role: variables.role });
 
                 addToast({ type: "success", title: "Cập nhật quyền thành công" });
             } else {
@@ -82,7 +83,8 @@ export function useUpdateBoardMemberRole() {
 export function useKickBoardMember() {
     const queryClient = useQueryClient();
     const { addToast } = UserToast();
-    const { removeBoardMember } = useBoardContext();
+    const boardContext = useBoardContext(false); // ✅ Safe for non-board pages
+    const removeBoardMember = boardContext?.removeBoardMember;
 
     return useMutation({
         mutationFn: ({ boardId, member_id }) =>
@@ -101,8 +103,8 @@ export function useKickBoardMember() {
 
         onSuccess: (res, variables) => {
             if (res.data?.success) {
-                // ✅ Update context by removing member
-                removeBoardMember(variables.member_id);
+                // ✅ Update context by removing member if exists
+                removeBoardMember?.(variables.member_id);
 
                 addToast({ type: "success", title: "Đã xóa thành viên khỏi bảng" });
             } else {

@@ -1,7 +1,8 @@
-import { useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef } from "react";
 
-import { useWorkspacesList } from "@/features/workspaces/api/useWorkspacesList";
+import { ROOM_TYPES, SOCKET_EVENTS } from "@/constants/socketEvents";
+import { NOTIFICATION_KEYS } from "@/features/notifications";
 import { useNetworkStatus } from "./useNetworkStatus";
 import { UserToast } from "@/context/ToastContext";
 import { useAuthStore } from "@/store";
@@ -18,8 +19,8 @@ export function useGlobalRealtimeSync() {
     const queryClient = useQueryClient();
     const user = useAuthStore((state) => state.user);
 
-    // Fetch workspaces to know which rooms to join
-    const { data: workspaces = [] } = useWorkspacesList();
+    // // Fetch workspaces to know which rooms to join
+    // const { data: workspaces = [] } = useWorkspacesList();
 
     // Reconnect & Refetch Logic
     useEffect(() => {
@@ -74,75 +75,55 @@ export function useGlobalRealtimeSync() {
     }, [socket, addToast, queryClient]);
 
     // Event Handling (Stable Listeners)
-    // useEffect(() => {
-    //     if (!socket) return;
+    useEffect(() => {
+        if (!socket) return;
 
-    //     // ==================== HANDLERS ====================
+        // ==================== NOTIFICATION HANDLERS ====================
+        const handleNewNotification = (notification) => {
+            console.log("[GlobalSync] New notification received:", notification);
 
-    //     const handleWorkspaceUpdated = (workspace) => {
-    //         queryClient.invalidateQueries(WORKSPACES_KEYS.list());
-    //         queryClient.invalidateQueries(WORKSPACE_KEYS.detail(workspace._id));
-    //     };
+            // 1. Show Toast
+            addToast({
+                title: "Thông báo mới",
+                description: `${notification.sender?.full_name || "Hệ thống"} ${notification.message}`,
+                type: "info",
+            });
 
-    //     const handleWorkspaceDeleted = (workspaceId) => {
-    //         queryClient.invalidateQueries(WORKSPACES_KEYS.list());
-    //         queryClient.removeQueries(WORKSPACE_KEYS.detail(workspaceId));
+            // 2. Refresh unread count
+            queryClient.invalidateQueries(NOTIFICATION_KEYS.unreadCount());
 
-    //         if (pathname.includes(`/workspaces/${workspaceId}`)) {
-    //             addToast({ title: "Workspace này đã bị xóa", type: "warning" });
-    //             navigate('/workspaces');
-    //         }
-    //     };
+            // 3. Prepend to notification list if UI is open
+            queryClient.setQueryData(NOTIFICATION_KEYS.list(), (old = []) => [notification, ...old]);
+        };
 
-    //     const handleMemberRemoved = ({ workspaceId, member_id, userId }) => {
-    //         if (userId === user?._id) {
-    //             // I was removed
-    //             queryClient.invalidateQueries(WORKSPACES_KEYS.list());
-    //             queryClient.invalidateQueries(WORKSPACE_KEYS.detail(workspaceId));
+        // Listen for notifications
+        socket.on(SOCKET_EVENTS.NOTIFICATION_NEW, handleNewNotification);
 
-    //             if (pathname.includes(`/workspaces/${workspaceId}`)) {
-    //                 addToast({ title: "Bạn đã bị xóa khỏi workspace", type: "warning" });
-    //                 navigate('/workspaces');
-    //             }
-    //         } else {
-    //             // Someone else removed
-    //             queryClient.invalidateQueries(WORKSPACE_KEYS.members(workspaceId));
-    //             queryClient.invalidateQueries(WORKSPACE_KEYS.detail(workspaceId));
-    //         }
-    //     };
+        return () => {
+            socket.off(SOCKET_EVENTS.NOTIFICATION_NEW, handleNewNotification);
+        };
+    }, [socket, addToast, queryClient]);
 
-    //     // Listeners Registry
-    //     socket.on(SOCKET_EVENTS.WORKSPACE_UPDATED, handleWorkspaceUpdated);
-    //     socket.on(SOCKET_EVENTS.WORKSPACE_DELETED, handleWorkspaceDeleted);
-    //     socket.on(SOCKET_EVENTS.MEMBER_REMOVED, handleMemberRemoved);
-
-    //     return () => {
-    //         socket.off(SOCKET_EVENTS.WORKSPACE_UPDATED, handleWorkspaceUpdated);
-    //         socket.off(SOCKET_EVENTS.WORKSPACE_DELETED, handleWorkspaceDeleted);
-    //         socket.off(SOCKET_EVENTS.MEMBER_REMOVED, handleMemberRemoved);
-    //     };
-    // }, [socket, user?._id, queryClient, navigate, pathname, currentBoardId]);
-
-    // // Room Subscription Management (Optimized)
+    // // Room Subscription Management
     // const workspaceIdsString = workspaces.map(w => w._id).sort().join(',');
 
-    // useEffect(() => {
-    //     if (!user || !isConnected || !socket) return;
+    useEffect(() => {
+        if (!user || !isConnected || !socket) return;
 
-    //     console.log("[Global] Updating room subscriptions");
+        console.log("[Global] Updating room subscriptions");
 
-    //     // Join User Room
-    //     joinRoom(ROOM_TYPES.USER, user._id);
+        // Join User Room
+        joinRoom(ROOM_TYPES.USER, user._id);
 
-    //     // Join Workspace Rooms
-    //     const ids = workspaceIdsString ? workspaceIdsString.split(',') : [];
-    //     ids.forEach(wsId => joinRoom(ROOM_TYPES.WORKSPACE, wsId));
+        // // Join Workspace Rooms
+        // const ids = workspaceIdsString ? workspaceIdsString.split(',') : [];
+        // ids.forEach(wsId => joinRoom(ROOM_TYPES.WORKSPACE, wsId));
 
-    //     return () => {
-    //         leaveRoom(ROOM_TYPES.USER, user._id);
-    //         ids.forEach(wsId => leaveRoom(ROOM_TYPES.WORKSPACE, wsId));
-    //     };
-    // }, [user, isConnected, socket, workspaceIdsString, joinRoom, leaveRoom]);
+        return () => {
+            leaveRoom(ROOM_TYPES.USER, user._id);
+            // ids.forEach(wsId => leaveRoom(ROOM_TYPES.WORKSPACE, wsId));
+        };
+    }, [user?._id, isConnected, socket, joinRoom, leaveRoom]);
 
     // Network Status Toast
     useEffect(() => {

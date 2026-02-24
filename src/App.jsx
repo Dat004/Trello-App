@@ -6,8 +6,8 @@ import AppInitializer from "./initializers/AppInitializer";
 import SocketProvider from "./providers/ContextProvider";
 import ToastProvider from "./providers/ToastProvider";
 import ProtectedRoute from "./routes/ProtectedRoute";
-import { useGlobalRealtimeSync } from "@/hooks";
 import PublicRoute from "./routes/PublicRoute";
+import { useGlobalRealtimeSync } from "@/hooks";
 
 function GlobalRealtimeSync() {
   useGlobalRealtimeSync();

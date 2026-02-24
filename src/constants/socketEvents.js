@@ -4,6 +4,7 @@ export const ROOM_TYPES = {
     WORKSPACE: 'workspace',
     BOARD: 'board',
     CARD: 'card',
+    USER: 'user',
 };
 
 // Socket Events
@@ -58,6 +59,9 @@ export const SOCKET_EVENTS = {
     // Comment events
     COMMENT_ADDED: 'comment-added',
     COMMENT_DELETED: 'comment-deleted',
+
+    // Global / Notification events
+    NOTIFICATION_NEW: 'notification-new',
 };
 
 // Helper function để tạo join/leave event names

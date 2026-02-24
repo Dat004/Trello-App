@@ -19,7 +19,7 @@ function AttachmentItem({ boardId, cardId, attachment, onDeleteSuccess }) {
 
   const { addToast } = UserToast();
 
-  const { board: currentBoard } = useBoardContext();
+  const { board: currentBoard } = useBoardAccess();
   // Check can delete attachment
   const { canDelete } = usePermissions({ board: currentBoard, entity: {
     ownerId: attachment.uploaded_by,

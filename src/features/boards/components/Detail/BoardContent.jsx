@@ -12,10 +12,10 @@ import { useBoardDnD } from "@/hooks";
 import { useBoardContext } from "../../context/BoardStateContext";
 import { useBoardRealtime } from "../../hooks/useBoardRealtime";
 import { useBoardAccess } from "../BoardAccessGuard";
-import CardItem from "../Card/CardItem";
 import AddListButton from "./AddListButton";
 import BoardDetailHeader from "./BoardDetailHeader";
 import BoardList from "./BoardList.jsx";
+import CardItem from "../Card/CardItem";
 
 const customDropAnimation = {
   sideEffects: defaultDropAnimationSideEffects({

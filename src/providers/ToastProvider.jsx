@@ -1,20 +1,36 @@
+import { useCallback, useState } from "react";
 import {
   AlertCircle,
   AlertTriangle,
   CheckCircle,
-  Loader2,
   Info,
+  Loader2,
   X,
 } from "lucide-react";
-import { useState } from "react";
 
-import { Button } from "@/Components/UI";
 import ToastContext from "@/context/ToastContext";
+import { Button } from "@/Components/UI";
 
 function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([]);
 
-  const addToast = (toast) => {
+  const removeToast = useCallback((id) => {
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
+  }, []);
+
+  const closeToast = useCallback((id) => {
+    setToasts((prev) =>
+      prev.map((toast) =>
+        toast.id === id ? { ...toast, closing: true } : toast
+      )
+    );
+
+    setTimeout(() => {
+      removeToast(id);
+    }, 300);
+  }, [removeToast]);
+
+  const addToast = useCallback((toast) => {
     const id = Date.now().toString();
 
     const newToast = {
@@ -32,25 +48,7 @@ function ToastProvider({ children }) {
     }
 
     return id;
-  };
-
-  const closeToast = (id) => {
-    // Step 1: trigger closing animation
-    setToasts((prev) =>
-      prev.map((toast) =>
-        toast.id === id ? { ...toast, closing: true } : toast
-      )
-    );
-
-    // Step 2: remove after animation
-    setTimeout(() => {
-      removeToast(id);
-    }, 300);
-  };
-
-  const removeToast = (id) => {
-    setToasts((prev) => prev.filter((toast) => toast.id !== id));
-  };
+  }, [closeToast]);
 
   const getIcon = (type) => {
     switch (type) {

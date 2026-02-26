@@ -2,10 +2,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 
 import { ROOM_TYPES, SOCKET_EVENTS } from "@/constants/socketEvents";
-import { NOTIFICATION_KEYS } from "@/features/notifications";
-import { useNetworkStatus } from "./useNetworkStatus";
 import { UserToast } from "@/context/ToastContext";
+import { NOTIFICATION_KEYS } from "@/features/notifications";
 import { useAuthStore } from "@/store";
+import { useNetworkStatus } from "./useNetworkStatus";
 import useSocket from "./useSocket";
 
 export function useGlobalRealtimeSync() {
@@ -82,18 +82,51 @@ export function useGlobalRealtimeSync() {
         const handleNewNotification = (notification) => {
             console.log("[GlobalSync] New notification received:", notification);
 
-            // 1. Show Toast
+            const isReminder = notification.type === 'due_date_reminder';
             addToast({
-                title: "Thông báo mới",
-                description: `${notification.sender?.full_name || "Hệ thống"} ${notification.message}`,
-                type: "info",
+                title: isReminder ? "Nhắc nhở hạn chót" : "Thông báo mới",
+                description: isReminder
+                    ? notification.message
+                    : `${notification.sender?.full_name || "Hệ thống"} ${notification.message}`,
+                type: isReminder ? "warning" : "info",
+                duration: isReminder ? 8000 : 5000,
             });
 
-            // 2. Refresh unread count
-            queryClient.invalidateQueries(NOTIFICATION_KEYS.unreadCount());
+            // Cập nhật số lượng thông báo chưa đọc
+            queryClient.setQueryData(NOTIFICATION_KEYS.unreadCount(), (old = 0) => {
+                return old + 1;
+            });
 
-            // 3. Prepend to notification list if UI is open
-            queryClient.setQueryData(NOTIFICATION_KEYS.list(), (old = []) => [notification, ...old]);
+            // Cập nhật danh sách thông báo
+            queryClient.setQueryData(NOTIFICATION_KEYS.list(), (oldRes) => {
+                if (!oldRes?.data?.data) return oldRes;
+
+                const currentNotifications = oldRes.data.data.notifications || [];
+                const alreadyExists = currentNotifications.some(n => n._id === notification._id);
+
+                let updatedNotifications;
+                if (alreadyExists) {
+                    // Cập nhật thông báo và đưa lên đầu
+                    updatedNotifications = [
+                        notification,
+                        ...currentNotifications.filter(n => n._id !== notification._id)
+                    ];
+                } else {
+                    // Thêm thông báo mới vào đầu danh sách
+                    updatedNotifications = [notification, ...currentNotifications];
+                }
+
+                return {
+                    ...oldRes,
+                    data: {
+                        ...oldRes.data,
+                        data: {
+                            ...oldRes.data.data,
+                            notifications: updatedNotifications
+                        }
+                    }
+                };
+            });
         };
 
         // Listen for notifications
@@ -110,10 +143,14 @@ export function useGlobalRealtimeSync() {
     useEffect(() => {
         if (!user || !isConnected || !socket) return;
 
-        console.log("[Global] Updating room subscriptions");
-
         // Join User Room
         joinRoom(ROOM_TYPES.USER, user._id);
+        socket.emit(SOCKET_EVENTS.REGISTER_USER, {
+            _id: user._id,
+            full_name: user.full_name,
+            avatar: user.avatar,
+            username: user.username
+        });
 
         // // Join Workspace Rooms
         // const ids = workspaceIdsString ? workspaceIdsString.split(',') : [];

@@ -62,6 +62,23 @@ export const SOCKET_EVENTS = {
 
     // Global / Notification events
     NOTIFICATION_NEW: 'notification-new',
+
+    // Presence events
+    REGISTER_USER: 'register-user',
+    BOARD_PRESENCE_UPDATE: 'board-presence-update',
+    CARD_PRESENCE_UPDATE: 'card-presence-update',
+
+    // Typing events
+    CARD_TYPING_START: 'card-typing-start',
+    CARD_TYPING_STOP: 'card-typing-stop',
+    CARD_TYPING_UPDATE: 'card-typing-update',
+
+    // Field locking events
+    CARD_FIELD_LOCK: 'card-field-lock',
+    CARD_FIELD_UNLOCK: 'card-field-unlock',
+    CARD_FIELD_LOCKED: 'card-field-locked',
+    CARD_FIELD_UNLOCKED: 'card-field-unlocked',
+    CARD_LOCKS_INIT: 'card-locks-init',
 };
 
 // Helper function để tạo join/leave event names

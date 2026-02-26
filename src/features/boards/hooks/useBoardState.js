@@ -4,12 +4,13 @@ import { useCallback, useEffect, useState } from "react";
 export const useBoardState = (initialBoardDetail) => {
     const [boardData, setBoardData] = useState({
         currentBoard: null,
-        users: {},        // ✅ Normalized users (single source of truth)
+        users: {},
         lists: {},
         cards: {},
         listOrder: [],
         boardMembers: [],
         joinRequests: [],
+        activeUsers: [],
     });
 
     // Sync from props (when refetched)
@@ -39,7 +40,7 @@ export const useBoardState = (initialBoardDetail) => {
             newLists[list._id] = {
                 ...list,
                 cards: undefined,
-                cardOrderIds: [], // New list starts empty
+                cardOrderIds: [],
             };
 
             return {
@@ -518,6 +519,10 @@ export const useBoardState = (initialBoardDetail) => {
         });
     }, []);
 
+    const setActiveUsers = useCallback((users) => {
+        setBoardData((prev) => ({ ...prev, activeUsers: users }));
+    }, []);
+
     return {
         boardData,
         moveList,
@@ -528,7 +533,8 @@ export const useBoardState = (initialBoardDetail) => {
         addJoinRequest, removeJoinRequest,
         addChecklistItem, toggleChecklistItem, deleteChecklistItem,
         addAttachment, deleteAttachment,
-        assignCardMember, removeCardMember, updateUser,  // ✅ Card member actions
-        updateBoard
+        assignCardMember, removeCardMember, updateUser,
+        updateBoard,
+        setActiveUsers
     };
 };

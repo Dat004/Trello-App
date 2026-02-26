@@ -2,6 +2,7 @@ import { ROOM_TYPES, SOCKET_EVENTS } from "@/constants/socketEvents";
 import { UserToast } from "@/context/ToastContext";
 import { BOARD_ACTIVITIES_KEYS } from "@/features/boards/api/useBoardActivities";
 import { useSocket } from "@/hooks";
+import { useAuthStore } from "@/store";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 
@@ -9,8 +10,10 @@ export const useBoardRealtime = (boardId, actions) => {
     const { socket, joinRoom, leaveRoom, isConnected } = useSocket();
     const { addToast } = UserToast();
     const queryClient = useQueryClient();
+    const user = useAuthStore((state) => state.user);
 
     const actionsRef = useRef(actions);
+    const prevActiveUsersRef = useRef([]);
     useEffect(() => {
         actionsRef.current = actions;
     });
@@ -117,6 +120,26 @@ export const useBoardRealtime = (boardId, actions) => {
         socket.on(SOCKET_EVENTS.BOARD_DELETED, handleBoardDeleted);
         socket.on(SOCKET_EVENTS.BOARD_UPDATED, handleBoardUpdated);
 
+        // Presence
+        socket.on(SOCKET_EVENTS.BOARD_PRESENCE_UPDATE, ({ members }) => {
+            console.log("[BoardRealtime] Presence update:", members);
+
+            const prevIds = prevActiveUsersRef.current.map(u => u._id);
+            const newcomers = members.filter(u => !prevIds.includes(u._id) && u._id !== user?._id);
+
+            newcomers.forEach(u => {
+                addToast({
+                    title: "Người tham gia bảng",
+                    description: `${u.full_name} vừa vào xem bảng này`,
+                    type: "info",
+                    duration: 3000
+                });
+            });
+
+            prevActiveUsersRef.current = members;
+            safeCall('setActiveUsers', members);
+        });
+
         return () => {
             console.log(`[BoardRealtime] Cleanup: Leaving board room: ${boardId} and removing listeners`);
 
@@ -146,12 +169,12 @@ export const useBoardRealtime = (boardId, actions) => {
 
             socket.off(SOCKET_EVENTS.BOARD_DELETED, handleBoardDeleted);
             socket.off(SOCKET_EVENTS.BOARD_UPDATED, handleBoardUpdated);
+            socket.off(SOCKET_EVENTS.BOARD_PRESENCE_UPDATE);
 
             leaveRoom(ROOM_TYPES.BOARD, boardId);
         };
     }, [
-        boardId, isConnected, socket, // Depend on socket instance
-        joinRoom, leaveRoom, addToast, queryClient,
-        boardId,
+        boardId, isConnected, socket,
+        joinRoom, leaveRoom, addToast, queryClient, user?._id
     ]);
 };

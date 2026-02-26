@@ -1,19 +1,25 @@
 import { ROOM_TYPES, SOCKET_EVENTS } from "@/constants/socketEvents";
+import { UserToast } from "@/context/ToastContext";
 import { CARD_KEYS } from "@/features/boards/api/useCardData";
 import { useSocket } from "@/hooks";
+import { useAuthStore } from "@/store";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 
-/**
- * Hook to handle real-time updates for a specific card (comments, attachments, etc.)
- * @param {string} cardId - The ID of the card to subscribe to
- */
 export const useCardRealtime = (cardId) => {
-    const { joinRoom, leaveRoom, on, off, isConnected } = useSocket();
+    const { socket, joinRoom, leaveRoom, isConnected } = useSocket();
+    const { addToast } = UserToast();
     const queryClient = useQueryClient();
+    const user = useAuthStore((state) => state.user);
+
+    // Local state for presence/typing/locks
+    const [activeUsers, setActiveUsers] = useState([]);
+    const [typingUsers, setTypingUsers] = useState([]); // Array of user objects
+    const [fieldLocks, setFieldLocks] = useState({}); // { title: userObj, description: userObj }
+    const prevActiveUsersRef = useRef([]);
 
     useEffect(() => {
-        if (!cardId || !isConnected) return;
+        if (!cardId || !isConnected || !socket) return;
 
         console.log(`[CardRealtime] Joining room for card: ${cardId}`);
         joinRoom(ROOM_TYPES.CARD, cardId);
@@ -21,7 +27,6 @@ export const useCardRealtime = (cardId) => {
         // --- Event Handlers ---
 
         const handleCommentAdded = (newComment) => {
-            console.log("[Socket] Comment added");
             queryClient.invalidateQueries(CARD_KEYS.comments(cardId));
             if (newComment.parent_comment) {
                 queryClient.invalidateQueries(CARD_KEYS.replies(newComment.parent_comment));
@@ -29,27 +34,86 @@ export const useCardRealtime = (cardId) => {
         };
 
         const handleCommentDeleted = (data) => {
-            console.log("[Socket] Comment deleted");
             queryClient.invalidateQueries(CARD_KEYS.comments(cardId));
             if (data.parentId) {
                 queryClient.invalidateQueries(CARD_KEYS.replies(data.parentId));
             }
         };
 
-        // --- Attachments (If implementing realtime attachments here too) ---
-        // Assuming we have ATTACHMENT_ADDED events? 
-        // If not, we can add them later. For now, focus on existing supported events.
+        const handlePresenceUpdate = ({ members }) => {
+            const prevIds = prevActiveUsersRef.current.map(u => u._id);
+            const newcomers = members.filter(u => !prevIds.includes(u._id) && u._id !== user?._id);
+
+            newcomers.forEach(u => {
+                addToast({
+                    title: "Người cùng xem thẻ",
+                    description: `${u.full_name} vừa vào xem thẻ này`,
+                    type: "info",
+                    duration: 2000
+                });
+            });
+
+            prevActiveUsersRef.current = members;
+            setActiveUsers(members);
+        };
+
+        const handleTypingUpdate = ({ user, isTyping }) => {
+            setTypingUsers(prev => {
+                if (isTyping) {
+                    // Lọc người dùng đã tồn tại để tránh trùng lặp, sau đó thêm người dùng mới
+                    return [...prev.filter(u => u._id !== user._id), user];
+                } else {
+                    return prev.filter(u => u._id !== user._id);
+                }
+            });
+        };
+
+        const handleFieldLocked = ({ field, user }) => {
+            setFieldLocks(prev => ({ ...prev, [field]: user }));
+        };
+
+        const handleFieldUnlocked = ({ field }) => {
+            setFieldLocks(prev => {
+                const newState = { ...prev };
+                delete newState[field];
+                return newState;
+            });
+        };
+
+        const handleLocksInit = ({ locks }) => {
+            const lockMap = {};
+            locks.forEach(l => {
+                lockMap[l.field] = l.user;
+            });
+            setFieldLocks(lockMap);
+        };
 
         // --- Listeners ---
-        on(SOCKET_EVENTS.COMMENT_ADDED, handleCommentAdded);
-        on(SOCKET_EVENTS.COMMENT_DELETED, handleCommentDeleted);
+        socket.on(SOCKET_EVENTS.COMMENT_ADDED, handleCommentAdded);
+        socket.on(SOCKET_EVENTS.COMMENT_DELETED, handleCommentDeleted);
+        socket.on(SOCKET_EVENTS.CARD_PRESENCE_UPDATE, handlePresenceUpdate);
+        socket.on(SOCKET_EVENTS.CARD_TYPING_UPDATE, handleTypingUpdate);
+        socket.on(SOCKET_EVENTS.CARD_FIELD_LOCKED, handleFieldLocked);
+        socket.on(SOCKET_EVENTS.CARD_FIELD_UNLOCKED, handleFieldUnlocked);
+        socket.on(SOCKET_EVENTS.CARD_LOCKS_INIT, handleLocksInit);
 
         // Cleanup
         return () => {
             console.log(`[CardRealtime] Leaving room for card: ${cardId}`);
-            off(SOCKET_EVENTS.COMMENT_ADDED, handleCommentAdded);
-            off(SOCKET_EVENTS.COMMENT_DELETED, handleCommentDeleted);
+            socket.off(SOCKET_EVENTS.COMMENT_ADDED, handleCommentAdded);
+            socket.off(SOCKET_EVENTS.COMMENT_DELETED, handleCommentDeleted);
+            socket.off(SOCKET_EVENTS.CARD_PRESENCE_UPDATE, handlePresenceUpdate);
+            socket.off(SOCKET_EVENTS.CARD_TYPING_UPDATE, handleTypingUpdate);
+            socket.off(SOCKET_EVENTS.CARD_FIELD_LOCKED, handleFieldLocked);
+            socket.off(SOCKET_EVENTS.CARD_FIELD_UNLOCKED, handleFieldUnlocked);
+            socket.off(SOCKET_EVENTS.CARD_LOCKS_INIT, handleLocksInit);
             leaveRoom(ROOM_TYPES.CARD, cardId);
         };
-    }, [cardId, isConnected, joinRoom, leaveRoom, on, off, queryClient]);
+    }, [cardId, isConnected, socket, joinRoom, leaveRoom, queryClient, addToast, user?._id]);
+
+    return {
+        activeUsers,
+        typingUsers,
+        fieldLocks
+    };
 };

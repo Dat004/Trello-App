@@ -2,20 +2,32 @@ import { AlertCircle, Calendar, Tag } from "lucide-react";
 
 import { Input, Label } from "@/Components/UI";
 import { formatDateOnly } from "@/helpers/formatTime";
+import { cn } from "@/lib/utils";
 
-function CardHeader({ card }) {
+function CardHeader({ card, locks }) {
   return (
     <div className="grid gap-4">
       {/* Title */}
       <div className="grid gap-2">
-        <Label htmlFor="card-title" className="text-sm font-medium">
-          Tiêu đề
-        </Label>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="card-title" className="text-sm font-medium">
+            Tiêu đề
+          </Label>
+          {locks?.title && (
+            <div className="flex items-center gap-1.5 text-[10px] text-orange-500 font-medium animate-pulse">
+               <span className="h-1.5 w-1.5 rounded-full bg-orange-500" />
+               {locks.title.full_name} đang sửa...
+            </div>
+          )}
+        </div>
         <Input
           id="card-title"
           value={card.title}
           readOnly
-          className="text-base font-semibold"
+          className={cn(
+            "text-base font-semibold transition-all",
+            locks?.title && "bg-orange-50/50 border-orange-200"
+          )}
         />
       </div>
 

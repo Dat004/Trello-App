@@ -74,10 +74,6 @@ function CardComments({ card, boardId, board }) {
             if (workspace) {
                  const wsOwnerId = (workspace.owner._id || workspace.owner).toString();
                  if (wsOwnerId === currentUserId) return true;
-
-                 // TODO: Check Admin Role from Workspace Members (Requires fetching members)
-                 // For now, we rely on Owner checks or simple permissions.
-                 // If critical, fetch useWorkspaceMembers(workspace._id) here.
             }
         }
         return false;
@@ -144,7 +140,7 @@ function CardComments({ card, boardId, board }) {
       </div>
 
       {/* Add Comment */}
-      <CommentInput onSubmit={handleAddComment} isLoading={isAdding} />
+      <CommentInput cardId={card._id} user={user} onSubmit={handleAddComment} isLoading={isAdding} />
 
       {/* Loading Initial */}
       {isInitialLoading ? (

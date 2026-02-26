@@ -1,9 +1,13 @@
 import { Send, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Button, Input } from "@/Components/UI";
+import { SOCKET_EVENTS } from "@/constants/socketEvents";
+import { useSocket } from "@/hooks";
 
 function CommentInput({ 
+  cardId,
+  user,
   onSubmit, 
   onCancel, 
   isLoading, 
@@ -12,6 +16,47 @@ function CommentInput({
   replyToName = null 
 }) {
   const [value, setValue] = useState("");
+  const { socket } = useSocket();
+  const typingTimeoutRef = useRef(null);
+  const isTypingRef = useRef(false);
+
+  const emitTyping = (isTyping) => {
+    if (!socket || !cardId || !user) return;
+    
+    if (isTyping) {
+        if (!isTypingRef.current) {
+            socket.emit(SOCKET_EVENTS.CARD_TYPING_START, { cardId, user });
+            isTypingRef.current = true;
+        }
+    } else {
+        if (isTypingRef.current) {
+            socket.emit(SOCKET_EVENTS.CARD_TYPING_STOP, { cardId, user });
+            isTypingRef.current = false;
+        }
+    }
+  };
+
+  const handleValueChange = (e) => {
+    const val = e.target.value;
+    setValue(val);
+    
+    // Start typing
+    emitTyping(true);
+    
+    // Debounce stop typing
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(() => {
+        emitTyping(false);
+    }, 2000);
+  };
+
+  // Cleanup typing on unmount
+  useEffect(() => {
+    return () => {
+        if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+        emitTyping(false);
+    };
+  }, []);
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -57,7 +102,7 @@ function CommentInput({
       <div className="flex gap-2 items-center">
         <Input
           value={value}
-          onChange={(e) => setValue(e.target.value)}
+          onChange={handleValueChange}
           onKeyDown={handleKeyDown}
           disabled={isLoading}
           placeholder={placeholder}

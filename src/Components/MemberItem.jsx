@@ -1,6 +1,5 @@
 import { LogOut, Settings } from "lucide-react";
 
-import { getRoleText } from "@/helpers/role";
 import {
   Avatar,
   AvatarFallback,
@@ -17,8 +16,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/Components/UI";
+import { getRoleText } from "@/helpers/role";
 
-function MemberItem({ workspace, member, isOwner = false, isAdmin = false, isMe = false, readOnly = false, onUpdateRoleMember, onKickMember }) {
+function MemberItem({ workspace, member, isOwner = false, isAdmin = false, isMe = false, isOnline = false, readOnly = false, onUpdateRoleMember, onKickMember }) {
     const memberUser = member.user || {};
     const memberId = memberUser._id || member.user;
     const memberName = memberUser.full_name || "Unknown";
@@ -46,15 +46,20 @@ function MemberItem({ workspace, member, isOwner = false, isAdmin = false, isMe 
     return (
         <div key={member._id} className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors">
             <div className="flex items-center gap-3 flex-1 min-w-0">
-                <Avatar className="h-8 w-8">
-                <AvatarFallback className="text-xs">
-                    {memberName.charAt(0)}
-                </AvatarFallback>
-                <AvatarImage
-                    src={memberAvatar}
-                    alt={memberName}
-                />
-                </Avatar>
+                <div className="relative">
+                    <Avatar className="h-8 w-8">
+                        <AvatarFallback className="text-xs">
+                            {memberName.charAt(0)}
+                        </AvatarFallback>
+                        <AvatarImage
+                            src={memberAvatar}
+                            alt={memberName}
+                        />
+                    </Avatar>
+                    {isOnline && (
+                        <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-green-500 border-2 border-background shadow-sm" />
+                    )}
+                </div>
                 <div>
                 <p className="text-sm font-medium">
                     {memberName} {isMe && "(Bạn)"}

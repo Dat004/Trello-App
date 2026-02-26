@@ -5,9 +5,9 @@ import { useBoardContext } from "@/features/boards/context/BoardStateContext";
 import { useFavoritesStore } from "@/store";
 import BoardActivitiesDialog from "../Dialogs/BoardActivitiesDialog";
 
-import MembersDialog from "@/Components/MembersDialog";
-import { Button } from "@/Components/UI";
 import { useHandleBoardJoinRequest } from "@/features/boards/api/useBoardMembers";
+import { Avatar, AvatarFallback, AvatarImage, Button } from "@/Components/UI";
+import MembersDialog from "@/Components/MembersDialog";
 import { useFavorites } from "@/hooks";
 import { cn } from "@/lib/utils";
 
@@ -129,6 +129,7 @@ function BoardDetailHeader() {
                 entity={currentBoard}
                 members={boardMembers}
                 pendingMembers={joinRequests}
+                activeUsers={boardData.activeUsers}
                 onAcceptRequest={handleAcceptRequest}
                 onRejectRequest={handleRejectRequest}
                 trigger={
@@ -143,6 +144,22 @@ function BoardDetailHeader() {
                   </Button>
                 }
               />
+
+              <div className="flex items-center -space-x-2 ml-2 mr-4">
+                {boardData.activeUsers?.slice(0, 3).map((active) => (
+                  <Avatar key={active._id} className="h-7 w-7 border-2 border-background shadow-sm" title={`${active.full_name} đang online`}>
+                    <AvatarImage src={active.avatar?.url} alt={active.full_name} />
+                    <AvatarFallback className="text-[10px] bg-green-100 text-green-700">
+                      {active.full_name?.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                ))}
+                {boardData.activeUsers?.length > 3 && (
+                  <div className="h-7 w-7 rounded-full bg-muted border-2 border-background flex items-center justify-center text-[10px] font-bold text-muted-foreground z-10 shadow-sm">
+                    +{boardData.activeUsers.length - 3}
+                  </div>
+                )}
+              </div>
 
               <Button
                 variant="ghost"

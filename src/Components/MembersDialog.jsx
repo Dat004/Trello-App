@@ -29,6 +29,7 @@ function MembersDialog({
   entity, 
   members = [], 
   pendingMembers = [],
+  activeUsers = [],
   isLoading = false,
   onAcceptRequest,
   onRejectRequest,
@@ -126,6 +127,7 @@ function MembersDialog({
                     isMe={member.user?._id === user._id}
                     isAdmin={isAdmin}
                     isOwner={isMyEntity}
+                    isOnline={activeUsers.some(u => u._id === (member.user?._id || member.user))}
                     onUpdateRoleMember={handleUpdateRoleMember}
                     onKickMember={handleKickMember}
                   />

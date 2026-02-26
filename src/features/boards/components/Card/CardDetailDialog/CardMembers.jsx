@@ -2,26 +2,26 @@ import { Plus, User, X } from "lucide-react";
 import { useState } from "react";
 
 import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-  Button,
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  Input,
-  Label,
+    Avatar,
+    AvatarFallback,
+    AvatarImage,
+    Button,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+    Input,
+    Label,
 } from "@/Components/UI";
 import {
-  useAssignCardMember,
-  useRemoveCardMember,
+    useAssignCardMember,
+    useRemoveCardMember,
 } from "@/features/boards/api/useCardMembers";
 import { useBoardContext } from "@/features/boards/context/BoardStateContext";
 
-function CardMembers({ card, boardId, listId }) {
+function CardMembers({ card, boardId, listId, activeUsers = [] }) {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const { boardData } = useBoardContext();
@@ -133,12 +133,17 @@ function CardMembers({ card, boardId, listId }) {
                         role="button"
                         tabIndex={0}
                       >
-                        <Avatar className="h-10 w-10">
-                          <AvatarImage src={memberAvatar} alt={memberName} />
-                          <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                            {memberName.charAt(0).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
+                        <div className="relative">
+                          <Avatar className="h-10 w-10">
+                            <AvatarImage src={memberAvatar} alt={memberName} />
+                            <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                              {memberName.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          {activeUsers.some(u => u._id === (member._id)) && (
+                            <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-background shadow-sm" />
+                          )}
+                        </div>
 
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-sm truncate">
@@ -189,12 +194,17 @@ function CardMembers({ card, boardId, listId }) {
                 key={member._id}
                 className="group relative flex items-center gap-2 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full text-xs transition-all border border-transparent hover:border-primary/20"
               >
-                <Avatar className="h-5 w-5">
-                  <AvatarImage src={memberAvatar} alt={memberName} />
-                  <AvatarFallback className="text-[10px] bg-primary/10 text-primary font-semibold">
-                    {memberName.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
+                <div className="relative">
+                  <Avatar className="h-5 w-5">
+                    <AvatarImage src={memberAvatar} alt={memberName} />
+                    <AvatarFallback className="text-[10px] bg-primary/10 text-primary font-semibold">
+                      {memberName.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  {activeUsers.some(u => u._id === (member._id)) && (
+                    <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-green-500 border border-background shadow-sm" />
+                  )}
+                </div>
 
                 <span className="max-w-[120px] truncate font-medium">
                   {memberName}

@@ -2,6 +2,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
 import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
   Button,
   Dialog,
   DialogContent,
@@ -31,7 +34,7 @@ function CardDetailDialog({ card, listId, boardId, trigger }) {
   const currentBoard = boardData.currentBoard;
   
   // Join/Leave room khi dialog mở/đóng
-  useCardRealtime(open ? card?._id : null);
+  const { activeUsers, typingUsers, fieldLocks } = useCardRealtime(open ? card?._id : null);
 
   if (!card) return null;
 
@@ -39,30 +42,61 @@ function CardDetailDialog({ card, listId, boardId, trigger }) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Chi tiết thẻ</DialogTitle>
-          <DialogDescription>
-            Xem và chỉnh sửa thông tin chi tiết của thẻ, bao gồm tiêu đề, mô tả,
-            thành viên và danh sách công việc.
-          </DialogDescription>
+        <DialogHeader className="flex flex-row items-start justify-between">
+          <div>
+            <DialogTitle>Chi tiết thẻ</DialogTitle>
+            <DialogDescription>
+              Xem và chỉnh sửa thông tin thẻ.
+            </DialogDescription>
+          </div>
+          
+          {/* Card Presence */}
+          <div className="flex items-center -space-x-2 mr-6 mt-1">
+            {activeUsers?.map((u) => (
+              <Avatar key={u._id} className="h-6 w-6 border-2 border-background shadow-sm" title={`${u.full_name} đang xem`}>
+                <AvatarImage src={u.avatar?.url} alt={u.full_name} />
+                <AvatarFallback className="text-[10px] bg-blue-100 text-blue-700">
+                  {u.full_name?.charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+            ))}
+          </div>
         </DialogHeader>
 
         <div className="grid gap-6 py-4">
-          <CardHeader card={card} />
+          <CardHeader card={card} locks={fieldLocks} />
           
-          <CardMembers card={card} boardId={boardId} listId={listId} />
+          <CardMembers card={card} boardId={boardId} listId={listId} activeUsers={activeUsers} />
           
-          <CardDescription card={card} />
+          <CardDescription card={card} locks={fieldLocks} />
           
           <Separator />
           
           <CardChecklist card={card} boardId={boardId} listId={listId} />
-          
+
           <Separator />
           
           <CardAttachments card={card} boardId={boardId} />
           
           <Separator />
+
+          {/* Typing Indicator */}
+          {typingUsers.length > 0 && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground animate-pulse px-1">
+              <div className="flex -space-x-1">
+                {typingUsers.map(u => (
+                   <div key={u._id} className="h-4 w-4 rounded-full border border-background bg-muted overflow-hidden">
+                      <img src={u.avatar?.url} alt={u.full_name} className="h-full w-full object-cover" />
+                   </div>
+                ))}
+              </div>
+              <span>
+                {typingUsers.length === 1 
+                  ? `${typingUsers[0].full_name} đang nhập...` 
+                  : `${typingUsers.length} người đang nhập...`}
+              </span>
+            </div>
+          )}
           
           <CardComments card={card} boardId={boardId} board={currentBoard} />
           

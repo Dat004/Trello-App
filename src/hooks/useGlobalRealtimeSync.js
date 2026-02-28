@@ -98,34 +98,21 @@ export function useGlobalRealtimeSync() {
             });
 
             // Cập nhật danh sách thông báo
-            queryClient.setQueryData(NOTIFICATION_KEYS.list(), (oldRes) => {
-                if (!oldRes?.data?.data) return oldRes;
+            queryClient.setQueryData(NOTIFICATION_KEYS.list(), (oldRes = []) => {
+                if (!Array.isArray(oldRes)) return oldRes;
 
-                const currentNotifications = oldRes.data.data.notifications || [];
-                const alreadyExists = currentNotifications.some(n => n._id === notification._id);
+                const alreadyExists = oldRes.some(n => n._id === notification._id);
 
-                let updatedNotifications;
                 if (alreadyExists) {
                     // Cập nhật thông báo và đưa lên đầu
-                    updatedNotifications = [
+                    return [
                         notification,
-                        ...currentNotifications.filter(n => n._id !== notification._id)
+                        ...oldRes.filter(n => n._id !== notification._id)
                     ];
                 } else {
                     // Thêm thông báo mới vào đầu danh sách
-                    updatedNotifications = [notification, ...currentNotifications];
+                    return [notification, ...oldRes];
                 }
-
-                return {
-                    ...oldRes,
-                    data: {
-                        ...oldRes.data,
-                        data: {
-                            ...oldRes.data.data,
-                            notifications: updatedNotifications
-                        }
-                    }
-                };
             });
         };
 

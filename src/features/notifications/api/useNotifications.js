@@ -11,8 +11,10 @@ export const NOTIFICATION_KEYS = {
 export const useNotifications = () => {
     return useQuery({
         queryKey: NOTIFICATION_KEYS.list(),
-        queryFn: notificationApi.getMyNotifications,
-        select: (res) => res.data?.data?.notifications || [],
+        queryFn: async () => {
+            const res = await notificationApi.getMyNotifications();
+            return res.data?.data?.notifications || [];
+        },
         staleTime: 1000 * 60,
     });
 };
@@ -20,8 +22,10 @@ export const useNotifications = () => {
 export const useUnreadCount = () => {
     return useQuery({
         queryKey: NOTIFICATION_KEYS.unreadCount(),
-        queryFn: notificationApi.getUnreadNotificationsCount,
-        select: (res) => res.data?.data?.count || 0,
+        queryFn: async () => {
+            const res = await notificationApi.getUnreadNotificationsCount();
+            return res.data?.data?.count || 0;
+        },
         refetchInterval: 1000 * 60 * 2,
     });
 };
@@ -32,26 +36,30 @@ export const useMarkNotificationRead = () => {
     return useMutation({
         mutationFn: notificationApi.markNotificationAsRead,
         onMutate: async (notificationId) => {
-            // Hủy các truy vấn đang chờ
             await queryClient.cancelQueries(NOTIFICATION_KEYS.all);
 
-            // Lưu lại giá trị trước đó
-            const previousNotifications = queryClient.getQueryData(NOTIFICATION_KEYS.list());
+            // Lưu cache
+            const previousData = queryClient.getQueryData(NOTIFICATION_KEYS.list());
 
-            // Cập nhật trạng thái đã đọc
-            queryClient.setQueryData(NOTIFICATION_KEYS.list(), (old = []) =>
-                old.map(n => n._id === notificationId ? { ...n, is_read: true } : n)
-            );
+            // Cập nhật cache
+            queryClient.setQueryData(NOTIFICATION_KEYS.list(), (old = []) => {
+                if (!Array.isArray(old)) return old;
+                return old.map((n) =>
+                    n._id === notificationId ? { ...n, is_read: true } : n
+                );
+            });
 
-            // Giảm số lượng thông báo chưa đọc
+            // Giảm số thông báo chưa đọc
             queryClient.setQueryData(NOTIFICATION_KEYS.unreadCount(), (old = 0) =>
                 Math.max(0, old - 1)
             );
 
-            return { previousNotifications };
+            return { previousData };
         },
-        onError: (err, newTodo, context) => {
-            queryClient.setQueryData(NOTIFICATION_KEYS.list(), context.previousNotifications);
+        onError: (err, _vars, context) => {
+            if (context?.previousData) {
+                queryClient.setQueryData(NOTIFICATION_KEYS.list(), context.previousData);
+            }
             queryClient.invalidateQueries(NOTIFICATION_KEYS.unreadCount());
         },
         onSettled: () => {

@@ -1,8 +1,8 @@
-import { Plus, Users as UsersIcon } from "lucide-react";
+import { Users as UsersIcon } from "lucide-react";
 
-import { useKickMember, useUpdateMemberRole } from "@/features/workspaces/api/useWorkspaceMembers";
+import InviteMemberDialog from "@/Components/InviteMemberDialog";
 import MemberItem from "@/Components/MemberItem";
-import { Button } from "@/Components/UI";
+import { useInviteWorkspaceMember, useKickMember, useUpdateMemberRole } from "@/features/workspaces/api/useWorkspaceMembers";
 import { useAuthStore } from "@/store";
 
 function WorkspaceMembers({ workspace, readOnly }) {
@@ -15,6 +15,7 @@ function WorkspaceMembers({ workspace, readOnly }) {
   
   const { mutate: updateRole } = useUpdateMemberRole();
   const { mutate: kickMember } = useKickMember();
+  const { mutate: inviteMember } = useInviteWorkspaceMember();
 
   const handleUpdateRoleMember = (role, member) => {
     const memberId = member.user?._id || member.user;
@@ -24,7 +25,7 @@ function WorkspaceMembers({ workspace, readOnly }) {
       role,
     });
   };
-
+ 
   const handleKickMember = (targetUserId) => {
     kickMember({
       workspaceId: workspace._id,
@@ -32,15 +33,33 @@ function WorkspaceMembers({ workspace, readOnly }) {
     });
   };
 
+  const handleInviteMembers = ({ emails, role, message, onSuccess, onSettled }) => {
+    inviteMember(
+      {
+        workspaceId: workspace._id,
+        emails,
+        role,
+        message,
+      },
+      {
+        onSuccess: () => {
+          if (onSuccess) onSuccess();
+        },
+        onSettled: () => {
+          if (onSettled) onSettled();
+        },
+      }
+    );
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Thành viên ({members.length})</h3>
         {!readOnly && (
-          <Button size="sm" className="gap-2">
-            <Plus className="h-4 w-4" />
-            Thêm thành viên
-          </Button>
+          <section>
+            <InviteMemberDialog onInvite={handleInviteMembers} />
+          </section>
         )}
       </div>
 
@@ -50,10 +69,9 @@ function WorkspaceMembers({ workspace, readOnly }) {
           <p className="text-muted-foreground font-medium mb-1">Chưa có thành viên nào</p>
           <p className="text-sm text-muted-foreground mb-4">Thêm thành viên vào workspace để bắt đầu cộng tác</p>
           {!readOnly && (
-            <Button className="gap-2">
-              <Plus className="h-4 w-4" />
-              Thêm thành viên
-            </Button>
+            <section>
+              <InviteMemberDialog onInvite={handleInviteMembers} />
+            </section>
           )}
         </div>
       ) : (

@@ -1,11 +1,12 @@
+import { Loader2, Mail, UserPlus, X } from "lucide-react";
 import { useState } from "react";
-import { UserPlus, X, Mail } from "lucide-react";
+import { z } from "zod";
+
+import { useZodForm } from "@/hooks";
+import { inviteSchema } from "@/schemas/inviteSchema";
 
 import {
-  Input,
   Badge,
-  Label,
-  TextArea,
   Button,
   Dialog,
   DialogContent,
@@ -14,33 +15,62 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  Input,
+  Label,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
+  TextArea,
 } from "./UI";
 
-function InviteMemberDialog({ trigger }) {
+function InviteMemberDialog({ trigger, type = "workspace", onInvite }) {
+  const isWorkspace = type === "workspace";
+  const entityLabel = isWorkspace ? "workspace" : "bảng";
+
   const [open, setOpen] = useState(false);
-  const [emails, setEmails] = useState([]);
   const [currentEmail, setCurrentEmail] = useState("");
-  const [role, setRole] = useState("member");
-  const [message, setMessage] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    reset,
+    formState: { errors },
+  } = useZodForm(inviteSchema, {
+    defaultValues: {
+      emails: [],
+      role: "member",
+      message: "",
+    },
+  });
+
+  const emails = watch("emails");
+  const role = watch("role");
 
   const addEmail = () => {
-    if (
-      currentEmail &&
-      !emails.includes(currentEmail) &&
-      currentEmail.includes("@")
-    ) {
-      setEmails([...emails, currentEmail]);
-      setCurrentEmail("");
+    if (!currentEmail.trim()) return;
+    
+    // Validate email trước khi thêm vào danh sách
+    const emailResult = z.string().email().safeParse(currentEmail.trim());
+    if (!emailResult.success) {
+      setEmailError("Email không đúng định dạng");
+      return;
     }
+
+    if (!emails.includes(emailResult.data)) {
+      setValue("emails", [...emails, emailResult.data], { shouldValidate: true });
+    }
+    setCurrentEmail("");
+    setEmailError("");
   };
 
   const removeEmail = (emailToRemove) => {
-    setEmails(emails.filter((email) => email !== emailToRemove));
+    setValue("emails", emails.filter((email) => email !== emailToRemove), { shouldValidate: true });
   };
 
   const handleKeyPress = (e) => {
@@ -50,23 +80,37 @@ function InviteMemberDialog({ trigger }) {
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (emails.length === 0) return;
+  const onSubmit = (data) => {
+    setIsSubmitting(true);
+    if (onInvite) {
+      onInvite({
+        emails: data.emails,
+        role: data.role,
+        message: data.message,
+        onSuccess: () => {
+          reset();
+          setCurrentEmail("");
+          setEmailError("");
+          setOpen(false);
+        },
+        onSettled: () => {
+          setIsSubmitting(false);
+        },
+      });
+    }
+  };
 
-    // TODO: Add invitation logic
-    console.log("Inviting members:", { emails, role, message });
-
-    // Reset form
-    setEmails([]);
-    setCurrentEmail("");
-    setRole("member");
-    setMessage("");
-    setOpen(false);
+  const handleOpenChange = (isOpen) => {
+    setOpen(isOpen);
+    if (!isOpen) {
+      reset();
+      setCurrentEmail("");
+      setEmailError("");
+    }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         {trigger || (
           <Button className="w-full gap-2 leading-1.5">
@@ -82,11 +126,11 @@ function InviteMemberDialog({ trigger }) {
             Mời thành viên mới
           </DialogTitle>
           <DialogDescription>
-            Mời người khác tham gia workspace và cộng tác trong các dự án.
+            Mời người khác tham gia {entityLabel} và cộng tác trong các dự án.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="emails">Email addresses</Label>
             <div className="space-y-2">
@@ -94,14 +138,24 @@ function InviteMemberDialog({ trigger }) {
                 id="emails"
                 placeholder="Nhập email và nhấn Enter..."
                 value={currentEmail}
-                onChange={(e) => setCurrentEmail(e.target.value)}
+                onChange={(e) => {
+                  setCurrentEmail(e.target.value);
+                  if (emailError) setEmailError("");
+                }}
                 onKeyDown={handleKeyPress}
                 onBlur={addEmail}
               />
+              {emailError && (
+                <p className="text-xs text-red-500 mt-1">{emailError}</p>
+              )}
+              {errors.emails && (
+                <p className="text-xs text-red-500 mt-1">{errors.emails.message}</p>
+              )}
+              
               {emails.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   {emails.map((email) => (
-                    <Badge key={email} variant="secondary" className="gap-1">
+                    <Badge key={email} variant="secondary" className="flex items-center leading-[1.15] gap-1">
                       {email}
                       <button
                         type="button"
@@ -119,14 +173,14 @@ function InviteMemberDialog({ trigger }) {
 
           <div className="space-y-2">
             <Label htmlFor="role">Vai trò</Label>
-            <Select value={role} onValueChange={setRole}>
+            <Select 
+              value={role} 
+              onValueChange={(val) => setValue("role", val, { shouldValidate: true })}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="viewer">
-                  Xem - Chỉ có thể xem bảng
-                </SelectItem>
                 <SelectItem value="member">
                   Thành viên - Có thể chỉnh sửa bảng
                 </SelectItem>
@@ -140,12 +194,11 @@ function InviteMemberDialog({ trigger }) {
           <div className="space-y-2">
             <Label htmlFor="message">Tin nhắn (tùy chọn)</Label>
             <TextArea
-              id="message"
-              placeholder="Thêm tin nhắn cá nhân cho lời mời..."
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              rows={3}
-            />
+                id="message"
+                {...register("message")}
+                placeholder="Thêm tin nhắn cá nhân cho lời mời..."
+                rows={3}
+              />
           </div>
 
           <div className="bg-muted/50 p-3 rounded-lg">
@@ -154,13 +207,10 @@ function InviteMemberDialog({ trigger }) {
             </h4>
             <ul className="text-xs text-muted-foreground space-y-1">
               <li>
-                • <strong>Xem:</strong> Chỉ có thể xem bảng và thẻ
-              </li>
-              <li>
                 • <strong>Thành viên:</strong> Tạo, chỉnh sửa thẻ và bình luận
               </li>
               <li>
-                • <strong>Quản trị:</strong> Toàn quyền quản lý workspace và
+                • <strong>Quản trị:</strong> Toàn quyền quản lý {entityLabel} và
                 thành viên
               </li>
             </ul>
@@ -170,12 +220,20 @@ function InviteMemberDialog({ trigger }) {
             <Button
               type="button"
               variant="outline"
-              onClick={() => setOpen(false)}
+              onClick={() => handleOpenChange(false)}
+              disabled={isSubmitting}
             >
               Hủy
             </Button>
-            <Button type="submit" disabled={emails.length === 0}>
-              Gửi lời mời ({emails.length})
+            <Button type="submit" disabled={emails.length === 0 || isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Đang gửi...
+                </>
+              ) : (
+                `Gửi lời mời (${emails.length})`
+              )}
             </Button>
           </DialogFooter>
         </form>

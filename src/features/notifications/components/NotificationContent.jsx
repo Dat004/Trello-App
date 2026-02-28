@@ -2,9 +2,10 @@ import { ArrowLeft, Bell, Check, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { Button, Card, CardContent } from "@/Components/UI";
 import { useDeleteNotification, useMarkAllNotificationsRead, useMarkNotificationRead, useNotifications } from "@/features/notifications/api/useNotifications";
 import { NotificationCard, NotificationFilter } from "@/features/notifications/components";
+import { useRespondInvite } from "@/features/notifications/api/useRespondInvite";
+import { Button, Card, CardContent } from "@/Components/UI";
 
 function NotificationContent() {
     const navigate = useNavigate();
@@ -14,6 +15,7 @@ function NotificationContent() {
     const { mutate: markAsRead } = useMarkNotificationRead();
     const { mutate: markAllAsRead } = useMarkAllNotificationsRead();
     const { mutate: removeNotification } = useDeleteNotification();
+    const { mutate: respondInvite } = useRespondInvite();
 
     const unreadNotifications = notifications.filter((n) => !n.is_read);
     const readNotifications = notifications.filter((n) => n.is_read);
@@ -30,6 +32,20 @@ function NotificationContent() {
 
     const handleRemove = (id) => {
         removeNotification({ id });
+    };
+
+    const handleRespondInvite = ({ action, notification }) => {
+        const entityType = notification.entity_type ? "workspace" : "board";
+        const entityId = notification.workspace?._id || notification.board?._id;
+
+        if (!entityId) return;
+
+        respondInvite({
+            entityType,
+            entityId,
+            notification_id: notification._id,
+            action,
+        });
     };
 
     return (
@@ -104,6 +120,7 @@ function NotificationContent() {
                                 notification={notification}
                                 onMarkAsRead={markAsRead}
                                 onRemove={handleRemove}
+                                onRespond={handleRespondInvite}
                             />
                         ))}
                     </div>

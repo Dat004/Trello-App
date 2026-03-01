@@ -1,19 +1,24 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { ROOM_TYPES, SOCKET_EVENTS } from "@/constants/socketEvents";
 import { BOARD_KEYS } from "@/features/workspaces/api/useWorkspaceBoards";
 import { WORKSPACE_KEYS } from "@/features/workspaces/api/useWorkspaceDetail";
 import { WORKSPACES_KEYS } from "@/features/workspaces/api/useWorkspacesList";
-import { useSocket } from "@/hooks";
-import { useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
 import { WORKSPACE_ACTIVITIES_KEYS } from "../api/useWorkspaceActivities";
 import { WORKSPACE_MEMBERS_KEYS } from "../api/useWorkspaceMembers";
+import { UserToast } from "@/context/ToastContext";
+import { useAuthStore } from "@/store";
+import { useSocket } from "@/hooks";
 
 export function useWorkspaceSocket(workspaceId) {
     const { on, off, joinRoom, leaveRoom, isConnected } = useSocket();
     const queryClient = useQueryClient();
     const navigate = useNavigate();
+
+    const { addToast } = UserToast();
+    const user = useAuthStore((state) => state.user);
 
     useEffect(() => {
         if (!workspaceId || !isConnected) return;
@@ -48,16 +53,13 @@ export function useWorkspaceSocket(workspaceId) {
                 }
             } else {
                 queryClient.invalidateQueries(WORKSPACE_KEYS.detail(wsId));
-                queryClient.invalidateQueries(WORKSPACE_MEMBERS_KEYS.list(wsId));
                 queryClient.invalidateQueries(WORKSPACE_ACTIVITIES_KEYS.list(wsId));
             }
         }
 
         const handleMembersUpdate = () => {
-            // Invalidate Query Detail (because it contains current user role/membership info)
+            // Invalidate workspace detail (chứa members bên trong)
             queryClient.invalidateQueries(WORKSPACE_KEYS.detail(workspaceId));
-            // Invalidate specific members list if used elsewhere
-            queryClient.invalidateQueries(WORKSPACE_MEMBERS_KEYS.list(workspaceId));
             // Activities often involve member actions
             queryClient.invalidateQueries(WORKSPACE_ACTIVITIES_KEYS.list(workspaceId));
         };

@@ -36,7 +36,7 @@ import { useAuthStore } from "@/store";
 import BoardsInWorkspaceDialog from "../Dialogs/BoardsInWorkspaceDialog";
 import SettingWorkspaceDialog from "../Dialogs/SettingWorkspaceDialog";
 
-import { useHandleJoinRequest, useWorkspaceJoinRequests, useWorkspaceMembers } from "@/features/workspaces/api/useWorkspaceMembers";
+import { useHandleJoinRequest, useWorkspaceJoinRequests } from "@/features/workspaces/api/useWorkspaceMembers";
 import { useDeleteWorkspace } from "@/features/workspaces/api/useWorkspacesList";
 
 function WorkspaceItem({ workspace }) {
@@ -47,8 +47,7 @@ function WorkspaceItem({ workspace }) {
     workspaceId: workspace._id
   });
   
-  // React Query Hooks for Data
-  const { data: members = [] } = useWorkspaceMembers(workspace._id);
+  const members = workspace.members || [];
   const { data: pendingMembers = [] } = useWorkspaceJoinRequests(workspace._id);
   
   // React Query Hooks for Actions
@@ -56,7 +55,7 @@ function WorkspaceItem({ workspace }) {
   const { mutate: deleteWorkspace } = useDeleteWorkspace();
 
   const isOwner = user._id === workspace.owner;
-  const role = getMyRole(members, user._id); // Assuming helper updated or just pass user._id if needed
+  const role = getMyRole(members, user._id);
   const roleVariant = getRoleVariant(role);
 
   const handleAcceptRequest = (requestId) => {

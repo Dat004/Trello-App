@@ -5,22 +5,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { WORKSPACE_KEYS } from "./useWorkspaceDetail";
 
 export const WORKSPACE_MEMBERS_KEYS = {
-    list: (workspaceId) => ['workspaces', 'members', workspaceId],
     joinRequests: (workspaceId) => ['workspaces', 'members', 'requests', workspaceId],
 };
-
-export function useWorkspaceMembers(workspaceId) {
-    return useQuery({
-        queryKey: WORKSPACE_MEMBERS_KEYS.list(workspaceId),
-        queryFn: async () => {
-            const res = await workspaceApi.getMemberInWorkspace(workspaceId);
-            if (!res.data?.success) throw new Error(res.data?.message);
-            return res.data.data.members || [];
-        },
-        enabled: !!workspaceId,
-        staleTime: 1000 * 60 * 5, // 5 minutes
-    });
-}
 
 export function useWorkspaceJoinRequests(workspaceId) {
     return useQuery({
@@ -33,7 +19,6 @@ export function useWorkspaceJoinRequests(workspaceId) {
         enabled: !!workspaceId,
     });
 }
-
 
 export function useUpdateMemberRole() {
     const queryClient = useQueryClient();
@@ -91,8 +76,9 @@ export function useHandleJoinRequest(workspaceId) {
         onSuccess: (res) => {
             if (res.data?.success) {
                 queryClient.invalidateQueries(WORKSPACE_MEMBERS_KEYS.joinRequests(workspaceId));
+                // Khi chấp nhận, invalidate workspace detail để cập nhật danh sách members
                 if (res.data.status === 'accepted') {
-                    queryClient.invalidateQueries(WORKSPACE_MEMBERS_KEYS.list(workspaceId));
+                    queryClient.invalidateQueries(WORKSPACE_KEYS.detail(workspaceId));
                 }
                 addToast({ type: "success", title: "Đã xử lý yêu cầu tham gia" });
             } else {

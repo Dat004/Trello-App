@@ -8,8 +8,7 @@ import { BACKGROUND_COLORS } from "@/config/theme";
 import {
   useInviteWorkspaceMember,
   useKickMember,
-  useUpdateMemberRole,
-  useWorkspaceMembers
+  useUpdateMemberRole
 } from "@/features/workspaces/api/useWorkspaceMembers";
 import {
   useDeleteWorkspace,
@@ -46,10 +45,7 @@ function SettingWorkspaceDialog({ workspace, trigger }) {
   // React Query Hooks
   const { mutate: updateWorkspace } = useUpdateWorkspace();
   const { mutate: deleteWorkspace } = useDeleteWorkspace();
-  const {
-    data: members = [],
-    isLoading: isLoadingMembers
-  } = useWorkspaceMembers(workspace._id);
+  const members = workspace.members || [];
   const { mutate: updateMemberRole } = useUpdateMemberRole(workspace._id);
   const { mutate: kickMember } = useKickMember(workspace._id);
   const { mutate: inviteMember } = useInviteWorkspaceMember();
@@ -264,11 +260,6 @@ function SettingWorkspaceDialog({ workspace, trigger }) {
             </div>
 
             <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
-              {isLoadingMembers ? (
-                <div className="text-center text-sm py-4 text-muted-foreground">
-                  Đang tải thành viên...
-                </div>
-              ) : (
                 <div className="space-y-1">
                   {members.map((member) => (
                     <MemberItem
@@ -283,7 +274,6 @@ function SettingWorkspaceDialog({ workspace, trigger }) {
                     />
                   ))}
                 </div>
-              )}
             </div>
           </TabsContent>
 

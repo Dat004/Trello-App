@@ -10,35 +10,30 @@ import { cn } from "@/lib/utils"
 import AddBoardToWorkspaceDialog from "./AddBoardToWorkspaceDialog"
 
 import { useWorkspaceBoards } from "@/features/workspaces/api/useWorkspaceBoards"
-import { useWorkspaceMembers } from "@/features/workspaces/api/useWorkspaceMembers"
 import { useAuthStore, useFavoritesStore } from "@/store"
 
 import {
-  Badge,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
+    Badge,
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
 } from "@/Components/UI"
 
 function BoardsInWorkspaceDialog({ workspace, trigger }) {
   const [open, setOpen] = useState(false);
   const currentUser = useAuthStore((state) => state.user);
   
-  // React Query
-  // Note: ensure useWorkspaceBoards returns data or refetch when open if needed.
-  // Query is enabled by default if workspace._id exists.
   const { data: boards = [] } = useWorkspaceBoards(workspace._id);
-  const { data: members = [] } = useWorkspaceMembers(workspace._id);
+  const members = workspace.members || [];
   const favoriteBoards = useFavoritesStore((s) => s.favoriteBoards) || [];
 
-  // Map favorites to boards locally
   const processedBoards = boards.map(b => ({
       ...b,
       is_starred: favoriteBoards.some(fb => fb._id === b._id)

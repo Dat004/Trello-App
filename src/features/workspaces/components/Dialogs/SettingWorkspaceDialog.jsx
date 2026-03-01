@@ -1,9 +1,12 @@
-import { Settings, Trash2, Users } from "lucide-react";
+import { Settings, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import DeleteDialog from "@/Components/DeleteDialog";
+import InviteMemberDialog from "@/Components/InviteMemberDialog";
+import MemberItem from "@/Components/MemberItem";
 import { BACKGROUND_COLORS } from "@/config/theme";
 import {
+  useInviteWorkspaceMember,
   useKickMember,
   useUpdateMemberRole,
   useWorkspaceMembers
@@ -12,15 +15,11 @@ import {
   useDeleteWorkspace,
   useUpdateWorkspace
 } from "@/features/workspaces/api/useWorkspacesList";
-import { getRoleText } from "@/helpers/role";
 import { useZodForm } from "@/hooks";
 import { workspaceSchema } from "@/schemas/workspaceSchema";
 import { useAuthStore } from "@/store";
 
 import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
   Badge,
   Button,
   Dialog,
@@ -29,22 +28,13 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
   Input,
   Label,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-  TextArea,
+  TextArea
 } from "@/Components/UI";
 
 function SettingWorkspaceDialog({ workspace, trigger }) {
@@ -62,6 +52,22 @@ function SettingWorkspaceDialog({ workspace, trigger }) {
   } = useWorkspaceMembers(workspace._id);
   const { mutate: updateMemberRole } = useUpdateMemberRole(workspace._id);
   const { mutate: kickMember } = useKickMember(workspace._id);
+  const { mutate: inviteMember } = useInviteWorkspaceMember();
+
+  const handleInviteMembers = ({ emails, role, message, onSuccess, onSettled }) => {
+    inviteMember(
+      {
+        workspaceId: workspace._id,
+        emails,
+        role,
+        message,
+      },
+      {
+        onSuccess: () => {if (onSuccess) onSuccess()},
+        onSettled: () => {if (onSettled) onSettled()}
+      }
+    );
+  };
 
   const form = useZodForm(workspaceSchema, {
     defaultValues: {
@@ -106,43 +112,6 @@ function SettingWorkspaceDialog({ workspace, trigger }) {
         workspaceId: workspace._id,
         member_id 
     });
-  };
-
-  // Permission Checks
-  const canEditRole = (member) => {
-    if (!member?.user?._id) return false;
-    const isTargetOwner = member.user._id === workspace.owner;
-    const isMe = member.user._id === user._id;
-
-    if (isMyWorkspace) return !isTargetOwner;
-
-    // Admin cannot change role of Owner or Themselves (usually)
-    if (isAdminWorkspace) {
-      if (isTargetOwner) return false;
-      if (isMe) return false;
-      // Admin cannot change another Admin's role? Assume NO for now (only owner can demote admin).
-      if (member.role === 'admin') return false; 
-      return true;
-    }
-
-    return false;
-  };
-
-  const canManagerMembers = (member) => {
-    if (!member?.user?._id) return false;
-    const isTargetOwner = member.user._id === workspace.owner;
-    const isMe = member.user._id === user._id;
-
-    if (isMyWorkspace) return !isTargetOwner;
-
-    if (isAdminWorkspace) {
-      if (isTargetOwner) return false;
-      if (isMe) return false;
-      if (member.role === "admin") return false; // Admin kick Admin? No.
-      return true;
-    }
-
-    return false;
   };
 
   return (
@@ -289,10 +258,9 @@ function SettingWorkspaceDialog({ workspace, trigger }) {
               <h4 className="text-sm font-medium">
                 Thành viên ({members.length})
               </h4>
-              <Button size="sm" className="gap-2">
-                <Users className="h-4 w-4" />
-                Mời thành viên
-              </Button>
+              <section>
+                <InviteMemberDialog onInvite={handleInviteMembers} />
+              </section>
             </div>
 
             <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
@@ -301,93 +269,20 @@ function SettingWorkspaceDialog({ workspace, trigger }) {
                   Đang tải thành viên...
                 </div>
               ) : (
-                <>
-                  {members.map((member) => {
-                    const isOwner = workspace.owner === member.user._id;
-                    const isMe = member.user._id === user._id;
-
-                    return (
-                      <div
-                        key={member._id}
-                        className="flex items-center justify-between p-3 border rounded-lg"
-                      >
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-8 w-8">
-                            <AvatarFallback className="text-xs">
-                              {member.user.full_name?.charAt(0)}
-                            </AvatarFallback>
-                            <AvatarImage
-                              src={member.user.avatar?.url}
-                              alt={member.user.full_name}
-                            ></AvatarImage>
-                          </Avatar>
-                          <div>
-                            <p className="text-sm font-medium">
-                              {member.user.full_name}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {member.user.email}
-                            </p>
-                          </div>
-                        </div>
-                        <section className="flex items-center gap-3">
-                          <div className="flex items-center gap-2">
-                            {(!canEditRole(member)) ? (
-                              <Badge>{getRoleText(member.role, member.user._id, workspace.owner)}</Badge>
-                            ) : (
-                              <Select
-                                value={member.role}
-                                disabled={!canEditRole(member)}
-                                onValueChange={(value) =>
-                                  handleUpdateRoleMember(value, member)
-                                }
-                              >
-                                <SelectTrigger id={`role-${member._id}`} className="w-[110px]">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="admin">
-                                    Quản trị
-                                  </SelectItem>
-                                  <SelectItem value="member">
-                                    Thành viên
-                                  </SelectItem>
-                                </SelectContent>
-                              </Select>
-                            )}
-                          </div>
-
-                          {canManagerMembers(member) && (
-                            <section>
-                                <DropdownMenu>
-                                <DropdownMenuTrigger align="start">
-                                    <Button variant="ghost" className="w-8 h-8">
-                                    <Settings />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    <DeleteDialog
-                                        title="Kick thành viên?"
-                                        description="Bạn có chắc muốn xóa thành viên này khỏi workspace?"
-                                        onConfirm={() => handleKickMemberAction(member.user._id)}
-                                        trigger={
-                                            <DropdownMenuItem
-                                            onSelect={(e) => e.preventDefault()}
-                                            className="hover:bg-destructive hover:text-background justify-center cursor-pointer text-destructive"
-                                            >
-                                            Kick thành viên
-                                            </DropdownMenuItem>
-                                        }
-                                    />
-                                </DropdownMenuContent>
-                                </DropdownMenu>
-                            </section>
-                          )}
-                        </section>
-                      </div>
-                    );
-                  })}
-                </>
+                <div className="space-y-1">
+                  {members.map((member) => (
+                    <MemberItem
+                      key={member._id}
+                      member={member}
+                      workspace={workspace}
+                      isMe={member.user?._id === user._id}
+                      isAdmin={isAdminWorkspace}
+                      isOwner={isMyWorkspace}
+                      onKickMember={handleKickMemberAction}
+                      onUpdateRoleMember={handleUpdateRoleMember}
+                    />
+                  ))}
+                </div>
               )}
             </div>
           </TabsContent>

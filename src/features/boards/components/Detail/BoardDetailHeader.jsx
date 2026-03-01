@@ -1,13 +1,14 @@
-import { Activity, ArrowLeft, Filter, Loader2, MoreHorizontal, Settings, Share2, Star, Users } from "lucide-react";
+import { Activity, ArrowLeft, Filter, Loader2, MoreHorizontal, Settings, Star, UserPlus, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import { useBoardContext } from "@/features/boards/context/BoardStateContext";
 import { useFavoritesStore } from "@/store";
 import BoardActivitiesDialog from "../Dialogs/BoardActivitiesDialog";
 
-import { useHandleBoardJoinRequest } from "@/features/boards/api/useBoardMembers";
-import { Avatar, AvatarFallback, AvatarImage, Button } from "@/Components/UI";
+import InviteMemberDialog from "@/Components/InviteMemberDialog";
 import MembersDialog from "@/Components/MembersDialog";
+import { Avatar, AvatarFallback, AvatarImage, Button } from "@/Components/UI";
+import { useHandleBoardJoinRequest, useInviteBoardMember } from "@/features/boards/api/useBoardMembers";
 import { useFavorites } from "@/hooks";
 import { cn } from "@/lib/utils";
 
@@ -22,6 +23,22 @@ function BoardDetailHeader() {
     const { toggleBoardStar, isTogglingBoard } = useFavorites();
 
     const { mutate: handleJoinRequest } = useHandleBoardJoinRequest();
+    const { mutate: inviteMember } = useInviteBoardMember();
+  
+    const handleInviteMembers = ({ emails, role, message, onSuccess, onSettled }) => {
+      inviteMember(
+        {
+            boardId: currentBoard._id,
+            emails,
+            role,
+            message,
+        },
+        {
+            onSuccess: () => {if (onSuccess) onSuccess()},
+            onSettled: () => {if (onSettled) onSettled()}
+        }
+      );
+    };
   
     const handleAcceptRequest = (requestId) => {
         handleJoinRequest({
@@ -84,16 +101,21 @@ function BoardDetailHeader() {
                   />
                 )}
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                // onClick={handleShareBoard}
-                className="text-gray-700 dark:text-gray-300 hover:bg-gray-700 dark:hover:bg-gray-200 gap-1 hidden sm:flex"
-                title="Chia sẻ bảng"
-              >
-                <Share2 className="h-4 w-4" />
-                <span className="hidden md:inline text-xs">Chia sẻ</span>
-              </Button>
+              <InviteMemberDialog
+                type="board"
+                onInvite={handleInviteMembers}
+                trigger={
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-gray-700 dark:text-gray-300 hover:bg-gray-700 dark:hover:bg-gray-200 gap-1 hidden sm:flex cursor-pointer"
+                    title="Mời thành viên"
+                  >
+                    <UserPlus className="h-4 w-4" />
+                    <span className="hidden md:inline text-xs">Thêm</span>
+                  </Button>
+                }
+              />
 
               <Button
                 variant="ghost"

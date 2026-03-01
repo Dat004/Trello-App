@@ -1,4 +1,5 @@
 import { boardApi } from "@/api/board";
+import { inviteApi } from "@/api/invite";
 import { UserToast } from "@/context/ToastContext";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useBoardContext } from "../context/BoardStateContext";
@@ -146,5 +147,82 @@ export function useHandleBoardJoinRequest() {
         onError: (err) => {
             addToast({ type: "error", title: err.response?.data?.message || "Lỗi kết nối" });
         }
+    });
+}
+
+export function useInviteBoardMember() {
+    const queryClient = useQueryClient();
+    const { addToast } = UserToast();
+
+    const formatFailures = (fails) => {
+        if (!fails || fails.length === 0) return "Lỗi không xác định";
+        const maxDisplay = 2; // Tối đa 2 email hiển thị lý do
+        let msgs = fails.slice(0, maxDisplay).map(f => `${f.email} (${f.reason})`).join(", ");
+        if (fails.length > maxDisplay) {
+            msgs += `... và ${fails.length - maxDisplay} email khác`;
+        }
+        return msgs;
+    };
+
+    return useMutation({
+        mutationFn: ({ boardId, emails, role, message }) =>
+            inviteApi.sendInvite("board", boardId, { emails, role, message }),
+        onSuccess: (res, variables) => {
+            const results = res.data?.data?.results || res.data?.results;
+
+            if (res.data?.success) {
+                queryClient.invalidateQueries(BOARD_KEYS.detail(variables.boardId));
+
+                if (results) {
+                    const invitedCount = results.invited?.length || 0;
+                    const failedArray = results.failed || [];
+                    const failedCount = failedArray.length;
+
+                    if (invitedCount > 0 && failedCount === 0) {
+                        addToast({
+                            type: "success",
+                            title: "Mời thành công",
+                            description: `Đã gửi lời mời đến ${invitedCount} email.`
+                        });
+                    } else if (invitedCount > 0 && failedCount > 0) {
+                        addToast({
+                            type: "warning",
+                            title: "Mời thành công một phần",
+                            description: `Đã mời ${invitedCount} email. Thất bại ${failedCount}: ${formatFailures(failedArray)}`,
+                            duration: 6000
+                        });
+                    } else if (invitedCount === 0 && failedCount > 0) {
+                        addToast({
+                            type: "error",
+                            title: "Mời thất bại",
+                            description: formatFailures(failedArray),
+                            duration: 6000
+                        });
+                    } else {
+                        addToast({ type: "success", title: "Đã gửi lời mời thành công" });
+                    }
+                } else {
+                    addToast({ type: "success", title: "Đã gửi lời mời thành công" });
+                }
+
+            } else {
+                addToast({ type: "error", title: res.data?.message || "Lỗi xử lý yêu cầu" });
+            }
+        },
+        onError: (err) => {
+            const errResponse = err.response?.data;
+            const results = errResponse?.data?.results || errResponse?.results;
+
+            if (results && results.failed && results.failed.length > 0) {
+                addToast({
+                    type: "error",
+                    title: "Mời thất bại",
+                    description: formatFailures(results.failed),
+                    duration: 6000
+                });
+            } else {
+                addToast({ type: "error", title: errResponse?.message || "Lỗi kết nối" });
+            }
+        },
     });
 }

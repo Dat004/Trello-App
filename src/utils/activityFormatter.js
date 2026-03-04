@@ -150,6 +150,17 @@ export const formatActivityMessage = (activity) => {
         case ACTIVITY_ACTIONS.ATTACHMENT_DELETED:
             return `đã xóa tệp "${metadata.attachment_name}" khỏi thẻ "${metadata.card_title}"`;
 
+        // ===== CHECKLIST =====
+        case ACTIVITY_ACTIONS.CHECKLIST_ITEM_ADDED:
+            return `đã thêm mục "${metadata.checklist_text}" vào checklist trong thẻ "${metadata.card_title}"`;
+
+        case ACTIVITY_ACTIONS.CHECKLIST_ITEM_COMPLETED:
+            return `đã hoàn thành mục "${metadata.checklist_text}" trong thẻ "${metadata.card_title}"`;
+
+        // ===== MEMBER INVITE =====
+        case ACTIVITY_ACTIONS.MEMBER_INVITED:
+            return `đã mời ${metadata.member_name} tham gia với vai trò ${metadata.role}${metadata.message ? ` kèm lời nhắn: "${metadata.message}"` : ""}`;
+
         // ===== DEFAULT =====
         default:
             return "đã thực hiện một hành động";
@@ -178,7 +189,10 @@ export const getActivityContext = (activity) => {
         ACTIVITY_ACTIONS.COMMENT_UPDATED,
         ACTIVITY_ACTIONS.COMMENT_DELETED,
         ACTIVITY_ACTIONS.ATTACHMENT_UPLOADED,
-        ACTIVITY_ACTIONS.ATTACHMENT_DELETED
+        ACTIVITY_ACTIONS.ATTACHMENT_DELETED,
+        ACTIVITY_ACTIONS.CHECKLIST_ITEM_ADDED,
+        ACTIVITY_ACTIONS.CHECKLIST_ITEM_COMPLETED,
+        ACTIVITY_ACTIONS.MEMBER_INVITED,
     ].includes(action)) {
         if (metadata.board_title) {
             return `Trong bảng: ${metadata.board_title}`;

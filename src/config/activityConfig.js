@@ -7,6 +7,7 @@ import {
     Building2,
     // Join request icons
     CheckCircle,
+    CheckSquare,
     Edit3,
     FileEdit,
     FileX,
@@ -14,8 +15,10 @@ import {
     // Board icons
     Layout,
     LayoutGrid,
+    ListChecks,
     ListPlus,
     ListX,
+    MailPlus,
     MessageCircle,
     // Comment icons
     MessageSquare,
@@ -86,6 +89,13 @@ export const ACTIVITY_ACTIONS = {
     // Attachment actions
     ATTACHMENT_UPLOADED: 'attachment_uploaded',
     ATTACHMENT_DELETED: 'attachment_deleted',
+
+    // Checklist actions
+    CHECKLIST_ITEM_ADDED: 'checklist_item_added',
+    CHECKLIST_ITEM_COMPLETED: 'checklist_item_completed',
+
+    // Member actions
+    MEMBER_INVITED: 'member_invited',
 };
 
 // Định nghĩa icon và color cho từng action
@@ -306,6 +316,28 @@ export const ACTIVITY_CONFIG = {
         color: "text-red-600",
         bgColor: "bg-red-50 dark:bg-red-950",
         label: "Xóa tệp đính kèm"
+    },
+
+    // Checklist actions
+    [ACTIVITY_ACTIONS.CHECKLIST_ITEM_ADDED]: {
+        icon: ListChecks,
+        color: "text-blue-600",
+        bgColor: "bg-blue-50 dark:bg-blue-950",
+        label: "Thêm mục checklist"
+    },
+    [ACTIVITY_ACTIONS.CHECKLIST_ITEM_COMPLETED]: {
+        icon: CheckSquare,
+        color: "text-green-600",
+        bgColor: "bg-green-50 dark:bg-green-950",
+        label: "Hoàn thành mục checklist"
+    },
+
+    // Invite actions
+    [ACTIVITY_ACTIONS.MEMBER_INVITED]: {
+        icon: MailPlus,
+        color: "text-purple-600",
+        bgColor: "bg-purple-50 dark:bg-purple-950",
+        label: "Mời thành viên"
     },
 };
 

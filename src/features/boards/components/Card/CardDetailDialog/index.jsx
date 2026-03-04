@@ -64,7 +64,13 @@ function CardDetailDialog({ card, listId, boardId, trigger }) {
         </DialogHeader>
 
         <div className="grid gap-6 py-4">
-          <CardHeader card={card} locks={fieldLocks} />
+          <CardHeader 
+            card={card} 
+            locks={fieldLocks} 
+            boardId={boardId} 
+            listId={listId} 
+            currentBoard={currentBoard} 
+          />
           
           <CardMembers card={card} boardId={boardId} listId={listId} activeUsers={activeUsers} />
           

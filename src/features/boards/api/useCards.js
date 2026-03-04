@@ -105,6 +105,59 @@ export function useUpdateCard() {
     });
 }
 
+export function useUpdateCardComplete() {
+    const queryClient = useQueryClient();
+    const { addToast } = UserToast();
+    const { updateCard } = useBoardContext();
+
+    return useMutation({
+        mutationFn: ({ boardId, listId, id, data }) => cardApi.updateComplete(boardId, listId, id, data),
+
+        onMutate: async (variables) => {
+            // Cancel outgoing refetches
+            await queryClient.cancelQueries(BOARD_KEYS.detail(variables.boardId));
+            await queryClient.cancelQueries(CARD_KEYS.detail(variables.id));
+
+            // Snapshot previous values
+            const previousBoard = queryClient.getQueryData(BOARD_KEYS.detail(variables.boardId));
+            const previousCard = queryClient.getQueryData(CARD_KEYS.detail(variables.id));
+
+            return { previousBoard, previousCard };
+        },
+
+        onSuccess: (res, variables) => {
+            if (res.data?.success) {
+                // Update context with server data
+                const updatedCard = res.data.data;
+                updateCard(variables.id, updatedCard);
+                queryClient.setQueryData(CARD_KEYS.detail(variables.id), updatedCard);
+            } else {
+                addToast({ type: "error", title: res.data?.message || "Lỗi cập nhật trạng thái thẻ" });
+            }
+        },
+
+        onError: (err, variables, context) => {
+            // Rollback on error
+            if (context?.previousBoard) {
+                queryClient.setQueryData(
+                    BOARD_KEYS.detail(variables.boardId),
+                    context.previousBoard
+                );
+            }
+            if (context?.previousCard) {
+                queryClient.setQueryData(
+                    CARD_KEYS.detail(variables.id),
+                    context.previousCard
+                );
+            }
+            addToast({ type: "error", title: err.response?.data?.message || "Lỗi kết nối server" });
+        },
+        onSettled: (data, error, variables) => {
+            queryClient.invalidateQueries(CARD_KEYS.detail(variables.id));
+        }
+    });
+}
+
 export function useDeleteCard() {
     const queryClient = useQueryClient();
     const { addToast } = UserToast();

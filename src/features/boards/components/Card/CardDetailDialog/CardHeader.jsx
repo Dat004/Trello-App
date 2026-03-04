@@ -1,10 +1,33 @@
 import { AlertCircle, Calendar, Tag } from "lucide-react";
 
-import { Input, Label } from "@/Components/UI";
+import { useUpdateCardComplete } from "@/features/boards/api/useCards";
+import { Input, Label, Switch } from "@/Components/UI";
 import { formatDateOnly } from "@/helpers/formatTime";
+import { useAuthStore } from "@/store";
 import { cn } from "@/lib/utils";
 
-function CardHeader({ card, locks }) {
+function CardHeader({ card, locks, boardId, listId, currentBoard }) {
+  const { user } = useAuthStore();
+  const { mutateAsync: updateComplete, isLoading: isUpdatingComplete } = useUpdateCardComplete();
+
+  const isAssigned = card.members?.some((m) => m._id === user?._id || m.user?._id === user?._id);
+  const isBoardAdmin = currentBoard?.members?.some(
+    (m) => m.user?._id === user?._id && m.role === "admin"
+  );
+  const isBoardOwner = currentBoard?.owner === user?._id;
+
+  const canMarkComplete = isAssigned || isBoardAdmin || isBoardOwner;
+
+  const handleToggleComplete = async (checked) => {
+    if (!canMarkComplete) return;
+    await updateComplete({
+      boardId,
+      listId,
+      id: card._id,
+      data: { due_complete: checked },
+    });
+  };
+  
   return (
     <div className="grid gap-4">
       {/* Title */}
@@ -13,12 +36,28 @@ function CardHeader({ card, locks }) {
           <Label htmlFor="card-title" className="text-sm font-medium">
             Tiêu đề
           </Label>
-          {locks?.title && (
-            <div className="flex items-center gap-1.5 text-[10px] text-orange-500 font-medium animate-pulse">
-               <span className="h-1.5 w-1.5 rounded-full bg-orange-500" />
-               {locks.title.full_name} đang sửa...
+          <div className="flex items-center gap-4">
+            {locks?.title && (
+              <div className="flex items-center gap-1.5 text-[10px] text-orange-500 font-medium animate-pulse">
+                <span className="h-1.5 w-1.5 rounded-full bg-orange-500" />
+                {locks.title.full_name} đang sửa...
+              </div>
+            )}
+            
+            <div 
+              className="flex items-center gap-2"
+              title={!canMarkComplete ? "Chỉ người được phân công hoặc Quản trị viên bảng mới được phép đánh dấu thẻ này." : (card.due_complete ? "Bỏ hoàn thành" : "Đánh dấu hoàn thành")}
+            >
+              <Label className={cn("text-xs font-medium cursor-pointer", card.due_complete ? "text-green-600" : "text-muted-foreground", !canMarkComplete && "opacity-50")}>
+                {card.due_complete ? "Hoàn thành" : "Chưa hoàn thành"}
+              </Label>
+              <Switch 
+                checked={card.due_complete || false}
+                onCheckedChange={handleToggleComplete}
+                disabled={!canMarkComplete || isUpdatingComplete}
+              />
             </div>
-          )}
+          </div>
         </div>
         <Input
           id="card-title"
@@ -67,9 +106,18 @@ function CardHeader({ card, locks }) {
             </div>
           )}
 
-          <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-gray-500" />
-            <span className="text-gray-700 dark:text-gray-300">
+          <div className={cn(
+            "flex items-center gap-2 px-2.5 py-1 rounded-md transition-colors",
+            card.due_complete ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400" : ""
+          )}>
+            <Calendar className={cn(
+              "h-4 w-4",
+              card.due_complete ? "text-green-600 dark:text-green-400" : "text-gray-500"
+            )} />
+            <span className={cn(
+               "text-sm font-medium",
+               !card.due_complete && "text-gray-700 dark:text-gray-300"
+            )}>
               Hạn:{" "}
               <strong>
                 {card.due_date

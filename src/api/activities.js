@@ -18,5 +18,12 @@ export const activitiesApi = {
         } catch (err) {
             return err.response;
         }
+    },
+    async getMyActivities(params) {
+        try {
+            return await axiosClient.get(`${activitiesRoute}/me`, { params });
+        } catch (err) {
+            return err.response;
+        }
     }
 }

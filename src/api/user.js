@@ -28,5 +28,13 @@ export const userApi = {
         catch(err) {
             return err.response;
         }
+    },
+    async getMyTasks(params) {
+        try {
+            return await axiosClient.get(`${meRoute}/tasks`, { params });
+        }
+        catch(err) {
+            return err.response;
+        }
     }
 }

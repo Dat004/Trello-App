@@ -1,8 +1,5 @@
 import { Copy, Eye } from "lucide-react";
 
-import CreateBoardFromTemplateDialog from "@/features/boards/components/Dialogs/CreateBoardFromTemplateDialog";
-import TemplatePreviewDialog from "@/features/boards/components/Dialogs/TemplatePreviewDialog";
-import { getCategoryIcon } from "@/helpers/fileIcon";
 import {
     Badge,
     Button,
@@ -12,8 +9,11 @@ import {
     CardHeader,
     CardTitle,
 } from "@/Components/UI";
+import CreateBoardFromTemplateDialog from "@/features/boards/components/Dialogs/CreateBoardFromTemplateDialog";
+import TemplatePreviewDialog from "@/features/boards/components/Dialogs/TemplatePreviewDialog";
+import { getCategoryIcon } from "@/helpers/fileIcon";
 
-function TemplateItems({ template, isPopular = false }) {
+function TemplateItem({ template, isPopular = false }) {
     const ICON = getCategoryIcon[template.category];
 
     return (
@@ -120,4 +120,4 @@ function TemplateItems({ template, isPopular = false }) {
     )
 }
 
-export default TemplateItems
+export default TemplateItem;

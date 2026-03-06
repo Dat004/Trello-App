@@ -10,7 +10,7 @@ const usePermissions = ({ board, entity, workspace, workspaceMembers }) => {
     if (!user || !board) return {};
 
     // Sử dụng workspace được truyền vào hoặc lấy từ board nếu là object
-    const resolvedWorkspace = workspace || (board.workspace && typeof board.workspace === 'object' ? board.workspace : null);
+    const resolvedWorkspace = workspace || null;
 
     return resolvePermissions({
       userId: user._id?.toString(),

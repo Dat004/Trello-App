@@ -16,8 +16,8 @@ export const getMyRole = (members) => {
 };
 
 export const getRoleText = (role, memberId, owner) => {
-  if (memberId?.toString() === owner?.toString()) {
-    return "Chủ sở hữu";
+  if (memberId && owner) {
+    if (memberId?.toString() === owner?.toString()) return "Chủ sở hữu";
   }
 
   switch (role) {

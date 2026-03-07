@@ -25,9 +25,12 @@ import CardHeader from "./CardHeader";
 import CardMembers from "./CardMembers";
 import CardMetadata from "./CardMetadata";
 
-function CardDetailDialog({ card, listId, boardId, trigger }) {
-  const [open, setOpen] = useState(false);
-  const queryClient = useQueryClient();
+function CardDetailDialog({ card, listId, boardId, trigger, open: externalOpen, onOpenChange: externalOnOpenChange }) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  
+  const isControlled = externalOpen !== undefined;
+  const open = isControlled ? externalOpen : internalOpen;
+  const setOpen = isControlled ? externalOnOpenChange : setInternalOpen;
   
   // Use Context instead of Store for currentBoard
   const { boardData } = useBoardContext();

@@ -1,5 +1,5 @@
-import { Clock, Users } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Clock, Users } from "lucide-react";
 
 import { Badge, Card, CardContent, CardHeader, CardTitle } from "@/Components/UI";
 import { getRoleText, getRoleVariant } from "@/helpers/role";
@@ -15,12 +15,14 @@ function BoardCard({ index, board, view = "grid" }) {
   const renderRoleBadge = () => {
     if (!role && !isBoardOwner) return null;
 
+    console.log(role)
+
     return (
       <Badge
         variant={isBoardOwner ? "destructive" : getRoleVariant(role)}
         className="ml-2 px-1.5 h-5 text-[10px] sm:text-xs sm:h-auto font-normal pointer-events-none"
       >
-        {isBoardOwner ? "Chủ sở hữu" : getRoleText(role)}
+        {getRoleText(role)}
       </Badge>
     );
   };
@@ -52,7 +54,7 @@ function BoardCard({ index, board, view = "grid" }) {
 
             <CardHeader className="relative -mt-8 sm:p-5 p-3 bg-transparent">
               <div className="flex items-start justify-between gap-2">
-                <CardTitle className="text-lg font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2 drop-shadow-sm">
+                <CardTitle className="text-lg font-bold text-muted-foreground group-hover:text-foreground transition-colors line-clamp-2 drop-shadow-sm">
                   <section className="flex items-center flex-wrap gap-2">
                     <span className="bg-background/95 backdrop-blur-md px-3 py-1 rounded-lg border border-border shadow-sm">
                       {board.title}
@@ -70,8 +72,8 @@ function BoardCard({ index, board, view = "grid" }) {
                 {board.description || "Chưa có mô tả cho bảng này."}
               </p>
               
-              <div className="flex items-center justify-between pt-4 border-t border-border/40 text-[11px] font-semibold tracking-wide uppercase text-muted-foreground/80">
-                <div className="flex items-start gap-1.5 px-2 py-1 rounded-md bg-muted/40 transition-colors group-hover:bg-primary/5 group-hover:text-primary">
+              <div className="flex items-center justify-between pt-4 border-t border-border/40 text-[11px] font-semibold tracking-wide uppercase text-muted-foreground/80 group-hover:text-foreground">
+                <div className="flex items-start gap-1.5 px-2 py-1 rounded-md bg-muted/40 transition-colors group-hover:bg-primary/5">
                   <Users className="h-3.5 w-3.5" />
                   <span>{board.members.length} thành viên</span>
                 </div>
@@ -106,7 +108,7 @@ function BoardCard({ index, board, view = "grid" }) {
           <div className="flex-1 min-w-0 flex items-center justify-between gap-4">
             <div className="min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="font-semibold text-sm sm:text-base text-foreground truncate group-hover:text-primary transition-colors">
+                <h3 className="font-semibold text-sm sm:text-base text-muted-foreground truncate group-hover:text-foreground transition-colors">
                   {board.title}
                 </h3>
                 {renderRoleBadge()}

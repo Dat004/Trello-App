@@ -70,17 +70,17 @@ function ToastProvider({ children }) {
   const getBackgroundColor = (type) => {
     switch (type) {
       case "success":
-        return "bg-green-50 border-green-200";
+        return "bg-card border-green-500/20";
       case "error":
-        return "bg-red-50 border-red-200";
+        return "bg-card border-red-500/20";
       case "warning":
-        return "bg-yellow-50 border-yellow-200";
+        return "bg-card border-yellow-500/20";
       case "info":
-        return "bg-blue-50 border-blue-200";
+        return "bg-card border-blue-500/20";
       case "loading":
-        return "bg-gray-50 border-gray-200";
+        return "bg-card border-border";
       default:
-        return "";
+        return "bg-card border-border";
     }
   };
 

@@ -8,14 +8,14 @@ import {
   horizontalListSortingStrategy,
 } from "@dnd-kit/sortable";
 
-import { useBoardDnD } from "@/hooks";
 import { useBoardContext } from "../../context/BoardStateContext";
 import { useBoardRealtime } from "../../hooks/useBoardRealtime";
 import { useBoardAccess } from "../BoardAccessGuard";
-import AddListButton from "./AddListButton";
 import BoardDetailHeader from "./BoardDetailHeader";
-import BoardList from "./BoardList.jsx";
+import AddListButton from "./AddListButton";
 import CardItem from "../Card/CardItem";
+import BoardList from "./BoardList.jsx";
+import { useBoardDnD } from "@/hooks";
 
 const customDropAnimation = {
   sideEffects: defaultDropAnimationSideEffects({
@@ -53,8 +53,8 @@ function BoardContent() {
   if (!currentBoard) return null;
 
   return (
-    <section className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      <section className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 shadow-sm">
+    <section className="min-h-screen bg-muted/30">
+      <section className="bg-background/80 backdrop-blur-sm border-b border-border shadow-sm">
         <BoardDetailHeader />
         {/* Board Content */}
       </section>

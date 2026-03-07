@@ -10,11 +10,12 @@ import {
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import { Button, ScrollArea, Separator } from "@/Components/UI";
 import { useWorkspacesList } from "@/features/workspaces/api/useWorkspacesList";
+import { Button, ScrollArea, Separator } from "@/Components/UI";
+import { useFavoritesStore, useUIStore } from "@/store";
+import ThemeToggle from "@/Components/ThemeToggle";
 import { useFavorites } from "@/hooks";
 import { cn } from "@/lib/utils";
-import { useFavoritesStore, useUIStore } from "@/store";
 
 function Sidebar() {
   const navigate = useNavigate();
@@ -179,16 +180,17 @@ function Sidebar() {
           </div>
         </ScrollArea>
 
-        <footer className="p-3 border-t shrink-0">
-             <Button
-                variant="ghost"
-                className={cn("w-full justify-start", collapsed ? "px-2 justify-center" : "px-3")}
-                 onClick={() => navigate("/settings")} // Global settings if any
-                 title="Cài đặt"
-              >
-                <Settings className="h-4 w-4 shrink-0" />
-                {!collapsed && <span className="ml-3 truncate">Cài đặt</span>}
-              </Button>
+        <footer className="p-3 border-t shrink-0 space-y-1">
+          <ThemeToggle collapsed={collapsed} />
+          <Button
+            variant="ghost"
+            className={cn("w-full justify-start", collapsed ? "px-2 justify-center" : "px-3")}
+              onClick={() => navigate("/settings")} // Global settings if any
+              title="Cài đặt"
+          >
+            <Settings className="h-4 w-4 shrink-0" />
+            {!collapsed && <span className="ml-3 truncate">Cài đặt</span>}
+          </Button>
         </footer>
     </aside>
   );

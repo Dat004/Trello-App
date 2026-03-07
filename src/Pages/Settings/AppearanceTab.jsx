@@ -1,24 +1,24 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import { SETTINGS_TABS } from "@/constants/settings";
-import { useUpdateUserSettings } from "@/hooks";
-import { settingsData } from "@/config/data";
-import { useAuthStore } from "@/store";
 import {
   Button,
-  Separator,
+  Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-  Card,
   Label,
   Select,
-  SelectItem,
-  SelectValue,
-  SelectTrigger,
   SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Separator,
 } from "@/Components/UI";
+import { settingsData } from "@/config/data";
+import { SETTINGS_TABS } from "@/constants/settings";
+import { useUpdateUserSettings } from "@/hooks";
+import { useAuthStore, useUIStore } from "@/store";
 
 function AppearanceTab() {
   const { user } = useAuthStore();
@@ -27,6 +27,14 @@ function AppearanceTab() {
   const [appearance, setAppearance] = useState({
     ...user.settings.appearance,
   });
+
+  // Sync local state when user settings change (e.g., from Sidebar toggle)
+  useEffect(() => {
+    setAppearance((prev) => ({
+      ...prev,
+      ...user.settings.appearance,
+    }));
+  }, [user.settings.appearance]);
 
   const handleSelect = (setData, key, value) => {
     setData((state) => ({
@@ -76,7 +84,15 @@ function AppearanceTab() {
         <Button
           className="h-9"
           disabled={isUpdating}
-          onClick={() => updateSettings(SETTINGS_TABS.APPEARANCE, appearance)}
+          onClick={async () => {
+            const res = await updateSettings(
+              SETTINGS_TABS.APPEARANCE,
+              appearance
+            );
+            if (res?.data?.success && appearance.theme) {
+              useUIStore.getState().setTheme(appearance.theme);
+            }
+          }}
         >
           Lưu cài đặt
         </Button>

@@ -1,13 +1,15 @@
+import { useEffect, useState } from "react";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { Edit, GripVertical, MoreHorizontal, Plus, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
 
 import { useDeleteList, useUpdateList } from "@/features/boards/api/useLists";
 import { useBoardContext } from "@/features/boards/context/BoardStateContext";
-import { usePermissions } from "@/hooks";
-
 import DeleteDialog from "@/Components/DeleteDialog";
 import SortableItem from "@/Components/SortableItem";
+import CardFormDialog from "../Card/CardFormDialog";
+import { usePermissions } from "@/hooks";
+import CardItem from "../Card/CardItem";
+import { cn } from "@/lib/utils";
 import {
   Button,
   Card,
@@ -20,9 +22,6 @@ import {
   DropdownMenuTrigger,
   Input,
 } from "@/Components/UI";
-import { cn } from "@/lib/utils";
-import CardFormDialog from "../Card/CardFormDialog";
-import CardItem from "../Card/CardItem";
 
 function BoardList({ listId, boardId, isOverlay = false }) {
   // Use Context
@@ -93,7 +92,7 @@ function BoardList({ listId, boardId, isOverlay = false }) {
             )}
           >
             <Card className={cn(
-              "bg-white dark:bg-gray-800 shadow-md border-gray-200 dark:border-gray-700 h-fit overflow-hidden transition-shadow",
+              "bg-card shadow-md border border-border h-fit overflow-hidden transition-shadow",
               isOverlay && "shadow-2xl ring-2 ring-primary/20",
               !isOverlay && "hover:shadow-lg"
             )}>
@@ -105,10 +104,10 @@ function BoardList({ listId, boardId, isOverlay = false }) {
                       {...attributes}
                       {...listeners}
                       className={cn(
-                        "cursor-grab p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors active:cursor-grabbing"
+                        "cursor-grab p-1 hover:bg-muted rounded transition-colors active:cursor-grabbing"
                       )}
                     >
-                      <GripVertical className="h-4 w-4 text-gray-400 pointer-events-none" />
+                      <GripVertical className="h-4 w-4 text-muted-foreground pointer-events-none" />
                     </button>
                     {isEditing ? (
                       <h3 className="flex-1">
@@ -117,14 +116,14 @@ function BoardList({ listId, boardId, isOverlay = false }) {
                           onChange={(e) => setTitle(e.target.value)}
                           onBlur={handleSaveTitle}
                           onKeyDown={handleKeyPress}
-                          className="font-semibold text-gray-900 dark:text-white p-0 h-6 border-none outline-none bg-transparent focus-visible:ring-0 w-full"
+                          className="font-semibold text-foreground p-0 h-6 border-none outline-none bg-transparent focus-visible:ring-0 w-full"
                           autoFocus
                           disabled={isLoading}
                         />
                       </h3>
                     ) : (
                       <h3
-                        className="font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 px-2 py-1 rounded -mx-2 -my-1 flex-1 transition-colors"
+                        className="font-semibold text-foreground cursor-pointer hover:bg-muted px-2 py-1 rounded -mx-2 -my-1 flex-1 transition-colors"
                         onClick={() => setIsEditing(true)}
                       >
                         {list.title}
@@ -173,7 +172,7 @@ function BoardList({ listId, boardId, isOverlay = false }) {
                   <SortableContext items={list.cardOrderIds} strategy={verticalListSortingStrategy}>
                     <section className="space-y-2 p-1 min-h-[10px]">
                       {list.cardOrderIds.length === 0 && !isOverlay && (
-                        <section className="text-center py-8 text-gray-500 dark:text-gray-400">
+                        <section className="text-center py-8 text-muted-foreground">
                           <p className="text-sm">Chưa có thẻ nào</p>
                           <p className="text-xs">Thêm thẻ đầu tiên của bạn</p>
                         </section>

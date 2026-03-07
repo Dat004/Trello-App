@@ -1,10 +1,10 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { UserToast } from "@/context/ToastContext";
-import { useAuthStore } from "@/store";
 import { authApi } from "@/api/auth";
 import { userApi } from "@/api/user";
+import { UserToast } from "@/context/ToastContext";
+import { useAuthStore, useUIStore } from "@/store";
 
 export const useAuthInit = () => {
   const setUser = useAuthStore((s) => s.setUser);
@@ -15,7 +15,13 @@ export const useAuthInit = () => {
       const res = await userApi.me();
 
       if (res.data.success) {
-        setUser(res.data.data.user);
+        const user = res.data.data.user;
+        setUser(user);
+
+        const userTheme = user?.settings?.appearance?.theme;
+        if (userTheme) {
+          useUIStore.getState().setTheme(userTheme);
+        }
 
         return;
       }

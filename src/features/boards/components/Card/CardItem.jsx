@@ -1,3 +1,4 @@
+import { memo } from "react";
 import {
   AlertCircle,
   Calendar,
@@ -13,11 +14,12 @@ import {
 import { useDeleteCard } from "@/features/boards/api/useCards";
 import { getChecklistProgress } from "@/helpers/card";
 import { formatDueDate } from "@/helpers/formatTime";
-import { usePermissions } from "@/hooks";
-import { memo } from "react";
-
 import DeleteDialog from "@/Components/DeleteDialog";
 import SortableItem from "@/Components/SortableItem";
+import CardDetailDialog from "./CardDetailDialog";
+import CardFormDialog from "./CardFormDialog";
+import { usePermissions } from "@/hooks";
+import { cn } from "@/lib/utils";
 import {
   Avatar,
   AvatarFallback,
@@ -31,9 +33,6 @@ import {
   DropdownMenuTrigger,
   Progress,
 } from "@/Components/UI";
-import { cn } from "@/lib/utils";
-import CardDetailDialog from "./CardDetailDialog";
-import CardFormDialog from "./CardFormDialog";
 
 function CardItem({ cardId, listId, boardId, isOverlay = false, card, currentBoard, removeCard }) {
   if (!card) return null;
@@ -76,7 +75,7 @@ function CardItem({ cardId, listId, boardId, isOverlay = false, card, currentBoa
             trigger={
               <div 
                 className={cn(
-                  "bg-white dark:bg-gray-800 p-3 rounded-md shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200 cursor-pointer group",
+                  "bg-card p-3 rounded-md shadow-sm border border-border hover:shadow-md transition-all duration-200 cursor-pointer group",
                   isOverlay && "shadow-2xl ring-2 ring-primary/20 rotate-1"
                 )}
               >
@@ -85,13 +84,13 @@ function CardItem({ cardId, listId, boardId, isOverlay = false, card, currentBoa
                     <button 
                       {...attributes}
                       {...listeners}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity mt-1 cursor-grab active:cursor-grabbing p-0.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                      className="opacity-0 group-hover:opacity-100 transition-opacity mt-1 cursor-grab active:cursor-grabbing p-0.5 hover:bg-muted rounded"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <GripVertical className="h-3 w-3 text-gray-400 dark:text-gray-500" />
+                      <GripVertical className="h-3 w-3 text-muted-foreground" />
                     </button>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white mb-2">
+                      <p className="text-sm font-medium text-foreground mb-2">
                         {card.title}
                       </p>
 
@@ -114,7 +113,7 @@ function CardItem({ cardId, listId, boardId, isOverlay = false, card, currentBoa
                       )}
 
                       {card.description && (
-                        <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 mb-2">
+                        <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
                           {card.description}
                         </p>
                       )}
@@ -122,8 +121,8 @@ function CardItem({ cardId, listId, boardId, isOverlay = false, card, currentBoa
                       {checklistProgress && (
                         <div className="mb-2">
                           <div className="flex items-center gap-2 mb-1">
-                            <CheckSquare className="h-3 w-3 text-gray-500" />
-                            <span className="text-xs text-gray-600 dark:text-gray-400">
+                            <CheckSquare className="h-3 w-3 text-muted-foreground" />
+                            <span className="text-xs text-muted-foreground">
                               {checklistProgress.completed}/{checklistProgress.total}
                             </span>
                           </div>
@@ -198,8 +197,8 @@ function CardItem({ cardId, listId, boardId, isOverlay = false, card, currentBoa
                             );
                           })}
                           {members.length > 3 && (
-                            <div className="h-6 w-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center border-2 border-white dark:border-gray-800">
-                              <span className="text-[10px] font-semibold text-gray-600 dark:text-gray-300">
+                            <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center border-2 border-card">
+                              <span className="text-[10px] font-semibold text-muted-foreground">
                                 +{members.length - 3}
                               </span>
                             </div>

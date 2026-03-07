@@ -1,10 +1,21 @@
-import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Loader2, Share2, Star, Users } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from "@tanstack/react-query";
+import { ArrowLeft, Loader2, Share2, Star, Users } from "lucide-react";
 
-import { workspaceApi } from "@/api/workspace";
+import { useWorkspaceContext } from "@/features/workspaces/components/WorkspaceAccessGuard";
+import { useWorkspaceSocket } from "@/features/workspaces/hooks/useWorkspaceSocket";
+import { WORKSPACE_KEYS } from "@/features/workspaces/api/useWorkspaceDetail";
+import { useWorkspaceActivities } from "../../api/useWorkspaceActivities";
+import { useApiMutation, useFavorites } from "@/hooks";
 import MembersDialog from "@/Components/MembersDialog";
+import WorkspaceActivity from "./WorkspaceActivities";
+import WorkspaceSettings from "./WorkspaceSettings";
+import WorkspaceMembers from "./WorkspaceMembers";
+import WorkspaceBoards from "./WorkspaceBoards";
+import { workspaceApi } from "@/api/workspace";
+import { useFavoritesStore } from "@/store";
+import { cn } from "@/lib/utils";
 import {
   Button,
   Separator,
@@ -13,42 +24,24 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/Components/UI';
-import { WORKSPACE_KEYS } from "@/features/workspaces/api/useWorkspaceDetail";
-import { useWorkspaceContext } from "@/features/workspaces/components/WorkspaceAccessGuard";
-import { useWorkspaceSocket } from "@/features/workspaces/hooks/useWorkspaceSocket";
-import { useApiMutation, useFavorites } from "@/hooks";
-import { cn } from "@/lib/utils";
-import { useWorkspaceActivities } from "../../api/useWorkspaceActivities";
-// import { useActivityStore } from "@/store" // Có thể refactor activity store sau
-import WorkspaceActivity from "./WorkspaceActivities";
-import WorkspaceBoards from "./WorkspaceBoards";
-import WorkspaceMembers from "./WorkspaceMembers";
-import WorkspaceSettings from "./WorkspaceSettings";
-
-// Tạm thời vẫn dùng useFavoritesStore từ store cũ cho favorites
-import { useFavoritesStore } from "@/store";
 
 export default function WorkspaceContent() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  // Get data from Context instead of Store
   const { workspace, isMember, readOnly } = useWorkspaceContext();
   
   // Setup Realtime Scoped
   useWorkspaceSocket(workspace._id);
-  useWorkspaceActivities(workspace._id); // Vẫn dùng hook cũ cho activities tạm thời
+  useWorkspaceActivities(workspace._id); 
 
   const [activeTab, setActiveTab] = useState("boards");
   
-  // Favorites Logic (Giữ nguyên)
+  // Favorites
   const favoriteWorkspaces = useFavoritesStore((state) => state.favoriteWorkspaces);
   const { toggleWorkspaceStar, isTogglingWorkspace } = useFavorites();
 
   // Members & Join Requests
-  // Giả định workspace object từ API đã có members.
-  // Nếu API backend trả về join_requests trong workspace object thì dùng luôn.
-  // Nếu không, cần fetch riêng useQuery(['workspace', id, 'join-requests'])
   const workspaceMembers = workspace.members || [];
   const pendingMembers = workspace.join_requests || [];
 
@@ -62,7 +55,6 @@ export default function WorkspaceContent() {
 
     const res = await handleJoinRequest(requestId, { status: "accepted" });
     if (res?.success) {
-      // Invalidate query to refetch workspace data (members & requests)
       queryClient.invalidateQueries(WORKSPACE_KEYS.detail(workspace._id));
     }
   }
@@ -76,9 +68,6 @@ export default function WorkspaceContent() {
     }
   }
 
-  // --- UI Handlers (Dialogs) ---
-  // (Giữ nguyên logic mở dialog nếu cần)
-
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -91,7 +80,7 @@ export default function WorkspaceContent() {
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate('/workspaces')} // Back to list
-                className="text-gray-700 dark:text-gray-300 hover:bg-gray-800 dark:hover:bg-gray-200"
+                className="text-muted-foreground hover:bg-muted"
               >
                 <ArrowLeft className="h-4 w-4" />
               </Button>
@@ -119,7 +108,7 @@ export default function WorkspaceContent() {
                     variant="ghost"
                     disabled={isTogglingWorkspace}
                     onClick={() => toggleWorkspaceStar(workspace)}
-                    className="text-gray-700 dark:text-gray-300 hover:bg-gray-800 dark:hover:bg-gray-200 gap-1 hidden sm:flex"
+                    className="text-muted-foreground hover:bg-muted gap-1 hidden sm:flex"
                     title="Yêu thích"
                   >
                     {isTogglingWorkspace ? (
@@ -135,7 +124,7 @@ export default function WorkspaceContent() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-gray-700 dark:text-gray-300 hover:bg-gray-800 dark:hover:bg-gray-200 gap-1 hidden sm:flex"
+                    className="text-muted-foreground hover:bg-muted gap-1 hidden sm:flex"
                     title="Chia sẻ"
                   >
                     <Share2 className="h-4 w-4" />
@@ -153,7 +142,7 @@ export default function WorkspaceContent() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-gray-700 dark:text-gray-300 hover:bg-gray-800 dark:hover:bg-gray-200 gap-1"
+                        className="text-muted-foreground hover:bg-muted gap-1 cursor-pointer"
                         title="Thành viên"
                       >
                         <Users className="h-4 w-4" />

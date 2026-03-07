@@ -1,14 +1,13 @@
-import { Activity, ArrowLeft, Filter, Loader2, MoreHorizontal, Settings, Star, UserPlus, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { Activity, ArrowLeft, Filter, Loader2, MoreHorizontal, Settings, Star, UserPlus, Users } from "lucide-react";
 
+import { useHandleBoardJoinRequest, useInviteBoardMember } from "@/features/boards/api/useBoardMembers";
 import { useBoardContext } from "@/features/boards/context/BoardStateContext";
-import { useFavoritesStore } from "@/store";
+import { Avatar, AvatarFallback, AvatarImage, Button } from "@/Components/UI";
 import BoardActivitiesDialog from "../Dialogs/BoardActivitiesDialog";
-
 import InviteMemberDialog from "@/Components/InviteMemberDialog";
 import MembersDialog from "@/Components/MembersDialog";
-import { Avatar, AvatarFallback, AvatarImage, Button } from "@/Components/UI";
-import { useHandleBoardJoinRequest, useInviteBoardMember } from "@/features/boards/api/useBoardMembers";
+import { useFavoritesStore } from "@/store";
 import { useFavorites } from "@/hooks";
 import { cn } from "@/lib/utils";
 
@@ -66,17 +65,17 @@ function BoardDetailHeader() {
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate(-1)}
-                className="text-gray-700 dark:text-gray-300 hover:bg-gray-700 dark:hover:bg-gray-200"
+                className="text-muted-foreground hover:bg-muted"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Quay lại
               </Button>
               <section>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                <h1 className="text-2xl font-bold text-foreground">
                   {currentBoard.title}
                 </h1>
                 {currentBoard.description && (
-                  <p className="text-gray-600 dark:text-gray-400 text-sm">
+                  <p className="text-muted-foreground text-sm">
                     {currentBoard.description}
                   </p>
                 )}
@@ -88,7 +87,7 @@ function BoardDetailHeader() {
                 size="sm"
                 variant="ghost"
                 onClick={() => toggleBoardStar(currentBoard)}
-                className="text-gray-700 cursor-pointer dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="text-muted-foreground cursor-pointer hover:bg-muted"
               >
                 {isTogglingBoard ? (
                   <Loader2 className="h-4 w-4 animate-spin text-primary" />
@@ -97,7 +96,7 @@ function BoardDetailHeader() {
                   className={cn("h-5 w-5", 
                     favoriteBoards.some((board) => board._id === currentBoard._id)
                       ? "fill-yellow-400 text-yellow-400"
-                      : "text-gray-700 dark:text-gray-300")}
+                      : "text-muted-foreground")}
                   />
                 )}
               </Button>
@@ -108,7 +107,7 @@ function BoardDetailHeader() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-gray-700 dark:text-gray-300 hover:bg-gray-700 dark:hover:bg-gray-200 gap-1 hidden sm:flex cursor-pointer"
+                    className="text-muted-foreground hover:bg-muted gap-1 hidden sm:flex cursor-pointer"
                     title="Mời thành viên"
                   >
                     <UserPlus className="h-4 w-4" />
@@ -121,21 +120,21 @@ function BoardDetailHeader() {
                 variant="ghost"
                 size="sm"
                 // onClick={handleFilterBoard}
-                className="text-gray-700 dark:text-gray-300 hover:bg-gray-700 dark:hover:bg-gray-200 gap-1 hidden sm:flex"
+                className="text-muted-foreground hover:bg-muted gap-1 hidden sm:flex"
                 title="Bộ lọc"
               >
                 <Filter className="h-4 w-4" />
                 <span className="hidden md:inline text-xs">Bộ lọc</span>
               </Button>
 
-              <BoardActivitiesDialog
+               <BoardActivitiesDialog
                 boardId={currentBoard._id}
                 trigger={
                   <Button
                     variant="ghost"
                     size="sm"
                     // onClick={handleViewActivity}
-                    className="text-gray-700 dark:text-gray-300 hover:bg-gray-700 dark:hover:bg-gray-200 gap-1 hidden sm:flex"
+                    className="text-muted-foreground hover:bg-muted gap-1 hidden sm:flex"
                     title="Hoạt động"
                   >
                     <Activity className="h-4 w-4" />
@@ -144,7 +143,7 @@ function BoardDetailHeader() {
                 }
               />
 
-      <div className="border-l border-gray-300 dark:border-gray-700 mx-1 h-6" />
+      <div className="border-l border-border mx-1 h-6" />
               
               <MembersDialog
                 type="board"
@@ -158,7 +157,7 @@ function BoardDetailHeader() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-gray-700 dark:text-gray-300 hover:bg-gray-700 dark:hover:bg-gray-200 cursor-pointer"
+                    className="text-muted-foreground hover:bg-muted cursor-pointer"
                     title="Xem thành viên"
                   >
                     <Users className="h-4 w-4 mr-1" />
@@ -187,7 +186,7 @@ function BoardDetailHeader() {
                 variant="ghost"
                 size="sm"
                 // onClick={handleBoardSettings}
-                className="text-gray-700 dark:text-gray-300 hover:bg-gray-700 dark:hover:bg-gray-200 gap-1 hidden sm:flex"
+                className="text-muted-foreground hover:bg-muted gap-1 hidden sm:flex"
                 title="Cài đặt"
               >
                 <Settings className="h-4 w-4" />
@@ -196,7 +195,7 @@ function BoardDetailHeader() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-gray-700 dark:text-gray-300 hover:bg-gray-700 dark:hover:bg-gray-200"
+                className="text-muted-foreground hover:bg-muted"
               >
                 <MoreHorizontal className="h-4 w-4" />
               </Button>

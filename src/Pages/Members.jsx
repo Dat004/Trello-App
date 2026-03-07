@@ -1,41 +1,41 @@
-import { useState, useEffect } from "react";
 import {
-  Search,
-  Users,
-  Crown,
-  Shield,
-  Eye,
-  MoreHorizontal,
-  Mail,
-  Calendar,
-  Activity,
-  Settings,
+    Activity,
+    Calendar,
+    Crown,
+    Eye,
+    Mail,
+    MoreHorizontal,
+    Search,
+    Settings,
+    Shield,
+    Users,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import MemberDetailsDialog from "@/Components/MemberDetailsDialog";
 import InviteMemberDialog from "@/Components/InviteMemberDialog";
 import {
-  Badge,
-  Input,
-  Button,
   Avatar,
   AvatarFallback,
   AvatarImage,
+  Badge,
+  Button,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   StatsSkeleton,
 } from "@/Components/UI";
 import { MembersSkeleton } from "@/Components/UI/LoadingSkeleton";
@@ -156,19 +156,19 @@ function Members() {
     switch (status) {
       case "active":
         return (
-          <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
+          <Badge className="bg-green-500/10 text-green-600 hover:bg-green-500/20 shadow-none border-none">
             Hoạt động
           </Badge>
         );
       case "pending":
         return (
-          <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">
+          <Badge className="bg-yellow-500/10 text-yellow-600 hover:bg-yellow-500/20 shadow-none border-none">
             Chờ xác nhận
           </Badge>
         );
       case "inactive":
         return (
-          <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100">
+          <Badge className="bg-muted text-muted-foreground hover:bg-muted/80 shadow-none border-none">
             Không hoạt động
           </Badge>
         );
@@ -221,8 +221,8 @@ function Members() {
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                    <Users className="h-5 w-5 text-blue-600" />
+                  <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                    <Users className="h-5 w-5 text-blue-500" />
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">
@@ -237,8 +237,8 @@ function Members() {
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-green-100 flex items-center justify-center">
-                    <Activity className="h-5 w-5 text-green-600" />
+                  <div className="h-10 w-10 rounded-lg bg-green-500/10 flex items-center justify-center">
+                    <Activity className="h-5 w-5 text-green-500" />
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">
@@ -253,8 +253,8 @@ function Members() {
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-yellow-100 flex items-center justify-center">
-                    <Mail className="h-5 w-5 text-yellow-600" />
+                  <div className="h-10 w-10 rounded-lg bg-yellow-500/10 flex items-center justify-center">
+                    <Mail className="h-5 w-5 text-yellow-500" />
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">
@@ -269,8 +269,8 @@ function Members() {
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-purple-100 flex items-center justify-center">
-                    <Shield className="h-5 w-5 text-purple-600" />
+                  <div className="h-10 w-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                    <Shield className="h-5 w-5 text-purple-500" />
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">

@@ -1,5 +1,18 @@
 import { useNavigate } from "react-router-dom";
-import { Activity, ArrowLeft, Filter, Loader2, MoreHorizontal, Settings, Star, UserPlus, Users } from "lucide-react";
+import {
+  Activity,
+  ArrowLeft,
+  Calendar,
+  Filter,
+  Kanban,
+  Loader2,
+  MoreHorizontal,
+  Settings,
+  Star,
+  Table,
+  UserPlus,
+  Users
+} from "lucide-react";
 
 import { useHandleBoardJoinRequest, useInviteBoardMember } from "@/features/boards/api/useBoardMembers";
 import { useBoardContext } from "@/features/boards/context/BoardStateContext";
@@ -11,7 +24,7 @@ import { useFavoritesStore } from "@/store";
 import { useFavorites } from "@/hooks";
 import { cn } from "@/lib/utils";
 
-function BoardDetailHeader() {
+function BoardDetailHeader({ currentView, onViewChange }) {
     const navigate = useNavigate();
     
     // Use Context
@@ -55,31 +68,52 @@ function BoardDetailHeader() {
         });
     }
 
+    const views = [
+      { id: 'kanban', label: 'Bảng', icon: Kanban },
+      { id: 'table', label: 'Bảng biểu', icon: Table },
+      { id: 'calendar', label: 'Lịch', icon: Calendar },
+    ];
+
     if (!currentBoard) return null;
 
     return (
-        <section className="container mx-auto px-4 py-4">
+        <section className="container mx-auto px-4 py-3">
           <section className="flex items-center justify-between">
-            <section className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate(-1)}
-                className="text-muted-foreground hover:bg-muted"
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Quay lại
-              </Button>
-              <section>
-                <h1 className="text-2xl font-bold text-foreground">
-                  {currentBoard.title}
-                </h1>
-                {currentBoard.description && (
-                  <p className="text-muted-foreground text-sm">
-                    {currentBoard.description}
-                  </p>
-                )}
-              </section>
+            <section className="flex items-center gap-6">
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => navigate(-1)}
+                  className="text-muted-foreground hover:bg-muted h-8 w-8"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+                <section>
+                  <h1 className="text-xl font-bold text-foreground">
+                    {currentBoard.title}
+                  </h1>
+                </section>
+              </div>
+
+              {/* View Switcher */}
+              <div className="hidden lg:flex items-center bg-muted/50 p-1 rounded-lg border border-border">
+                {views.map((view) => (
+                  <button
+                    key={view.id}
+                    onClick={() => onViewChange(view.id)}
+                    className={cn(
+                      "flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all",
+                      currentView === view.id 
+                        ? "bg-background text-primary shadow-sm" 
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    )}
+                  >
+                    <view.icon className="h-3.5 w-3.5" />
+                    <span>{view.label}</span>
+                  </button>
+                ))}
+              </div>
             </section>
 
             <section className="flex items-center gap-2">

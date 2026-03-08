@@ -1,11 +1,15 @@
 import { useState } from "react";
-import { Copy, Eye, Star } from "lucide-react";
+import { Briefcase, Copy, Eye, Star } from "lucide-react";
 
 import CreateBoardFromTemplateDialog from "./CreateBoardFromTemplateDialog";
 import { getCategoryIcon } from "@/helpers/fileIcon";
 import {
-  Button,
   Badge,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
   Dialog,
   DialogContent,
   DialogDescription,
@@ -13,14 +17,10 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
 } from "@/Components/UI";
 
 function TemplatePreviewDialog({ trigger, template }) {
-  const ICON = getCategoryIcon[template.category];
+  const ICON = getCategoryIcon[template.category] || Briefcase;
   const [open, setOpen] = useState(false);
 
   const useTemplate = () => {

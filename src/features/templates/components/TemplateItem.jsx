@@ -1,4 +1,4 @@
-import { Copy, Eye } from "lucide-react";
+import { Briefcase, Copy, Eye } from "lucide-react";
 
 import {
     Badge,
@@ -14,7 +14,7 @@ import TemplatePreviewDialog from "@/features/boards/components/Dialogs/Template
 import { getCategoryIcon } from "@/helpers/fileIcon";
 
 function TemplateItem({ template, isPopular = false }) {
-    const ICON = getCategoryIcon[template.category];
+    const ICON = getCategoryIcon[template.category] || Briefcase;
 
     return (
         <Card

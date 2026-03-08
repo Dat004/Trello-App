@@ -9,6 +9,7 @@ import timezone from 'dayjs/plugin/timezone.js';
 import utc from 'dayjs/plugin/utc.js';
 
 import { useBoardContext } from "../../context/BoardStateContext";
+import { useFilteredCards } from "../../hooks/useFilteredCards";
 import CardDetailDialog from "../Card/CardDetailDialog";
 import { Button } from '@/Components/UI';
 
@@ -42,8 +43,10 @@ function BoardCalendarView() {
   const { boardData } = useBoardContext();
   const { cards, currentBoard } = boardData;
 
+  const filteredCardsArray = useFilteredCards(Object.values(cards));
+
   const calendarEvents = useMemo(() => {
-    return Object.values(cards)
+    return filteredCardsArray
       .filter(c => c.due_date)
       .map(c => {
         const start = dayjs(c.created_at);

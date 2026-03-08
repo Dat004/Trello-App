@@ -4,6 +4,8 @@ import { Edit, GripVertical, MoreHorizontal, Plus, Trash2 } from "lucide-react";
 
 import { useDeleteList, useUpdateList } from "@/features/boards/api/useLists";
 import { useBoardContext } from "@/features/boards/context/BoardStateContext";
+import { useBoardFilter } from "../../context/BoardFilterContext";
+import { useFilteredCards } from "../../hooks/useFilteredCards";
 import DeleteDialog from "@/Components/DeleteDialog";
 import SortableItem from "@/Components/SortableItem";
 import CardFormDialog from "../Card/CardFormDialog";
@@ -21,16 +23,28 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   Input,
+  Badge,
 } from "@/Components/UI";
+import { useMemo } from "react";
 
 function BoardList({ listId, boardId, isOverlay = false }) {
   // Use Context
   const { boardData, removeCard } = useBoardContext();
-  const { currentBoard, lists } = boardData;
+  const { filters, isFiltering } = useBoardFilter();
+  const { currentBoard, lists, cards } = boardData;
   const list = lists[listId];
 
   const [title, setTitle] = useState(list?.title || "");
   const [isEditing, setIsEditing] = useState(false);
+
+  // Get Card Objects for hook
+  const listCards = useMemo(() => {
+    return (list?.cardOrderIds || []).map(id => cards[id]).filter(Boolean);
+  }, [list?.cardOrderIds, cards]);
+
+  // Filter Cards
+  const filteredCards = useFilteredCards(listCards);
+  const filteredCardIds = useMemo(() => filteredCards.map(c => c._id), [filteredCards]);
 
   // React Query Mutations
   const { mutate: updateListTitle, isLoading: isUpdating } = useUpdateList();
@@ -122,12 +136,26 @@ function BoardList({ listId, boardId, isOverlay = false }) {
                         />
                       </h3>
                     ) : (
-                      <h3
-                        className="font-semibold text-foreground cursor-pointer hover:bg-muted px-2 py-1 rounded -mx-2 -my-1 flex-1 transition-colors"
-                        onClick={() => setIsEditing(true)}
-                      >
-                        {list.title}
-                      </h3>
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <h3
+                          className="font-semibold text-foreground cursor-pointer hover:bg-muted px-2 py-1 rounded -mx-1 flex-1 transition-colors truncate"
+                          onClick={() => setIsEditing(true)}
+                        >
+                          {list.title}
+                        </h3>
+                        {isFiltering && (
+                          <Badge 
+                            variant="secondary" 
+                            className={cn(
+                              "px-1.5 py-0 h-5 text-[10px] font-bold min-w-[20px] justify-center transition-colors",
+                              filteredCardIds.length > 0 && "bg-primary text-primary-foreground",
+                              filteredCardIds.length === 0 && "bg-destructive/10 text-destructive"
+                            )}
+                          >
+                            {filteredCardIds.length}/{list.cardOrderIds.length}
+                          </Badge>
+                        )}
+                      </div>
                     )}
                   </section>
                   <DropdownMenu>
@@ -169,15 +197,19 @@ function BoardList({ listId, boardId, isOverlay = false }) {
               </CardHeader>
               <CardContent className="p-4 pt-0 max-h-[calc(100vh-250px)] flex flex-col">
                 <section className="overflow-y-auto overflow-x-hidden custom-scrollbar pr-1 -mr-1">
-                  <SortableContext items={list.cardOrderIds} strategy={verticalListSortingStrategy}>
+                  <SortableContext items={filteredCardIds} strategy={verticalListSortingStrategy}>
                     <section className="space-y-2 p-1 min-h-[10px]">
-                      {list.cardOrderIds.length === 0 && !isOverlay && (
-                        <section className="text-center py-8 text-muted-foreground">
-                          <p className="text-sm">Chưa có thẻ nào</p>
-                          <p className="text-xs">Thêm thẻ đầu tiên của bạn</p>
+                      {filteredCardIds.length === 0 && (
+                        <section className="text-center py-8 text-muted-foreground bg-muted/20 rounded-xl border border-dashed border-border/50">
+                          <p className="text-sm font-medium">
+                            {isFiltering ? "Không tìm thấy thẻ nào" : "Chưa có thẻ nào"}
+                          </p>
+                          <p className="text-[10px] opacity-70">
+                            {isFiltering ? "Thử thay đổi điều kiện lọc" : "Thêm thẻ đầu tiên của bạn"}
+                          </p>
                         </section>
                       )}
-                      {list.cardOrderIds.map((cardId) => (
+                      {filteredCardIds.map((cardId) => (
                         <CardItem
                           key={cardId}
                           cardId={cardId}

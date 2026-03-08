@@ -1,3 +1,16 @@
+import { useMemo, useState } from "react";
+import {
+  Calendar,
+  MessageSquare,
+  Paperclip,
+  Search
+} from "lucide-react";
+import { format } from "date-fns";
+
+import { useBoardContext } from "../../context/BoardStateContext";
+import { useFilteredCards } from "../../hooks/useFilteredCards";
+import CardDetailDialog from "../Card/CardDetailDialog";
+import { cn } from "@/lib/utils";
 import {
   Avatar,
   AvatarFallback,
@@ -5,17 +18,6 @@ import {
   Badge,
   Input
 } from "@/Components/UI";
-import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-import {
-  Calendar,
-  MessageSquare,
-  Paperclip,
-  Search
-} from "lucide-react";
-import { useMemo, useState } from "react";
-import { useBoardContext } from "../../context/BoardStateContext";
-import CardDetailDialog from "../Card/CardDetailDialog";
 
 function BoardTableView() {
   const { boardData } = useBoardContext();
@@ -42,7 +44,11 @@ function BoardTableView() {
     return flattened;
   }, [cards, lists, listOrder]);
 
-  const filteredCards = allCards.filter(card => 
+  // Lấy danh sách thẻ đã lọc
+  const globalFilteredCards = useFilteredCards(allCards);
+
+  // Lọc theo tìm kiếm
+  const filteredCards = globalFilteredCards.filter(card => 
     card.title.toLowerCase().includes(search.toLowerCase()) ||
     card.listName.toLowerCase().includes(search.toLowerCase())
   );

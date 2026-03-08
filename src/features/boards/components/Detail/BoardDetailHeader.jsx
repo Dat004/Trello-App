@@ -19,7 +19,9 @@ import { useHandleBoardJoinRequest, useInviteBoardMember } from "@/features/boar
 import { useBoardContext } from "@/features/boards/context/BoardStateContext";
 import { Avatar, AvatarFallback, AvatarImage, Button } from "@/Components/UI";
 import BoardActivitiesDialog from "../Dialogs/BoardActivitiesDialog";
+import { useBoardFilter } from "../../context/BoardFilterContext";
 import InviteMemberDialog from "@/Components/InviteMemberDialog";
+import BoardFilterDialog from "../Dialogs/BoardFilterDialog";
 import MembersDialog from "@/Components/MembersDialog";
 import { useFavoritesStore } from "@/store";
 import { useFavorites } from "@/hooks";
@@ -27,6 +29,7 @@ import { cn } from "@/lib/utils";
 
 function BoardDetailHeader({ currentView, onViewChange }) {
     const navigate = useNavigate();
+    const { isFiltering } = useBoardFilter();
     
     // Use Context
     const { boardData, addBoardMember, removeJoinRequest } = useBoardContext();
@@ -159,16 +162,25 @@ function BoardDetailHeader({ currentView, onViewChange }) {
                 }
               />
 
-              <Button
-                variant="ghost"
-                size="sm"
-                // onClick={handleFilterBoard}
-                className="text-muted-foreground hover:bg-muted gap-1 hidden sm:flex"
-                title="Bộ lọc"
-              >
-                <Filter className="h-4 w-4" />
-                <span className="hidden md:inline text-xs">Bộ lọc</span>
-              </Button>
+              <BoardFilterDialog
+                trigger={
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={cn(
+                      "text-muted-foreground hover:bg-muted gap-1 hidden sm:flex relative",
+                      isFiltering && "text-primary bg-primary/10"
+                    )}
+                    title="Bộ lọc"
+                  >
+                    <Filter className="h-4 w-4" />
+                    <span className="hidden md:inline text-xs">Bộ lọc</span>
+                    {isFiltering && (
+                      <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full border-2 border-background" />
+                    )}
+                  </Button>
+                }
+              />
 
                <BoardActivitiesDialog
                 boardId={currentBoard._id}

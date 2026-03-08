@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
   Activity,
   ArrowLeft,
@@ -97,22 +98,30 @@ function BoardDetailHeader({ currentView, onViewChange }) {
               </div>
 
               {/* View Switcher */}
-              <div className="hidden lg:flex items-center bg-muted/50 p-1 rounded-lg border border-border">
-                {views.map((view) => (
-                  <button
-                    key={view.id}
-                    onClick={() => onViewChange(view.id)}
-                    className={cn(
-                      "flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all",
-                      currentView === view.id 
-                        ? "bg-background text-primary shadow-sm" 
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                    )}
-                  >
-                    <view.icon className="h-3.5 w-3.5" />
-                    <span>{view.label}</span>
-                  </button>
-                ))}
+              <div className="hidden lg:flex items-center bg-muted/50 p-1 rounded-xl border border-border/50 backdrop-blur-sm">
+                {views.map((view) => {
+                  const isActive = currentView === view.id;
+                  return (
+                    <button
+                      key={view.id}
+                      onClick={() => onViewChange(view.id)}
+                      className={cn(
+                        "relative flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-300",
+                        isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      {isActive && (
+                        <motion.div
+                          layoutId="activeView"
+                          className="absolute inset-0 bg-background rounded-lg shadow-sm border border-border/50"
+                          transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                        />
+                      )}
+                      <view.icon className={cn("h-3.5 w-3.5 relative z-10 transition-transform duration-300", isActive && "scale-110")} />
+                      <span className="relative z-10">{view.label}</span>
+                    </button>
+                  );
+                })}
               </div>
             </section>
 

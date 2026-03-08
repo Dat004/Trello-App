@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 
 import { useBoardContext } from "../../context/BoardStateContext";
 import { useBoardRealtime } from "../../hooks/useBoardRealtime";
@@ -37,8 +38,19 @@ function BoardContent() {
       <section className="bg-background/80 backdrop-blur-sm border-b border-border shadow-sm shrink-0">
         <BoardDetailHeader currentView={currentView} onViewChange={setCurrentView} />
       </section>
-      <section className="flex-1 overflow-hidden">
-        {renderView()}
+      <section className="flex-1 overflow-auto relative">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentView}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="h-full"
+          >
+            {renderView()}
+          </motion.div>
+        </AnimatePresence>
       </section>
     </section>
   );

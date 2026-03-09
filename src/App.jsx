@@ -5,6 +5,7 @@ import { useGlobalRealtimeSync } from "@/hooks";
 import ConnectionIndicator from "./Components/ConnectionIndicator";
 import AppInitializer from "./initializers/AppInitializer";
 import SocketProvider from "./providers/ContextProvider";
+import GoogleProvider from "./providers/GoogleProvider";
 import ThemeProvider from "./providers/ThemeProvider";
 import ToastProvider from "./providers/ToastProvider";
 import ProtectedRoute from "./routes/ProtectedRoute";
@@ -19,46 +20,48 @@ function App() {
   return (
     <Router>
       <AppInitializer>
-        <ThemeProvider>
-          <ToastProvider>
-            <SocketProvider>
-              <GlobalRealtimeSync />
-              <ConnectionIndicator />
-              
-              <Routes>
-                {routes.map((route) => (
-                  <Route
-                    key={route.path}
-                    path={route.path}
-                    element={
-                      route.auth === "protected" ? (
-                        <ProtectedRoute>
-                          {route.layout ? (
-                            <route.layout>
+        <GoogleProvider>
+          <ThemeProvider>
+            <ToastProvider>
+              <SocketProvider>
+                <GlobalRealtimeSync />
+                <ConnectionIndicator />
+                
+                <Routes>
+                  {routes.map((route) => (
+                    <Route
+                      key={route.path}
+                      path={route.path}
+                      element={
+                        route.auth === "protected" ? (
+                          <ProtectedRoute>
+                            {route.layout ? (
+                              <route.layout>
+                                <route.page />
+                              </route.layout>
+                            ) : (
                               <route.page />
-                            </route.layout>
-                          ) : (
-                            <route.page />
-                          )}
-                        </ProtectedRoute>
-                      ) : (
-                        <PublicRoute>
-                          {route.layout ? (
-                            <route.layout>
+                            )}
+                          </ProtectedRoute>
+                        ) : (
+                          <PublicRoute>
+                            {route.layout ? (
+                              <route.layout>
+                                <route.page />
+                              </route.layout>
+                            ) : (
                               <route.page />
-                            </route.layout>
-                          ) : (
-                            <route.page />
-                          )}
-                        </PublicRoute>
-                      )
-                    }
-                  />
-                ))}
-              </Routes>
-            </SocketProvider>
-          </ToastProvider>
-        </ThemeProvider>
+                            )}
+                          </PublicRoute>
+                        )
+                      }
+                    />
+                  ))}
+                </Routes>
+              </SocketProvider>
+            </ToastProvider>
+          </ThemeProvider>
+        </GoogleProvider>
       </AppInitializer>
     </Router>
   );

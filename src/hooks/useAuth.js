@@ -108,5 +108,20 @@ export const useAuth = () => {
     handleError(res.data.message);
   };
 
-  return { login, register, logout };
+  const googleLogin = async (idToken) => {
+    const res = await authApi.googleLogin({ idToken });
+
+    if (res.data.success) {
+      handleSuccess(
+        res.data.data.user,
+        res.data.message,
+        "Đăng nhập thành công qua Google. Đang chuyển hướng..."
+      );
+      return;
+    }
+
+    handleError(res.data.message);
+  };
+
+  return { login, register, logout, googleLogin };
 };

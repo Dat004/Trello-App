@@ -1,5 +1,6 @@
 import { axiosClient } from "./axiosClient";
 
+const googleLoginRoute = "/auth/google";
 const registerRoute = "/auth/register";
 const logoutRoute = "/auth/logout";
 const loginRoute = "/auth/login";
@@ -15,6 +16,13 @@ export const authApi = {
   async login(data) {
     try {
       return await axiosClient.post(loginRoute, data);
+    } catch (err) {
+      return err.response;
+    }
+  },
+  async googleLogin(data) {
+    try {
+      return await axiosClient.post(googleLoginRoute, data);
     } catch (err) {
       return err.response;
     }

@@ -1,16 +1,16 @@
 import { useState } from "react";
-import { FaFacebook } from "react-icons/fa";
-import { FcGoogle } from "react-icons/fc";
 import { Link } from "react-router-dom";
 
+import GoogleLoginBtn from "@/Components/GoogleLoginBtn";
 import { Button, Input, Label, Separator } from "@/Components/UI";
+import { UserToast } from "@/context/ToastContext";
 import loginSchema from "@/schemas/loginSchema";
 import { useAuth, useZodForm } from "@/hooks";
-import { logInWithGoogle } from "@/lib/auth";
 
 function Auth() {
   const [isLogging, setIsLogging] = useState(false);
 
+  const { addToast } = UserToast();
   const { login } = useAuth();
   const {
     register,
@@ -18,8 +18,24 @@ function Auth() {
     formState: { errors },
   } = useZodForm(loginSchema);
 
-  const handleSignInWithGoogle = async () => {
-    const data = await logInWithGoogle();
+  const loginError = () => {
+    addToast({
+      type: "error",
+      title: "Đăng nhập thất bại",
+      duration: 3000,
+    });
+
+    setIsLogging(false);
+  };
+
+  const loginCancel = () => {
+    addToast({
+      type: "info",
+      title: "Đã hủy đăng nhập",
+      description: "Bạn đã đóng hoặc bỏ qua đăng nhập bằng Google.",
+      duration: 3000,
+    });
+    setIsLogging(false);
   };
 
   const handleLoginAccount = async (data) => {
@@ -88,7 +104,7 @@ function Auth() {
                   </span>
                 )}
               </section>
-              <Button disabled={isLogging} className="w-full" type="submit">
+              <Button disabled={isLogging} className="w-full mt-4" type="submit">
                 {isLogging ? "Đang đăng nhập..." : "Đăng nhập"}
               </Button>
             </form>
@@ -101,27 +117,11 @@ function Auth() {
             </section>
 
             <section className="space-y-4">
-              <Button
-                variant="outline"
-                disabled={isLogging}
-                onClick={handleSignInWithGoogle}
-                className="relative flex w-full items-center justify-start border-border hover:bg-muted-foreground h-11"
-              >
-                <FcGoogle className="!h-6 !w-6" />
-                <span className="absolute top-1/2 left-1/2 -translate-1/2">
-                  Đăng nhập với Google
-                </span>
-              </Button>
-              <Button
-                disabled
-                variant="outline"
-                className="relative flex w-full items-center justify-start border-border hover:bg-muted-foreground h-11"
-              >
-                <FaFacebook className="!h-6 !w-6 text-blue-600" />
-                <span className="absolute top-1/2 left-1/2 -translate-1/2">
-                  Đăng nhập với Facebook
-                </span>
-              </Button>
+              <GoogleLoginBtn
+                onSuccess={() => setIsLogging(false)}
+                onError={loginError}
+                onCancel={loginCancel}
+              />
             </section>
 
             <div className="text-center">

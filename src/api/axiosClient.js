@@ -4,7 +4,7 @@ import ENV_CONFIG from "@/config/env";
 
 const getBaseUrl = () => {
   if (import.meta.env.PROD) {
-    return import.meta.env.VITE_API_URI;
+    return ENV_CONFIG.API_URL;
   }
 
   return "/api";

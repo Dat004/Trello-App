@@ -2,6 +2,14 @@ import axios from "axios";
 
 import ENV_CONFIG from "@/config/env";
 
+const getBaseUrl = () => {
+  if (import.meta.env.PROD) {
+    return import.meta.env.VITE_API_URI;
+  }
+
+  return "/api";
+};
+
 // Biến toàn cục để lưu socketId, sẽ được set từ SocketContext
 let currentSocketId = null;
 
@@ -10,7 +18,7 @@ export const setSocketId = (socketId) => {
 };
 
 const axiosClient = axios.create({
-  baseURL: '/api',
+  baseURL: getBaseUrl(),
   withCredentials: true, // Gửi kèm cookie trong các yêu cầu
 });
 

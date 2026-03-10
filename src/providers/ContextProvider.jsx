@@ -12,7 +12,7 @@ function SocketProvider({ children }) {
 
   useEffect(() => {
     // Khởi tạo socket connection
-    const socketInstance = io(ENV_CONFIG.API_URL, {
+    const socketInstance = io(ENV_CONFIG.SOCKET_URL, {
       withCredentials: true,
       transports: ["websocket", "polling"],
     });

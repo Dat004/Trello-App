@@ -20,6 +20,7 @@ import { useBoardContext } from "@/features/boards/context/BoardStateContext";
 import { Avatar, AvatarFallback, AvatarImage, Button } from "@/Components/UI";
 import BoardActivitiesDialog from "../Dialogs/BoardActivitiesDialog";
 import BoardThemeDialog from "../Dialogs/BoardThemeDialog";
+import BoardAIDialog from "../Dialogs/BoardAIDialog";
 import { useBoardFilter } from "../../context/BoardFilterContext";
 import InviteMemberDialog from "@/Components/InviteMemberDialog";
 import BoardFilterDialog from "../Dialogs/BoardFilterDialog";
@@ -172,15 +173,20 @@ function BoardDetailHeader({ currentView, onViewChange, currentTheme, onThemeCha
 
               {/* AI & Theme Tools */}
               <div className="flex items-center gap-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 text-primary hover:bg-primary/10 gap-2 px-3 rounded-lg border border-primary/20 bg-primary/5 transition-all hover:scale-105 active:scale-95"
-                  title="AI Trợ lý"
-                >
-                  <Sparkles className="h-3.5 w-3.5 fill-primary/20" />
-                  <span className="hidden md:inline text-[11px] font-bold uppercase tracking-wider text-primary">AI Magic</span>
-                </Button>
+                <BoardAIDialog
+                  boardId={currentBoard._id}
+                  trigger={
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 text-primary hover:bg-primary/10 gap-2 px-3 rounded-lg border border-primary/20 bg-primary/5 transition-all hover:scale-105 active:scale-95"
+                      title="AI Trợ lý"
+                    >
+                      <Sparkles className="h-3.5 w-3.5 fill-primary/20" />
+                      <span className="hidden md:inline text-[11px] font-bold uppercase tracking-wider text-primary">AI Magic</span>
+                    </Button>
+                  }
+                />
 
                 <BoardThemeDialog
                   currentTheme={currentTheme}

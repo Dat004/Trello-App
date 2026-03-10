@@ -9,5 +9,12 @@ export const aiApi = {
         } catch (err) {
             return err.response;
         }
+    },
+    async analyzeBoard(boardId, payload) {
+        try {
+            return await axiosClient.post(`${aiRoute}/boards/${boardId}/analyze`, payload);
+        } catch (err) {
+            return err.response;
+        }
     }
 };

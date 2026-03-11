@@ -71,6 +71,15 @@ function Sidebar() {
                 {!collapsed && <span className="ml-3 truncate">Trang chủ</span>}
               </Button>
               <Button
+                variant={isActive("/workspaces") ? "secondary" : "ghost"}
+                className={cn("w-full justify-start", collapsed ? "px-2 justify-center" : "px-3")}
+                onClick={() => navigate("/workspaces")}
+                title="Không gian làm việc"
+              >
+                <Briefcase className="h-4 w-4 shrink-0" />
+                {!collapsed && <span className="ml-3 truncate">Không gian làm việc</span>}
+              </Button>
+              <Button
                 variant={isActive("/boards") ? "secondary" : "ghost"}
                 className={cn("w-full justify-start", collapsed ? "px-2 justify-center" : "px-3")}
                 onClick={() => navigate("/boards")}

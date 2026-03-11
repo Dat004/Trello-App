@@ -4,13 +4,18 @@ import { vi } from "date-fns/locale";
 import { formatActivityMessage, getActivityContext } from "@/utils/activityFormatter";
 import { Avatar, AvatarFallback, AvatarImage } from "@/Components/UI";
 import { getActivityConfig } from "@/config/activityConfig";
+import { useAuthStore } from "@/store";
 import { cn } from "@/lib/utils";
 
 function ActivityItem({ activity }) {
+  const { user } = useAuthStore();
   const config = getActivityConfig(activity.action);
   const message = formatActivityMessage(activity);
   const context = getActivityContext(activity);
   const Icon = config.icon;
+
+  const isMe = user?._id === activity.actor?._id;
+  const actorName = isMe ? "Bạn" : (activity.actor?.full_name || "Người dùng");
 
   return (
     <div className="flex items-start gap-3 pb-4 border-b border-border last:border-0 last:pb-0">
@@ -28,7 +33,7 @@ function ActivityItem({ activity }) {
           </Avatar>
           <span className="text-muted-foreground">
             <b className="mr-1">
-                {activity.actor?.full_name || "Người dùng"}
+                {actorName}
             </b>
             {message}
           </span>

@@ -1,22 +1,22 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Search, Plus, User, LogOut, Settings } from "lucide-react";
+import { LogOut, Plus, Settings, User } from "lucide-react";
 
 import BoardFormDialog from "@/features/boards/components/Dialogs/BoardFormDialog";
 import NotificationsPanel from "@/Components/NotificationsPanel";
+import GlobalSearch from "@/Components/GlobalSearch";
 import { headerMenuData } from "@/config/data";
 import { useAuthStore } from "@/store";
 import { useAuth } from "@/hooks";
 import {
-  Button,
-  Input,
   Avatar,
-  AvatarImage,
   AvatarFallback,
+  AvatarImage,
+  Button,
   DropdownMenu,
-  DropdownMenuItem,
   DropdownMenuContent,
-  DropdownMenuTrigger,
+  DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/Components/UI";
 
 function Header() {
@@ -62,9 +62,8 @@ function Header() {
         {/* Search và Actions */}
         <div className="ml-auto flex items-center gap-4">
           {/* Search */}
-          <div className="relative hidden sm:block">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input placeholder="Tìm kiếm bảng, thẻ..." className="w-64 pl-10" />
+          <div className="hidden sm:block">
+            <GlobalSearch />
           </div>
 
           {/* Create Button */}
@@ -95,10 +94,6 @@ function Header() {
               <DropdownMenuItem onClick={() => navigate("/settings/")}>
                 <User className="mr-2 h-4 w-4" />
                 <span>Hồ sơ</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/settings/")}>
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Cài đặt</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={logout}>

@@ -53,7 +53,7 @@ const BoardActions = ({ board, canDelete }) => {
         )}
       </Button>
 
-      <DropdownMenu>
+      <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"

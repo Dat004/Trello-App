@@ -104,7 +104,7 @@ function WorkspaceItem({ workspace }) {
                 <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
               </span>
             )}
-            <DropdownMenu>
+            <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"

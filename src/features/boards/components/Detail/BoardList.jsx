@@ -158,7 +158,7 @@ function BoardList({ listId, boardId, isOverlay = false }) {
                       </div>
                     )}
                   </section>
-                  <DropdownMenu>
+                  <DropdownMenu modal={false}>
                     <DropdownMenuTrigger asChild>
                       <Button
                         variant="ghost"

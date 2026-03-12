@@ -207,7 +207,7 @@ function CardItem({ cardId, listId, boardId, isOverlay = false, card, currentBoa
                       )}
                     </div>
                   </div>
-                  <DropdownMenu>
+                  <DropdownMenu modal={false}>
                     <DropdownMenuTrigger asChild>
                       <Button
                         variant="ghost"

@@ -112,91 +112,95 @@ function BoardList({ listId, boardId, isOverlay = false }) {
               !isOverlay && "hover:shadow-lg"
             )}>
               <section className={cn("h-2", list.color || "bg-transparent")} />
-              <CardHeader className="p-4 pb-3">
-                <section className="flex items-center justify-between">
-                  <section className="flex items-center gap-2 flex-1">
-                    <button
-                      {...attributes}
-                      {...listeners}
-                      className={cn(
-                        "p-1 hover:bg-muted rounded transition-colors active:cursor-grabbing",
-                        readOnly ? "hidden" : "cursor-grab"
-                      )}
-                    >
-                      <GripVertical className="h-4 w-4 text-muted-foreground pointer-events-none" />
-                    </button>
-                    {isEditing ? (
-                      <h3 className="flex-1">
-                        <Input
-                          value={title}
-                          onChange={(e) => setTitle(e.target.value)}
-                          onBlur={handleSaveTitle}
-                          onKeyDown={handleKeyPress}
-                          className="font-semibold text-foreground p-0 h-6 border-none outline-none bg-transparent focus-visible:ring-0 w-full"
-                          autoFocus
-                          disabled={isLoading}
-                        />
-                      </h3>
-                    ) : (
-                      <div className="flex items-center gap-2 flex-1 min-w-0">
-                        <h3
-                          className="font-semibold text-foreground cursor-pointer hover:bg-muted px-2 py-1 rounded -mx-1 flex-1 transition-colors truncate"
-                          onClick={() => !readOnly && setIsEditing(true)}
-                        >
-                          {list.title}
-                        </h3>
-                        {isFiltering && (
-                          <Badge 
-                            variant="secondary" 
-                            className={cn(
-                              "px-1.5 py-0 h-5 text-[10px] font-bold min-w-[20px] justify-center transition-colors",
-                              filteredCardIds.length > 0 && "bg-primary text-primary-foreground",
-                              filteredCardIds.length === 0 && "bg-destructive/10 text-destructive"
-                            )}
-                          >
-                            {filteredCardIds.length}/{list.cardOrderIds.length}
-                          </Badge>
+              <CardHeader className="block p-4 pb-3">
+                <section className="w-full">
+                  <section className="flex items-center">
+                    <section className="flex items-center w-0 flex-1 gap-2">
+                      <button
+                        {...attributes}
+                        {...listeners}
+                        className={cn(
+                          "p-1 hover:bg-muted rounded transition-colors active:cursor-grabbing",
+                          readOnly ? "hidden" : "cursor-grab"
                         )}
-                      </div>
+                      >
+                        <GripVertical className="h-4 w-4 text-muted-foreground pointer-events-none" />
+                      </button>
+                      {isEditing ? (
+                        <h3>
+                          <Input
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            onBlur={handleSaveTitle}
+                            onKeyDown={handleKeyPress}
+                            className="font-semibold text-foreground p-0 h-6 border-none outline-none bg-transparent focus-visible:ring-0 w-full"
+                            autoFocus
+                            disabled={isLoading}
+                          />
+                        </h3>
+                      ) : (
+                        <div className="flex items-center w-0 flex-1 gap-2">
+                          <span
+                            className="font-semibold text-foreground cursor-pointer hover:bg-muted px-2 py-1 rounded -mx-1 transition-colors truncate"
+                            onClick={() => !readOnly && setIsEditing(true)}
+                          >
+                            {list.title}
+                          </span>
+                          {isFiltering && (
+                            <Badge 
+                              variant="secondary" 
+                              className={cn(
+                                "px-1.5 py-0 h-5 text-[10px] font-bold min-w-[20px] justify-center transition-colors",
+                                filteredCardIds.length > 0 && "bg-primary text-primary-foreground",
+                                filteredCardIds.length === 0 && "bg-destructive/10 text-destructive"
+                              )}
+                            >
+                              {filteredCardIds.length}/{list.cardOrderIds.length}
+                            </Badge>
+                          )}
+                        </div>
+                      )}
+                    </section>
+                    {!readOnly && (
+                      <section className="flex-shrink-0 ml-1">
+                        <DropdownMenu modal={false}>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 w-6 p-0"
+                              disabled={isLoading}
+                            >
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => setIsEditing(true)}>
+                              <Edit className="mr-2 h-4 w-4" />
+                              Chỉnh sửa tên
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            {canDelete && (
+                              <DeleteDialog
+                                title="Xóa cột này?"
+                                description={`Bạn có chắc muốn xóa cột "${list.title}"? Hành động này không thể hoàn tác.`}
+                                onConfirm={handleDelete}
+                                trigger={
+                                  <DropdownMenuItem
+                                    onSelect={(e) => e.preventDefault()}
+                                    className="text-destructive"
+                                  >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Xóa danh sách
+                                  </DropdownMenuItem>
+                                }
+                              />
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </section>
                     )}
                   </section>
-                  {!readOnly && (
-                  <DropdownMenu modal={false}>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 w-6 p-0"
-                        disabled={isLoading}
-                      >
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => setIsEditing(true)}>
-                        <Edit className="mr-2 h-4 w-4" />
-                        Chỉnh sửa tên
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      {canDelete && (
-                        <DeleteDialog
-                          title="Xóa cột này?"
-                          description={`Bạn có chắc muốn xóa cột "${list.title}"? Hành động này không thể hoàn tác.`}
-                          onConfirm={handleDelete}
-                          trigger={
-                            <DropdownMenuItem
-                              onSelect={(e) => e.preventDefault()}
-                              className="text-destructive"
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Xóa danh sách
-                            </DropdownMenuItem>
-                          }
-                        />
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                  )}
                 </section>
               </CardHeader>
               <CardContent className="p-4 pt-0 max-h-[calc(100vh-250px)] flex flex-col">

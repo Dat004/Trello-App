@@ -1,8 +1,9 @@
-import { Plus } from "lucide-react";
+import { Globe, Lock, Plus, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import {
   Button,
+  Checkbox,
   Dialog,
   DialogContent,
   DialogDescription,
@@ -17,6 +18,7 @@ import {
 import { BACKGROUND_COLORS } from "@/config/theme";
 import { useCreateBoard, useUpdateBoard } from "@/features/boards/api/useBoards";
 import { useZodForm } from "@/hooks";
+import { cn } from "@/lib/utils";
 import { boardSchema } from "@/schemas/boardSchema";
 
 function BoardFormDialog({ trigger, isEdit = false, boardData }) {
@@ -32,6 +34,7 @@ function BoardFormDialog({ trigger, isEdit = false, boardData }) {
     defaultValue: {
       title: isEdit ? boardData.title : "",
       description: isEdit ? boardData.description : "",
+      visibility: isEdit ? boardData.visibility : "workspace",
     },
   });
   const {
@@ -46,16 +49,18 @@ function BoardFormDialog({ trigger, isEdit = false, boardData }) {
       if (isEdit) {
         setValue("title", boardData.title);
         setValue("description", boardData.description);
+        setValue("visibility", boardData.visibility);
         setSelectedColor(boardData.color);
       } else {
         form.reset();
+        setValue("visibility", "workspace");
         setSelectedColor(BACKGROUND_COLORS[0].class);
       }
     }
   }, [open, boardData, isEdit]); // Added isEdit to deps
 
   const handleActionsCard = async (data) => {
-    const payload = { ...data, color: selectedColor, visibility: "private" };
+    const payload = { ...data, color: selectedColor };
 
     try {
         if (isEdit) {
@@ -126,6 +131,41 @@ function BoardFormDialog({ trigger, isEdit = false, boardData }) {
                 placeholder="Mô tả ngắn về bảng này..."
                 className="focus-visible:ring-primary"
               />
+            </div>
+            <div className="grid gap-2">
+              <Label>Quyền riêng tư (Visibility)</Label>
+              <div className="grid gap-2">
+                {[
+                  { id: "private", label: "Riêng tư (Private)", desc: "Chỉ thành viên bảng mới có quyền truy cập.", icon: Lock },
+                  { id: "workspace", label: "Không gian làm việc (Workspace)", desc: "Tất cả thành viên Workspace có thể xem.", icon: Users },
+                  { id: "public", label: "Công khai (Public)", desc: "Bất kỳ ai cũng có thể xem.", icon: Globe },
+                ].map((option) => (
+                  <div
+                    key={option.id}
+                    className={cn(
+                      "flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all hover:bg-muted/50 select-none",
+                      form.watch("visibility") === option.id ? "border-primary bg-primary/5 shadow-sm" : "border-border"
+                    )}
+                    onClick={() => setValue("visibility", option.id)}
+                  >
+                    <div className="mt-0.5" onClick={(e) => e.stopPropagation()}>
+                      <Checkbox 
+                        checked={form.watch("visibility") === option.id}
+                        onCheckedChange={(checked) => {
+                          if (checked) setValue("visibility", option.id);
+                        }}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                      <div className="flex items-center gap-2">
+                        <option.icon className={cn("h-4 w-4", form.watch("visibility") === option.id ? "text-primary" : "text-muted-foreground")} />
+                        <span className="text-sm font-semibold">{option.label}</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground">{option.desc}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
             <div className="grid gap-2">
               <Label>Màu nền</Label>

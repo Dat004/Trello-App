@@ -3,8 +3,19 @@ import { ArrowLeft, Loader2, Star, Users } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 
-import { workspaceApi } from "@/api/workspace";
+import { useWorkspaceContext } from "@/features/workspaces/components/WorkspaceAccessGuard";
+import { useWorkspaceSocket } from "@/features/workspaces/hooks/useWorkspaceSocket";
+import { WORKSPACE_KEYS } from "@/features/workspaces/api/useWorkspaceDetail";
+import { useWorkspaceActivities } from "../../api/useWorkspaceActivities";
+import { useApiMutation, useFavorites } from "@/hooks";
 import MembersDialog from "@/Components/MembersDialog";
+import WorkspaceActivity from "./WorkspaceActivities";
+import WorkspaceSettings from "./WorkspaceSettings";
+import WorkspaceMembers from "./WorkspaceMembers";
+import WorkspaceBoards from "./WorkspaceBoards";
+import { workspaceApi } from "@/api/workspace";
+import { useFavoritesStore } from "@/store";
+import { cn } from "@/lib/utils";
 import {
   Button,
   Separator,
@@ -13,17 +24,6 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/Components/UI';
-import { WORKSPACE_KEYS } from "@/features/workspaces/api/useWorkspaceDetail";
-import { useWorkspaceContext } from "@/features/workspaces/components/WorkspaceAccessGuard";
-import { useWorkspaceSocket } from "@/features/workspaces/hooks/useWorkspaceSocket";
-import { useApiMutation, useFavorites } from "@/hooks";
-import { cn } from "@/lib/utils";
-import { useFavoritesStore } from "@/store";
-import { useWorkspaceActivities } from "../../api/useWorkspaceActivities";
-import WorkspaceActivity from "./WorkspaceActivities";
-import WorkspaceBoards from "./WorkspaceBoards";
-import WorkspaceMembers from "./WorkspaceMembers";
-import WorkspaceSettings from "./WorkspaceSettings";
 
 export default function WorkspaceContent() {
   const navigate = useNavigate();

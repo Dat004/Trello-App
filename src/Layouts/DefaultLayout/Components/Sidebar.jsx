@@ -1,3 +1,4 @@
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Briefcase,
   ChevronLeft,
@@ -8,7 +9,6 @@ import {
   Star,
   Trello
 } from "lucide-react";
-import { useLocation, useNavigate } from "react-router-dom";
 
 import { useWorkspacesList } from "@/features/workspaces/api/useWorkspacesList";
 import { Button, ScrollArea, Separator } from "@/Components/UI";
@@ -30,7 +30,7 @@ function Sidebar() {
   const { data: workspaces = [], isLoading: isLoadingWorkspaces } = useWorkspacesList();
   const favoriteBoards = useFavoritesStore((s) => s.favoriteBoards);
   const favoriteWorkspaces = useFavoritesStore((s) => s.favoriteWorkspaces);
-  const { toggleWorkspaceStar } = useFavorites();
+  const { toggleWorkspaceStar, toggleBoardStar } = useFavorites();
 
   // Helper to check active route
   const isActive = (path) => location.pathname === path;
@@ -57,7 +57,7 @@ function Sidebar() {
           </Button>
         </header>
 
-        <ScrollArea className="flex-1">
+        <ScrollArea className="flex-1 max-w-full overflow-hidden" >
           <div className="p-3 space-y-4">
             {/* Main Navigation */}
             <nav className="space-y-1">
@@ -92,35 +92,6 @@ function Sidebar() {
 
             <Separator />
 
-            {/* Favorite Boards */}
-            <div className="space-y-1">
-                {!collapsed && (
-                  <div className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase">
-                      Bảng yêu thích
-                  </div>
-                )}
-                {favoriteBoards.length > 0 ? (
-                    favoriteBoards.map((board) => (
-                        <Button
-                            key={board._id}
-                            variant="ghost"
-                            className={cn("w-full justify-start", collapsed ? "px-2 justify-center" : "px-3")}
-                            onClick={() => navigate(`/boards/${board._id}`)}
-                            title={board.title}
-                        >
-                            <span className="h-4 w-4 shrink-0 bg-yellow-400 rounded-sm flex items-center justify-center">
-                                <Star className="h-3 w-3 text-white fill-white" />
-                            </span>
-                             {!collapsed && <span className="ml-3 truncate">{board.title}</span>}
-                        </Button>
-                    ))
-                ) : (
-                    !collapsed && <div className="px-3 text-xs text-muted-foreground italic">Chưa có bảng yêu thích</div>
-                )}
-            </div>
-            
-            <Separator />
-
             {/* Workspaces */}
             <div className="space-y-1">
                 {!collapsed ? (
@@ -145,47 +116,109 @@ function Sidebar() {
                          </div>
                      ))
                 ) : (
-                    workspaces.map((ws) => {
-                        const isStarred = favoriteWorkspaces.some(w => w._id === ws._id);
-                        return (
-                            <div key={ws._id} className="group relative">
-                                <Button
-                                    variant={isActive(`/workspaces/${ws._id}`) ? "secondary" : "ghost"}
-                                    className={cn("w-full justify-start", collapsed ? "px-2 justify-center" : "px-3", !collapsed && "pr-8")}
-                                    onClick={() => navigate(`/workspaces/${ws._id}`)}
-                                    title={ws.name}
-                                >
-                                    <div className={cn("h-5 w-5 rounded flex items-center justify-center shrink-0 border text-xs font-bold text-white", ws.color || "bg-primary")}>
-                                        {ws.name.charAt(0).toUpperCase()}
-                                    </div>
-                                    {!collapsed && <span className="ml-3 truncate">{ws.name}</span>}
-                                </Button>
-                                {/* Star Button */}
-                                {!collapsed && (
-                                     <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className={cn(
-                                            "absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity",
-                                            isStarred && "opacity-100"
-                                        )}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            toggleWorkspaceStar(ws);
-                                        }}
-                                    >
-                                        <Star className={cn("h-3 w-3", isStarred ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground")} />
-                                    </Button>
-                                )}
-                            </div>
-                        );
-                    })
+                    <>
+                      {workspaces.slice(0, 5).map((ws) => {
+                          const isStarred = favoriteWorkspaces.some(w => w._id === ws._id);
+                          return (
+                              <div key={ws._id} className="group relative">
+                                  <Button
+                                      variant={isActive(`/workspaces/${ws._id}`) ? "secondary" : "ghost"}
+                                      className={cn("w-full justify-start", collapsed ? "px-2 justify-center" : "px-3", !collapsed && "pr-8")}
+                                      onClick={() => navigate(`/workspaces/${ws._id}`)}
+                                      title={ws.name}
+                                  >
+                                      <div className={cn("h-5 w-5 rounded flex items-center justify-center shrink-0 border text-xs font-bold text-white", ws.color || "bg-primary")}>
+                                          {ws.name.charAt(0).toUpperCase()}
+                                      </div>
+                                      {!collapsed && <span className="ml-3 truncate">{ws.name}</span>}
+                                  </Button>
+                                  {/* Star Button */}
+                                  {!collapsed && (
+                                       <Button
+                                          variant="ghost"
+                                          size="icon"
+                                          className={cn(
+                                              "absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity",
+                                              isStarred && "opacity-100"
+                                          )}
+                                          onClick={(e) => {
+                                              e.stopPropagation();
+                                              toggleWorkspaceStar(ws);
+                                          }}
+                                      >
+                                          <Star className={cn("h-3 w-3", isStarred ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground")} />
+                                      </Button>
+                                  )}
+                              </div>
+                          );
+                      })}
+                      {workspaces.length > 5 && !collapsed && (
+                        <section className="flex justify-end">
+                          <Link to="/workspaces" className="text-xs hover:underline">
+                            Xem tất cả
+                          </Link>
+                        </section>
+                      )}
+                    </>
                 )}
                  {!collapsed && workspaces.length === 0 && (
                      <div className="px-3 text-xs text-muted-foreground italic">Bạn chưa tham gia workspace nào</div>
                  )}
             </div>
 
+            <Separator />
+
+            {/* Favorite Boards */}
+            <div className="space-y-1 max-w-full overflow-hidden">
+                {!collapsed && (
+                  <div className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase">
+                      Bảng yêu thích
+                  </div>
+                )}
+                {favoriteBoards.length > 0 ? (
+                    <>
+                      {favoriteBoards.slice(0, 5).map((board) => (
+                          <div key={board._id} className="group relative">
+                              <Button
+                                  variant={isActive(`/boards/${board._id}`) ? "secondary" : "ghost"}
+                                  className={cn("w-full justify-start", collapsed ? "px-2 justify-center" : "px-3", !collapsed && "pr-8")}
+                                  onClick={() => navigate(`/boards/${board._id}`)}
+                                  title={board.title}
+                              >
+                                  <div className={cn("h-5 w-5 rounded flex items-center justify-center shrink-0 border text-[10px] font-bold text-white", board.color || "bg-primary")}>
+                                      {board.title.charAt(0).toUpperCase()}
+                                  </div>
+                                  {!collapsed && <span className="ml-3 truncate">{board.title}</span>}
+                              </Button>
+                              
+                              {/* Star Button */}
+                              {!collapsed && (
+                                   <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                                      onClick={(e) => {
+                                          e.stopPropagation();
+                                          toggleBoardStar(board);
+                                      }}
+                                  >
+                                      <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                                  </Button>
+                              )}
+                          </div>
+                      ))}
+                      {favoriteBoards.length > 5 && !collapsed && (
+                        <section className="flex justify-end">
+                          <Link to="/boards" className="text-xs hover:underline">
+                            Xem tất cả
+                          </Link>
+                        </section>
+                      )}
+                    </>
+                ) : (
+                    !collapsed && <div className="px-3 text-xs text-muted-foreground italic">Chưa có bảng yêu thích</div>
+                )}
+            </div>
           </div>
         </ScrollArea>
 

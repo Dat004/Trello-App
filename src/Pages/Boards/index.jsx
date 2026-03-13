@@ -1,14 +1,14 @@
 import { Grid3x3, List, Search, Star, X } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
-import { Button, Input } from "@/Components/UI";
-import { BoardSkeleton } from "@/Components/UI/LoadingSkeleton";
 import BoardFormDialog from "@/features/boards/components/Dialogs/BoardFormDialog";
-import BoardCard from "@/features/boards/components/List/BoardCard";
 import CreateNewBoard from "@/features/boards/components/List/CreateNewBoard";
-
+import BoardCard from "@/features/boards/components/List/BoardCard";
+import { BoardSkeleton } from "@/Components/UI/LoadingSkeleton";
 import { useMyBoards } from "@/features/boards/api/useBoards";
+import { Button, Input } from "@/Components/UI";
 import { useFavoritesStore } from "@/store";
+import { cn } from "@/lib/utils";
 
 function Boards() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -18,16 +18,27 @@ function Boards() {
   const { data: rawBoards = [], isLoading: loading } = useMyBoards();
   const favoriteBoards = useFavoritesStore(s => s.favoriteBoards);
 
-  const boards = rawBoards.map(board => ({
-    ...board,
-    is_starred: favoriteBoards.some(fav => fav._id === board._id)
-  })).filter(board => {
-     if (filterStarred && !board.is_starred) return false;
-     if (searchQuery) {
-         return board.title.toLowerCase().includes(searchQuery.toLowerCase());
-     }
-     return true;
-  });
+  const starredCount = useMemo(() => {
+    return rawBoards.filter(board => favoriteBoards.some(fav => fav._id === board._id)).length;
+  }, [rawBoards, favoriteBoards]);
+
+  const boards = useMemo(() => {
+    return rawBoards.map(board => ({
+      ...board,
+      is_starred: favoriteBoards.some(fav => fav._id === board._id)
+    })).filter(board => {
+       if (filterStarred && !board.is_starred) return false;
+       if (searchQuery) {
+           return board.title.toLowerCase().includes(searchQuery.toLowerCase());
+       }
+       return true;
+    });
+  }, [rawBoards, favoriteBoards, filterStarred, searchQuery]);
+
+  const handleClearFilters = () => {
+    setSearchQuery("");
+    setFilterStarred(false);
+  };
 
 
   return (
@@ -69,17 +80,31 @@ function Boards() {
 
             <div className="flex items-center flex-nowrap gap-2">
               <Button
-                variant={filterStarred ? "default" : "outline"}
+                variant={filterStarred ? "secondary" : "outline"}
                 size="sm"
                 onClick={() => setFilterStarred(!filterStarred)}
-                className="gap-2 text-sm"
+                className={cn(
+                  "gap-2 text-sm transition-all h-10",
+                  filterStarred && "bg-yellow-400/10 text-yellow-600 border-yellow-400/50 hover:bg-yellow-400/20"
+                )}
               >
                 <Star
-                  className={`h-4 w-4 ${filterStarred ? "fill-current" : ""}`}
+                  className={cn(
+                    "h-4 w-4 transition-all",
+                    filterStarred ? "fill-yellow-500 text-yellow-500 scale-110" : "text-muted-foreground"
+                  )}
                 />
                 <span className="hidden sm:inline">
-                  {filterStarred ? "Bộ lọc yêu thích" : "Yêu thích"}
+                  Bảng yêu thích
                 </span>
+                {starredCount > 0 && (
+                   <span className={cn(
+                     "ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold",
+                     filterStarred ? "bg-yellow-500 text-white" : "bg-muted text-muted-foreground"
+                   )}>
+                     {starredCount}
+                   </span>
+                )}
               </Button>
 
               <div className="flex border border-input rounded-lg p-1 bg-background">
@@ -163,10 +188,17 @@ function Boards() {
             </h3>
             <p className="text-sm text-muted-foreground mb-6">
               {searchQuery || filterStarred
-                ? `Không có bảng nào khớp với bộ lọc`
-                : "Bạn chưa tạo bảng nào. Hãy tạo bảng đầu tiên của bạn."}
+                ? `Không có bảng nào khớp với bộ lọc của bạn.`
+                : "Bạn chưa tạo bảng nào. Hãy tạo bảng đầu tiên của bạn để bắt đầu."}
             </p>
-            <BoardFormDialog trigger={<Button>Tạo bảng mới</Button>} />
+            {searchQuery || filterStarred ? (
+               <Button variant="outline" onClick={handleClearFilters} className="gap-2">
+                 <X className="h-4 w-4" />
+                 Xóa tất cả bộ lọc
+               </Button>
+            ) : (
+                <BoardFormDialog trigger={<Button>Tạo bảng mới</Button>} />
+            )}
           </div>
         </div>
       )}

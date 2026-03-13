@@ -15,7 +15,7 @@ export function useCreateCard() {
     const { addToast } = UserToast();
     const { addCard } = useBoardContext();
 
-    return useMutation({
+    const mutation = useMutation({
         mutationFn: ({ boardId, listId, ...data }) => cardApi.create(boardId, listId, data),
 
         onMutate: async (variables) => {
@@ -31,7 +31,7 @@ export function useCreateCard() {
         onSuccess: (res, variables) => {
             if (res.data?.success) {
                 // ✅ Optimistically update context with server data
-                const newCard = res.data.data;
+                const newCard = res.data.data.card;
                 addCard(newCard);
 
                 addToast({ type: "success", title: "Tạo thẻ thành công!" });
@@ -51,6 +51,8 @@ export function useCreateCard() {
             addToast({ type: "error", title: err.response?.data?.message || "Lỗi kết nối server" });
         }
     });
+
+    return { ...mutation, isLoading: mutation.isPending };
 }
 
 export function useUpdateCard() {
@@ -58,7 +60,7 @@ export function useUpdateCard() {
     const { addToast } = UserToast();
     const { updateCard } = useBoardContext();
 
-    return useMutation({
+    const mutation = useMutation({
         mutationFn: ({ boardId, listId, id, data }) => cardApi.update(boardId, listId, id, data),
 
         onMutate: async (variables) => {
@@ -76,7 +78,7 @@ export function useUpdateCard() {
         onSuccess: (res, variables) => {
             if (res.data?.success) {
                 // ✅ Update context with server data
-                const updatedCard = res.data.data;
+                const updatedCard = res.data.data.card;
                 updateCard(variables.id, updatedCard);
 
                 // Update card detail query if it exists
@@ -103,6 +105,8 @@ export function useUpdateCard() {
             addToast({ type: "error", title: err.response?.data?.message || "Lỗi kết nối server" });
         }
     });
+
+    return { ...mutation, isLoading: mutation.isPending };
 }
 
 export function useUpdateCardComplete() {
@@ -110,7 +114,7 @@ export function useUpdateCardComplete() {
     const { addToast } = UserToast();
     const { updateCard } = useBoardContext();
 
-    return useMutation({
+    const mutation = useMutation({
         mutationFn: ({ boardId, listId, id, data }) => cardApi.updateComplete(boardId, listId, id, data),
 
         onMutate: async (variables) => {
@@ -128,7 +132,7 @@ export function useUpdateCardComplete() {
         onSuccess: (res, variables) => {
             if (res.data?.success) {
                 // Update context with server data
-                const updatedCard = res.data.data;
+                const updatedCard = res.data.data.card;
                 updateCard(variables.id, updatedCard);
                 queryClient.setQueryData(CARD_KEYS.detail(variables.id), updatedCard);
             } else {
@@ -156,6 +160,8 @@ export function useUpdateCardComplete() {
             queryClient.invalidateQueries(CARD_KEYS.detail(variables.id));
         }
     });
+
+    return { ...mutation, isLoading: mutation.isPending };
 }
 
 export function useDeleteCard() {
@@ -163,7 +169,7 @@ export function useDeleteCard() {
     const { addToast } = UserToast();
     const { removeCard } = useBoardContext();
 
-    return useMutation({
+    const mutation = useMutation({
         mutationFn: ({ boardId, listId, id }) => cardApi.delete(boardId, listId, id),
 
         onMutate: async (variables) => {
@@ -198,6 +204,8 @@ export function useDeleteCard() {
             addToast({ type: "error", title: err.response?.data?.message || "Lỗi kết nối server" });
         }
     });
+
+    return { ...mutation, isLoading: mutation.isPending };
 }
 
 // Checklist Hooks
@@ -207,7 +215,7 @@ export function useAddChecklistItem() {
     const { addToast } = UserToast();
     const { addChecklistItem } = useBoardContext();
 
-    return useMutation({
+    const mutation = useMutation({
         mutationFn: ({ boardId, listId, cardId, data }) => cardApi.addChecklist(boardId, listId, cardId, data),
 
         onMutate: async (variables) => {
@@ -252,13 +260,15 @@ export function useAddChecklistItem() {
             addToast({ type: "error", title: err.response?.data?.message || "Lỗi kết nối server" });
         }
     });
+
+    return { ...mutation, isLoading: mutation.isPending };
 }
 
 export function useToggleChecklistItem() {
     const queryClient = useQueryClient();
     const { toggleChecklistItem } = useBoardContext();
 
-    return useMutation({
+    const mutation = useMutation({
         mutationFn: ({ boardId, listId, cardId, data }) => cardApi.toggleChecklistItem(boardId, listId, cardId, data),
 
         onMutate: async (variables) => {
@@ -302,6 +312,8 @@ export function useToggleChecklistItem() {
             }
         }
     });
+
+    return { ...mutation, isLoading: mutation.isPending };
 }
 
 export function useDeleteChecklistItem() {
@@ -309,7 +321,7 @@ export function useDeleteChecklistItem() {
     const { addToast } = UserToast();
     const { deleteChecklistItem } = useBoardContext();
 
-    return useMutation({
+    const mutation = useMutation({
         mutationFn: ({ boardId, listId, cardId, data }) => cardApi.deleteChecklist(boardId, listId, cardId, data),
 
         onMutate: async (variables) => {
@@ -353,4 +365,6 @@ export function useDeleteChecklistItem() {
             addToast({ type: "error", title: err.response?.data?.message || "Lỗi kết nối server" });
         }
     });
+
+    return { ...mutation, isLoading: mutation.isPending };
 }

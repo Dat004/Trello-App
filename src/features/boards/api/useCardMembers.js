@@ -9,10 +9,12 @@ import { CARD_KEYS } from "./useCards";
 export function useGetCardMembers() {
     const queryClient = useQueryClient();
 
-    return useMutation({
+    const mutation = useMutation({
         mutationFn: ({ boardId, listId, cardId }) =>
             cardApi.getMembersInCard(boardId, listId, cardId),
     });
+
+    return { ...mutation, isLoading: mutation.isPending };
 }
 
 // Assign member to card
@@ -21,7 +23,7 @@ export function useAssignCardMember() {
     const { addToast } = UserToast();
     const { assignCardMember } = useBoardContext();
 
-    return useMutation({
+    const mutation = useMutation({
         mutationFn: ({ boardId, listId, cardId, data }) =>
             cardApi.assignMemberToCard(boardId, listId, cardId, data),
 
@@ -43,13 +45,8 @@ export function useAssignCardMember() {
 
         onSuccess: (res, variables) => {
             if (res.data?.success) {
-                // ✅ Update context with assigned member (Hybrid Approach)
-                const updatedCard = res.data.data;
-
                 // Get the newly assigned member from response
-                const assignedMember = updatedCard.members?.find(
-                    m => m._id === variables.data.userId
-                );
+                const assignedMember = res.data.data.member;
 
                 if (assignedMember) {
                     assignCardMember(variables.cardId, assignedMember);
@@ -62,7 +59,7 @@ export function useAssignCardMember() {
                 if (currentCard) {
                     queryClient.setQueryData(CARD_KEYS.detail(variables.cardId), {
                         ...currentCard,
-                        members: updatedCard.members,
+                        members: [...currentCard.members, assignedMember],
                     });
                 }
 
@@ -95,6 +92,8 @@ export function useAssignCardMember() {
             });
         },
     });
+
+    return { ...mutation, isLoading: mutation.isPending };
 }
 
 // Remove member from card
@@ -103,7 +102,7 @@ export function useRemoveCardMember() {
     const { addToast } = UserToast();
     const { removeCardMember } = useBoardContext();
 
-    return useMutation({
+    const mutation = useMutation({
         mutationFn: ({ boardId, listId, cardId, userId }) =>
             cardApi.unassignMemberFromCard(boardId, listId, cardId, userId),
 
@@ -169,4 +168,6 @@ export function useRemoveCardMember() {
             });
         },
     });
+
+    return { ...mutation, isLoading: mutation.isPending };
 }

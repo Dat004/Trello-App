@@ -9,7 +9,7 @@ export function useCreateList() {
     const { addToast } = UserToast();
     const { addList } = useBoardContext();
 
-    return useMutation({
+    const mutation = useMutation({
         mutationFn: ({ boardId, data }) => listApi.create(boardId, data),
 
         onMutate: async (variables) => {
@@ -25,7 +25,7 @@ export function useCreateList() {
         onSuccess: (res, variables) => {
             if (res.data?.success) {
                 // ✅ Update context with new list
-                const newList = res.data.data;
+                const newList = res.data.data.list;
                 addList(newList);
 
                 addToast({ type: "success", title: "Tạo danh sách thành công!" });
@@ -45,6 +45,8 @@ export function useCreateList() {
             addToast({ type: "error", title: err.response?.data?.message || "Lỗi kết nối server" });
         }
     });
+
+    return { ...mutation, isLoading: mutation.isPending };
 }
 
 export function useUpdateList() {
@@ -52,7 +54,7 @@ export function useUpdateList() {
     const { addToast } = UserToast();
     const { updateList } = useBoardContext();
 
-    return useMutation({
+    const mutation = useMutation({
         mutationFn: ({ boardId, listId, data }) => listApi.update(boardId, listId, data),
 
         onMutate: async (variables) => {
@@ -68,7 +70,7 @@ export function useUpdateList() {
         onSuccess: (res, variables) => {
             if (res.data?.success) {
                 // ✅ Update context with updated list data
-                const updatedList = res.data.data;
+                const updatedList = res.data.data.list;
                 updateList(variables.listId, updatedList);
             } else {
                 addToast({ type: "error", title: res.data?.message || "Lỗi cập nhật danh sách" });
@@ -86,6 +88,8 @@ export function useUpdateList() {
             addToast({ type: "error", title: err.response?.data?.message || "Lỗi kết nối server" });
         }
     });
+
+    return { ...mutation, isLoading: mutation.isPending };
 }
 
 export function useDeleteList() {
@@ -93,7 +97,7 @@ export function useDeleteList() {
     const { addToast } = UserToast();
     const { removeList } = useBoardContext();
 
-    return useMutation({
+    const mutation = useMutation({
         mutationFn: ({ boardId, listId }) => listApi.delete(boardId, listId),
 
         onMutate: async (variables) => {
@@ -128,4 +132,6 @@ export function useDeleteList() {
             addToast({ type: "error", title: err.response?.data?.message || "Lỗi kết nối server" });
         }
     });
+
+    return { ...mutation, isLoading: mutation.isPending };
 }

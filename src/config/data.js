@@ -39,11 +39,6 @@ export const headerMenuData = [
     name: "Mẫu",
     path: paths.templates,
   },
-  {
-    id: 4,
-    name: "Thành viên",
-    path: paths.members,
-  },
 ];
 
 // Initial state

@@ -1,23 +1,23 @@
-import { Plus, User, X } from "lucide-react";
+import { Loader2, Plus, User, X } from "lucide-react";
 import { useState } from "react";
 
 import {
-    Avatar,
-    AvatarFallback,
-    AvatarImage,
-    Button,
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-    Input,
-    Label,
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+  Button,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  Input,
+  Label,
 } from "@/Components/UI";
 import {
-    useAssignCardMember,
-    useRemoveCardMember,
+  useAssignCardMember,
+  useRemoveCardMember,
 } from "@/features/boards/api/useCardMembers";
 import { useBoardContext } from "@/features/boards/context/BoardStateContext";
 import { useBoardAccess } from "../../BoardAccessGuard";
@@ -25,6 +25,7 @@ import { useBoardAccess } from "../../BoardAccessGuard";
 function CardMembers({ card, boardId, listId, activeUsers = [] }) {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [processingMemberId, setProcessingMemberId] = useState(null);
   const { boardData } = useBoardContext();
   const { readOnly } = useBoardAccess();
 
@@ -51,6 +52,7 @@ function CardMembers({ card, boardId, listId, activeUsers = [] }) {
     });
 
   const handleAssignMember = (member) => {
+    setProcessingMemberId(member._id);
     assignMember(
       {
         boardId,
@@ -63,16 +65,20 @@ function CardMembers({ card, boardId, listId, activeUsers = [] }) {
           setOpen(false);
           setSearchQuery("");
         },
+        onSettled: () => setProcessingMemberId(null),
       }
     );
   };
 
   const handleRemoveMember = (memberId) => {
+    setProcessingMemberId(memberId);
     removeMember({
       boardId,
       listId,
       cardId: card._id,
       userId: memberId,
+    }, {
+      onSettled: () => setProcessingMemberId(null),
     });
   };
 
@@ -163,8 +169,17 @@ function CardMembers({ card, boardId, listId, activeUsers = [] }) {
                           )}
                         </div>
 
-                        <Button variant="outline" size="icon">
-                          <Plus className="h-4 w-4" />
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          disabled={isAssigning}
+                          className="h-8 w-8"
+                        >
+                          {isAssigning && processingMemberId === member._id ? (
+                            <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                          ) : (
+                            <Plus className="h-4 w-4" />
+                          )}
                         </Button>
                       </div>
                     );
@@ -217,10 +232,15 @@ function CardMembers({ card, boardId, listId, activeUsers = [] }) {
                 {!readOnly && (
                 <button
                   onClick={() => handleRemoveMember(member._id)}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity ml-1 hover:bg-destructive/10 rounded-full p-0.5"
+                  disabled={isRemoving}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity ml-1 hover:bg-destructive/10 rounded-full p-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
                   title="Xóa thành viên"
                 >
-                  <X className="h-3 w-3 text-destructive" />
+                  {isRemoving && processingMemberId === member._id ? (
+                      <Loader2 className="h-3 w-3 animate-spin text-destructive" />
+                  ) : (
+                      <X className="h-3 w-3 text-destructive" />
+                  )}
                 </button>
                 )}
               </div>

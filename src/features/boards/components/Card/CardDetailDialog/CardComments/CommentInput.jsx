@@ -1,4 +1,4 @@
-import { Send, X } from "lucide-react";
+import { Loader2, Send, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { Button, Input } from "@/Components/UI";
@@ -115,7 +115,11 @@ function CommentInput({
           disabled={!value.trim() || isLoading}
           className="rounded-full h-10 w-10 shrink-0"
         >
-          <Send className="h-4 w-4" />
+          {isLoading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Send className="h-4 w-4" />
+          )}
         </Button>
       </div>
     </div>

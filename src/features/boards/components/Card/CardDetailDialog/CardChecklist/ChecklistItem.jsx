@@ -1,16 +1,23 @@
-import { Trash2 } from "lucide-react";
+import { Loader2, Trash2 } from "lucide-react";
 
 import { Button, Checkbox } from "@/Components/UI";
 
-function ChecklistItem({ item, onToggle, onDelete, readOnly }) {
+function ChecklistItem({ item, onToggle, onDelete, readOnly, isToggling, isDeleting }) {
   return (
     <div className="flex items-center gap-2 group">
-      <Checkbox
-        checked={item.completed}
-        onCheckedChange={() => onToggle(item._id, !item.completed)}
-        id={`check-${item._id}`}
-        disabled={readOnly}
-      />
+      <div className="relative flex items-center justify-center">
+        <Checkbox
+          checked={item.completed}
+          onCheckedChange={() => onToggle(item._id, !item.completed)}
+          id={`check-${item._id}`}
+          disabled={readOnly || isToggling}
+        />
+        {isToggling && (
+          <div className="absolute inset-0 flex items-center justify-center bg-background/50 rounded-sm">
+            <Loader2 className="h-3 w-3 animate-spin text-primary" />
+          </div>
+        )}
+      </div>
       <label
         htmlFor={`check-${item._id}`}
         className={`flex-1 text-sm cursor-pointer ${
@@ -27,8 +34,13 @@ function ChecklistItem({ item, onToggle, onDelete, readOnly }) {
         variant="link"
         className="h-6 w-6 p-0 opacity-0 text-white hover:bg-none group-hover:opacity-100"
         onClick={() => onDelete(item._id)}
+        disabled={isDeleting}
       >
-        <Trash2 className="h-3 w-3 text-red-500" />
+        {isDeleting ? (
+          <Loader2 className="h-3 w-3 animate-spin text-destructive" />
+        ) : (
+          <Trash2 className="h-3 w-3 text-red-500" />
+        )}
       </Button>
       )}
     </div>

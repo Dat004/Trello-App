@@ -1,9 +1,8 @@
-import { CheckSquare, Plus } from "lucide-react";
+import { CheckSquare, Loader2, Plus } from "lucide-react";
 import { useState } from "react";
 
 import { Button, Input, Label } from "@/Components/UI";
 import { useAddChecklistItem, useDeleteChecklistItem, useToggleChecklistItem } from "@/features/boards/api/useCards";
-import { useBoardContext } from "@/features/boards/context/BoardStateContext";
 import { getChecklistProgress } from "@/helpers/card";
 import { useBoardAccess } from "../../../BoardAccessGuard";
 import ChecklistItem from "./ChecklistItem";
@@ -17,8 +16,8 @@ function CardChecklist({ card, boardId, listId }) {
   const checklistProgress = getChecklistProgress(card);
 
   const { mutate: addChecklist, isLoading: isAdding } = useAddChecklistItem();
-  const { mutate: toggleChecklist } = useToggleChecklistItem();
-  const { mutate: deleteChecklist } = useDeleteChecklistItem();
+  const { mutate: toggleChecklist, isPending: isToggling, variables: toggleVars } = useToggleChecklistItem();
+  const { mutate: deleteChecklist, isPending: isDeleting, variables: deleteVars } = useDeleteChecklistItem();
 
   const handleAddChecklistItem = () => {
     if (!card || !newChecklistItem.trim()) return;
@@ -80,6 +79,8 @@ function CardChecklist({ card, boardId, listId }) {
               item={item}
               onToggle={handleToggleChecklistItem}
               onDelete={handleDeleteChecklist}
+              isToggling={isToggling && toggleVars?.data?.checklistId === item._id}
+              isDeleting={isDeleting && deleteVars?.data?.checklistId === item._id}
               readOnly={readOnly}
             />
           ))}
@@ -104,8 +105,13 @@ function CardChecklist({ card, boardId, listId }) {
           size="sm"
           onClick={handleAddChecklistItem}
           disabled={!newChecklistItem.trim() || isAdding}
+          className="min-w-[40px]"
         >
-          <Plus className="h-4 w-4" />
+          {isAdding ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Plus className="h-4 w-4" />
+          )}
         </Button>
       </div>
       )}

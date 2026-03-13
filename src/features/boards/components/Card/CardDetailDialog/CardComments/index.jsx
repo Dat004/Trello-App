@@ -112,7 +112,7 @@ function CardComments({ card, boardId, board }) {
   };
 
   // Delete comment
-  const { mutateAsync: deleteCommentAsync } = useMutation({
+  const { mutateAsync: deleteCommentAsync, isPending: isDeletingComment, variables: deleteVars } = useMutation({
       mutationFn: ({ commentId }) => commentsApi.deleteComment(boardId, card._id, commentId),
       onSuccess: () => {
         queryClient.invalidateQueries(CARD_KEYS.comments(card._id));
@@ -162,6 +162,7 @@ function CardComments({ card, boardId, board }) {
                   onReply={handleReply}
                   canDelete={comment.canDelete}
                   onDelete={handleDeleteComment}
+                  isDeleting={isDeletingComment && deleteVars?.commentId === comment._id}
                   boardId={boardId}
                   cardId={card._id}
                   userId={user?._id}

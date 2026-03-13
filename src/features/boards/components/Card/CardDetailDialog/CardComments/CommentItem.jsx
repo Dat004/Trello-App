@@ -19,6 +19,7 @@ function CommentItem({
   onDelete, 
   onReply,
   canDelete,
+  isDeleting,
   boardId,
   cardId,
   userId,
@@ -27,7 +28,6 @@ function CommentItem({
   const queryClient = useQueryClient();
   const [showReplyInput, setShowReplyInput] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
   const [isReplying, setIsReplying] = useState(false);
 
   // Use React Query to fetch replies
@@ -90,7 +90,6 @@ function CommentItem({
 
   // Handle delete
   const handleDelete = async () => {
-    setIsDeleting(true);
     try {
       await onDelete(comment._id, comment.parent_comment);
       // Parent handles invalidation of main list via mutation callbacks
@@ -99,8 +98,8 @@ function CommentItem({
       if (comment.parent_comment) {
            await queryClient.invalidateQueries(CARD_KEYS.replies(comment.parent_comment));
       }
-    } finally {
-      setIsDeleting(false);
+    } catch (error) {
+       console.error("Error deleting comment:", error);
     }
   };
 

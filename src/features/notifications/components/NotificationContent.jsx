@@ -15,7 +15,7 @@ function NotificationContent() {
     const { mutate: markAsRead } = useMarkNotificationRead();
     const { mutate: markAllAsRead } = useMarkAllNotificationsRead();
     const { mutate: removeNotification } = useDeleteNotification();
-    const { mutate: respondInvite } = useRespondInvite();
+    const { mutate: respondInvite, isLoading: isResponding, variables: respondVariables } = useRespondInvite();
 
     const unreadNotifications = notifications.filter((n) => !n.is_read);
     const readNotifications = notifications.filter((n) => n.is_read);
@@ -121,6 +121,7 @@ function NotificationContent() {
                                 onMarkAsRead={markAsRead}
                                 onRemove={handleRemove}
                                 onRespond={handleRespondInvite}
+                                isLoading={isResponding && respondVariables?.notification_id === notification._id}
                             />
                         ))}
                     </div>

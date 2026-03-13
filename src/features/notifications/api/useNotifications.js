@@ -33,7 +33,7 @@ export const useUnreadCount = () => {
 export const useMarkNotificationRead = () => {
     const queryClient = useQueryClient();
 
-    return useMutation({
+    const mutation = useMutation({
         mutationFn: notificationApi.markNotificationAsRead,
         onMutate: async (notificationId) => {
             await queryClient.cancelQueries(NOTIFICATION_KEYS.all);
@@ -66,27 +66,33 @@ export const useMarkNotificationRead = () => {
             queryClient.invalidateQueries(NOTIFICATION_KEYS.unreadCount());
         },
     });
+
+    return { ...mutation, isLoading: mutation.isPending };
 };
 
 export const useMarkAllNotificationsRead = () => {
     const queryClient = useQueryClient();
 
-    return useMutation({
+    const mutation = useMutation({
         mutationFn: notificationApi.markAllNotificationsAsRead,
         onSuccess: () => {
             queryClient.invalidateQueries(NOTIFICATION_KEYS.all);
         },
     });
+
+    return { ...mutation, isLoading: mutation.isPending };
 };
 
 export const useDeleteNotification = () => {
     const queryClient = useQueryClient();
 
-    return useMutation({
+    const mutation = useMutation({
         mutationFn: ({ id, data }) => notificationApi.deleteNotification(id, data),
         onSuccess: () => {
             queryClient.invalidateQueries(NOTIFICATION_KEYS.list());
             queryClient.invalidateQueries(NOTIFICATION_KEYS.unreadCount());
         },
     });
+
+    return { ...mutation, isLoading: mutation.isPending };
 };

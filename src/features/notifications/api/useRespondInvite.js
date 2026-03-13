@@ -9,7 +9,7 @@ export function useRespondInvite() {
     const queryClient = useQueryClient();
     const { addToast } = UserToast();
 
-    return useMutation({
+    const mutation = useMutation({
         mutationFn: ({ entityType, entityId, notification_id, action }) =>
             inviteApi.respondInvite(entityType, entityId, { action, notification_id }),
 
@@ -59,4 +59,6 @@ export function useRespondInvite() {
             });
         },
     });
+
+    return { ...mutation, isLoading: mutation.isPending };
 }

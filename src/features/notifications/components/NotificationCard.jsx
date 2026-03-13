@@ -1,4 +1,4 @@
-import { Check, CheckCheck, Trash2, X } from "lucide-react";
+import { Check, CheckCheck, Loader2, Trash2, X } from "lucide-react";
 import { useState } from "react";
 
 import { Avatar, AvatarFallback, AvatarImage, Badge, Button, Card, CardContent } from "@/Components/UI";
@@ -12,6 +12,7 @@ function NotificationCard({
   onMarkAsRead,
   onRemove,
   onRespond,
+  isLoading = false,
 }) {
   const [responded, setResponded] = useState(null);
   const ICON = getNotificationIcon(notification.type);
@@ -127,19 +128,29 @@ function NotificationCard({
                 <div className="flex gap-2">
                   <Button
                     size="sm"
-                    className="gap-1.5 h-8 bg-green-600 hover:bg-green-700 text-white"
+                    className="gap-1.5 h-8 bg-green-600 hover:bg-green-700 text-white min-w-[80px]"
+                    disabled={isLoading}
                     onClick={() => handleRespond('accept', notification)}
                   >
-                    <Check className="h-3.5 w-3.5" />
+                    {isLoading && responded === 'accept' ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Check className="h-3.5 w-3.5" />
+                    )}
                     Đồng ý
                   </Button>
                   <Button
                     size="sm"
                     variant="outline"
-                    className="gap-1.5 h-8 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/40"
+                    className="gap-1.5 h-8 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/40 min-w-[80px]"
+                    disabled={isLoading}
                     onClick={() => handleRespond('reject', notification)}
                   >
-                    <X className="h-3.5 w-3.5" />
+                    {isLoading && responded === 'reject' ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <X className="h-3.5 w-3.5" />
+                    )}
                     Từ chối
                   </Button>
                 </div>

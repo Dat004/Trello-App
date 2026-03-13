@@ -36,7 +36,7 @@ function NotificationContent() {
 
     const handleRespondInvite = ({ action, notification }) => {
         const entityType = notification.entity_type;
-        const entityId = notification.workspace?._id || notification.board?._id;
+        const entityId = entityType === 'workspace' ? notification.workspace?._id : notification.board?._id;
 
         if (!entityId) return;
 

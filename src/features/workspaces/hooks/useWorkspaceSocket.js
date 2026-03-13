@@ -65,6 +65,11 @@ export function useWorkspaceSocket(workspaceId) {
         };
 
         const handleJoinRequestsUpdate = () => {
+            addToast({
+                title: "Có yêu cầu tham gia không gian làm việc",
+                type: "info"
+            });
+
             queryClient.invalidateQueries(WORKSPACE_KEYS.detail(workspaceId));
             queryClient.invalidateQueries(WORKSPACE_MEMBERS_KEYS.joinRequests(workspaceId));
             queryClient.invalidateQueries(WORKSPACE_ACTIVITIES_KEYS.list(workspaceId));

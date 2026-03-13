@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { Edit, GripVertical, MoreHorizontal, Plus, Trash2 } from "lucide-react";
 
@@ -6,6 +6,7 @@ import { useDeleteList, useUpdateList } from "@/features/boards/api/useLists";
 import { useBoardContext } from "@/features/boards/context/BoardStateContext";
 import { useBoardFilter } from "../../context/BoardFilterContext";
 import { useFilteredCards } from "../../hooks/useFilteredCards";
+import { useBoardAccess } from "../BoardAccessGuard";
 import DeleteDialog from "@/Components/DeleteDialog";
 import SortableItem from "@/Components/SortableItem";
 import CardFormDialog from "../Card/CardFormDialog";
@@ -25,11 +26,11 @@ import {
   Input,
   Badge,
 } from "@/Components/UI";
-import { useMemo } from "react";
 
 function BoardList({ listId, boardId, isOverlay = false }) {
   // Use Context
   const { boardData, removeCard } = useBoardContext();
+  const { readOnly } = useBoardAccess();
   const { filters, isFiltering } = useBoardFilter();
   const { currentBoard, lists, cards } = boardData;
   const list = lists[listId];
@@ -118,7 +119,8 @@ function BoardList({ listId, boardId, isOverlay = false }) {
                       {...attributes}
                       {...listeners}
                       className={cn(
-                        "cursor-grab p-1 hover:bg-muted rounded transition-colors active:cursor-grabbing"
+                        "p-1 hover:bg-muted rounded transition-colors active:cursor-grabbing",
+                        readOnly ? "hidden" : "cursor-grab"
                       )}
                     >
                       <GripVertical className="h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -139,7 +141,7 @@ function BoardList({ listId, boardId, isOverlay = false }) {
                       <div className="flex items-center gap-2 flex-1 min-w-0">
                         <h3
                           className="font-semibold text-foreground cursor-pointer hover:bg-muted px-2 py-1 rounded -mx-1 flex-1 transition-colors truncate"
-                          onClick={() => setIsEditing(true)}
+                          onClick={() => !readOnly && setIsEditing(true)}
                         >
                           {list.title}
                         </h3>
@@ -158,6 +160,7 @@ function BoardList({ listId, boardId, isOverlay = false }) {
                       </div>
                     )}
                   </section>
+                  {!readOnly && (
                   <DropdownMenu modal={false}>
                     <DropdownMenuTrigger asChild>
                       <Button
@@ -193,6 +196,7 @@ function BoardList({ listId, boardId, isOverlay = false }) {
                       )}
                     </DropdownMenuContent>
                   </DropdownMenu>
+                  )}
                 </section>
               </CardHeader>
               <CardContent className="p-4 pt-0 max-h-[calc(100vh-250px)] flex flex-col">
@@ -223,6 +227,7 @@ function BoardList({ listId, boardId, isOverlay = false }) {
                     </section>
                   </SortableContext>
                 </section>
+                {!readOnly && (
                 <div className="mt-3">
                   <CardFormDialog
                     listId={list._id}
@@ -239,6 +244,7 @@ function BoardList({ listId, boardId, isOverlay = false }) {
                     }
                   />
                 </div>
+                )}
               </CardContent>
             </Card>
           </section>

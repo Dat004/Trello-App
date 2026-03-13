@@ -16,6 +16,7 @@ import { getChecklistProgress } from "@/helpers/card";
 import { formatDueDate } from "@/helpers/formatTime";
 import DeleteDialog from "@/Components/DeleteDialog";
 import SortableItem from "@/Components/SortableItem";
+import { useBoardAccess } from "../BoardAccessGuard";
 import CardDetailDialog from "./CardDetailDialog";
 import CardFormDialog from "./CardFormDialog";
 import { usePermissions } from "@/hooks";
@@ -36,6 +37,8 @@ import {
 
 function CardItem({ cardId, listId, boardId, isOverlay = false, card, currentBoard, removeCard }) {
   if (!card) return null;
+
+  const { readOnly } = useBoardAccess();
 
   const members = card._membersCache || card.members || [];
   const { canDelete } = usePermissions({
@@ -84,7 +87,10 @@ function CardItem({ cardId, listId, boardId, isOverlay = false, card, currentBoa
                     <button 
                       {...attributes}
                       {...listeners}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity mt-1 cursor-grab active:cursor-grabbing p-0.5 hover:bg-muted rounded"
+                      className={cn(
+                        "opacity-0 group-hover:opacity-100 transition-opacity mt-1 p-0.5 hover:bg-muted rounded",
+                        readOnly ? "hidden" : "cursor-grab active:cursor-grabbing"
+                      )}
                       onClick={(e) => e.stopPropagation()}
                     >
                       <GripVertical className="h-3 w-3 text-muted-foreground" />
@@ -207,6 +213,7 @@ function CardItem({ cardId, listId, boardId, isOverlay = false, card, currentBoa
                       )}
                     </div>
                   </div>
+                  {!readOnly && (
                   <DropdownMenu modal={false}>
                     <DropdownMenuTrigger asChild>
                       <Button
@@ -248,6 +255,7 @@ function CardItem({ cardId, listId, boardId, isOverlay = false, card, currentBoa
                       )}
                     </DropdownMenuContent>
                   </DropdownMenu>
+                  )}
                 </div>
               </div>
             }

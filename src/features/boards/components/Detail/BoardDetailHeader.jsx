@@ -25,6 +25,7 @@ import { useBoardFilter } from "../../context/BoardFilterContext";
 import InviteMemberDialog from "@/Components/InviteMemberDialog";
 import BoardFilterDialog from "../Dialogs/BoardFilterDialog";
 import MembersDialog from "@/Components/MembersDialog";
+import { useBoardAccess } from "../BoardAccessGuard";
 import { useFavoritesStore } from "@/store";
 import { useFavorites } from "@/hooks";
 import { cn } from "@/lib/utils";
@@ -34,7 +35,8 @@ function BoardDetailHeader({ currentView, onViewChange, currentTheme, onThemeCha
     const { isFiltering } = useBoardFilter();
     
     // Use Context
-    const { boardData, addBoardMember, removeJoinRequest } = useBoardContext();
+    const { readOnly } = useBoardAccess();
+    const { boardData } = useBoardContext();
     const { currentBoard, boardMembers, joinRequests } = boardData;
 
     const favoriteBoards = useFavoritesStore((state) => state.favoriteBoards);
@@ -225,19 +227,24 @@ function BoardDetailHeader({ currentView, onViewChange, currentTheme, onThemeCha
                   type="board"
                   entity={currentBoard}
                   members={boardMembers}
-                  pendingMembers={joinRequests}
+                  pendingMembers={!readOnly ? joinRequests : []}
                   activeUsers={boardData.activeUsers}
-                  onAcceptRequest={handleAcceptRequest}
-                  onRejectRequest={handleRejectRequest}
+                  onAcceptRequest={!readOnly ? handleAcceptRequest : undefined}
+                  onRejectRequest={!readOnly ? handleRejectRequest : undefined}
                   trigger={
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-muted-foreground hover:bg-muted h-8 px-2 rounded-lg"
+                      className="text-muted-foreground hover:bg-muted h-8 px-2 rounded-lg relative"
                       title="Xem thành viên"
                     >
                       <Users className="h-4 w-4 mr-1.5" />
                       <span className="text-xs font-bold">{currentBoard.members?.length || 0}</span>
+                      {!readOnly && joinRequests?.length > 0 && (
+                        <span className="absolute -top-1 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-white shadow-sm ring-2 ring-background">
+                          {joinRequests.length}
+                        </span>
+                      )}
                     </Button>
                   }
                 />
@@ -258,6 +265,7 @@ function BoardDetailHeader({ currentView, onViewChange, currentTheme, onThemeCha
                   )}
                 </div>
 
+                {!readOnly && (
                 <InviteMemberDialog
                   type="board"
                   onInvite={handleInviteMembers}
@@ -272,6 +280,7 @@ function BoardDetailHeader({ currentView, onViewChange, currentTheme, onThemeCha
                     </Button>
                   }
                 />
+                )}
               </div>
             </section>
           </section>

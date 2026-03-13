@@ -1,4 +1,3 @@
-import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
 import {
@@ -16,6 +15,7 @@ import {
 } from "@/Components/UI";
 import { useBoardContext } from "@/features/boards/context/BoardStateContext";
 import { useCardRealtime } from "@/features/boards/hooks/useCardRealtime";
+import { useBoardAccess } from "../../BoardAccessGuard";
 
 import CardAttachments from "./CardAttachments";
 import CardChecklist from "./CardChecklist";
@@ -34,6 +34,7 @@ function CardDetailDialog({ card, listId, boardId, trigger, open: externalOpen, 
   
   // Use Context instead of Store for currentBoard
   const { boardData } = useBoardContext();
+  const { readOnly } = useBoardAccess();
   const currentBoard = boardData.currentBoard;
   
   // Join/Leave room khi dialog mở/đóng
@@ -49,7 +50,7 @@ function CardDetailDialog({ card, listId, boardId, trigger, open: externalOpen, 
           <div>
             <DialogTitle>Chi tiết thẻ</DialogTitle>
             <DialogDescription>
-              Xem và chỉnh sửa thông tin thẻ.
+              {readOnly ? "Xem thông tin thẻ." : "Xem và chỉnh sửa thông tin thẻ."}
             </DialogDescription>
           </div>
           

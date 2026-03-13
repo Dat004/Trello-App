@@ -5,14 +5,12 @@ import { Button, Input, Label } from "@/Components/UI";
 import { useAddChecklistItem, useDeleteChecklistItem, useToggleChecklistItem } from "@/features/boards/api/useCards";
 import { useBoardContext } from "@/features/boards/context/BoardStateContext";
 import { getChecklistProgress } from "@/helpers/card";
+import { useBoardAccess } from "../../../BoardAccessGuard";
 import ChecklistItem from "./ChecklistItem";
 import ChecklistProgress from "./ChecklistProgress";
 
 function CardChecklist({ card, boardId, listId }) {
-  // Use Context for Optimistic Updates (Optional now since we invalidate queries)
-  // Or remove context logic if queries are fast enough. Keeping for consistency if desired.
-  // Actually, let's rely on React Query Invalidation for cleaner code unless lag is noticed.
-  const { addChecklistItem, toggleChecklistItem, deleteChecklistItem } = useBoardContext(); 
+  const { readOnly } = useBoardAccess();
   
   const [newChecklistItem, setNewChecklistItem] = useState("");
 
@@ -82,11 +80,13 @@ function CardChecklist({ card, boardId, listId }) {
               item={item}
               onToggle={handleToggleChecklistItem}
               onDelete={handleDeleteChecklist}
+              readOnly={readOnly}
             />
           ))}
         </div>
       )}
 
+      {!readOnly && (
       <div className="flex gap-2">
         <Input
           placeholder="Thêm công việc mới..."
@@ -108,6 +108,7 @@ function CardChecklist({ card, boardId, listId }) {
           <Plus className="h-4 w-4" />
         </Button>
       </div>
+      )}
     </div>
   );
 }

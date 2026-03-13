@@ -9,6 +9,7 @@ import { useBoardContext } from "@/features/boards/context/BoardStateContext";
 import { useWorkspacesList } from "@/features/workspaces/api/useWorkspacesList";
 import { resolvePermissions } from "@/helpers/permission";
 import { useAuthStore } from "@/store";
+import { useBoardAccess } from "../../../BoardAccessGuard";
 import CommentInput from "./CommentInput";
 import CommentItem from "./CommentItem";
 
@@ -19,6 +20,7 @@ function CardComments({ card, boardId, board }) {
 
   // Board Context for updating card comment_count
   const { updateCard } = useBoardContext();
+  const { readOnly } = useBoardAccess();
   
   const [isAdding, setIsAdding] = useState(false);
 
@@ -140,7 +142,9 @@ function CardComments({ card, boardId, board }) {
       </div>
 
       {/* Add Comment */}
-      <CommentInput cardId={card._id} user={user} onSubmit={handleAddComment} isLoading={isAdding} />
+      {!readOnly && (
+        <CommentInput cardId={card._id} user={user} onSubmit={handleAddComment} isLoading={isAdding} />
+      )}
 
       {/* Loading Initial */}
       {isInitialLoading ? (

@@ -4,11 +4,13 @@ import { useMemo, useState } from "react";
 
 import { Button, Label } from "@/Components/UI";
 import { CARD_KEYS, useCardAttachments } from "@/features/boards/api/useCardData";
+import { useBoardAccess } from "../../../BoardAccessGuard";
 import AttachmentItem from "./AttachmentItem";
 import UploadForm from "./UploadForm";
 
 function CardAttachments({ card, boardId }) {
   const queryClient = useQueryClient();
+  const { readOnly } = useBoardAccess();
   const [showUploadForm, setShowUploadForm] = useState(false);
   
   // Fetch attachments via React Query
@@ -53,7 +55,7 @@ function CardAttachments({ card, boardId }) {
             <span className="text-muted-foreground">({total})</span>
           )}
         </Label>
-        {!showUploadForm && (
+        {!readOnly && !showUploadForm && (
           <Button variant="outline" size="sm" onClick={() => setShowUploadForm(true)}>
             Thêm tệp
           </Button>

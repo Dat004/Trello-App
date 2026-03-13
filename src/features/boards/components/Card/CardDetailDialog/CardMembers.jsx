@@ -20,11 +20,13 @@ import {
     useRemoveCardMember,
 } from "@/features/boards/api/useCardMembers";
 import { useBoardContext } from "@/features/boards/context/BoardStateContext";
+import { useBoardAccess } from "../../BoardAccessGuard";
 
 function CardMembers({ card, boardId, listId, activeUsers = [] }) {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const { boardData } = useBoardContext();
+  const { readOnly } = useBoardAccess();
 
   // API hooks
   const { mutate: assignMember, isLoading: isAssigning } =
@@ -82,6 +84,7 @@ function CardMembers({ card, boardId, listId, activeUsers = [] }) {
           Thành viên
         </Label>
 
+        {!readOnly && (
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button
@@ -180,6 +183,7 @@ function CardMembers({ card, boardId, listId, activeUsers = [] }) {
             </div>
           </DialogContent>
         </Dialog>
+        )}
       </div>
 
       {/* Current members */}
@@ -210,6 +214,7 @@ function CardMembers({ card, boardId, listId, activeUsers = [] }) {
                   {memberName}
                 </span>
 
+                {!readOnly && (
                 <button
                   onClick={() => handleRemoveMember(member._id)}
                   className="opacity-0 group-hover:opacity-100 transition-opacity ml-1 hover:bg-destructive/10 rounded-full p-0.5"
@@ -217,6 +222,7 @@ function CardMembers({ card, boardId, listId, activeUsers = [] }) {
                 >
                   <X className="h-3 w-3 text-destructive" />
                 </button>
+                )}
               </div>
             );
           })

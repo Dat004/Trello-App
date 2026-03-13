@@ -2,13 +2,14 @@ import { Trash2 } from "lucide-react";
 
 import { Button, Checkbox } from "@/Components/UI";
 
-function ChecklistItem({ item, onToggle, onDelete }) {
+function ChecklistItem({ item, onToggle, onDelete, readOnly }) {
   return (
     <div className="flex items-center gap-2 group">
       <Checkbox
         checked={item.completed}
         onCheckedChange={() => onToggle(item._id, !item.completed)}
         id={`check-${item._id}`}
+        disabled={readOnly}
       />
       <label
         htmlFor={`check-${item._id}`}
@@ -20,6 +21,7 @@ function ChecklistItem({ item, onToggle, onDelete }) {
       >
         {item.text}
       </label>
+      {!readOnly && (
       <Button
         size="sm"
         variant="link"
@@ -28,6 +30,7 @@ function ChecklistItem({ item, onToggle, onDelete }) {
       >
         <Trash2 className="h-3 w-3 text-red-500" />
       </Button>
+      )}
     </div>
   );
 }

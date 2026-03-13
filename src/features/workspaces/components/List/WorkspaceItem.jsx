@@ -48,7 +48,7 @@ function WorkspaceItem({ workspace }) {
   });
   
   const members = workspace.members || [];
-  const { data: pendingMembers = [] } = useWorkspaceJoinRequests(workspace._id);
+  const pendingMembers = workspace.join_requests || [];
   
   // React Query Hooks for Actions
   const { mutate: handleRequest } = useHandleJoinRequest(workspace._id);
@@ -205,8 +205,13 @@ function WorkspaceItem({ workspace }) {
               onAcceptRequest={handleAcceptRequest}
               onRejectRequest={handleRejectRequest}
               trigger={
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="relative">
                   <Users className="h-4 w-4" />
+                  {pendingMembers.length > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-white shadow-sm ring-2 ring-background">
+                      {pendingMembers.length}
+                    </span>
+                  )}
                 </Button>
               }
             />

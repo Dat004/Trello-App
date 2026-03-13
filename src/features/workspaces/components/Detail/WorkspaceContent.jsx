@@ -1,21 +1,10 @@
+import { useQueryClient } from "@tanstack/react-query";
+import { ArrowLeft, Loader2, Star, Users } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
-import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Loader2, Share2, Star, Users } from "lucide-react";
 
-import { useWorkspaceContext } from "@/features/workspaces/components/WorkspaceAccessGuard";
-import { useWorkspaceSocket } from "@/features/workspaces/hooks/useWorkspaceSocket";
-import { WORKSPACE_KEYS } from "@/features/workspaces/api/useWorkspaceDetail";
-import { useWorkspaceActivities } from "../../api/useWorkspaceActivities";
-import { useApiMutation, useFavorites } from "@/hooks";
-import MembersDialog from "@/Components/MembersDialog";
-import WorkspaceActivity from "./WorkspaceActivities";
-import WorkspaceSettings from "./WorkspaceSettings";
-import WorkspaceMembers from "./WorkspaceMembers";
-import WorkspaceBoards from "./WorkspaceBoards";
 import { workspaceApi } from "@/api/workspace";
-import { useFavoritesStore } from "@/store";
-import { cn } from "@/lib/utils";
+import MembersDialog from "@/Components/MembersDialog";
 import {
   Button,
   Separator,
@@ -24,6 +13,17 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/Components/UI';
+import { WORKSPACE_KEYS } from "@/features/workspaces/api/useWorkspaceDetail";
+import { useWorkspaceContext } from "@/features/workspaces/components/WorkspaceAccessGuard";
+import { useWorkspaceSocket } from "@/features/workspaces/hooks/useWorkspaceSocket";
+import { useApiMutation, useFavorites } from "@/hooks";
+import { cn } from "@/lib/utils";
+import { useFavoritesStore } from "@/store";
+import { useWorkspaceActivities } from "../../api/useWorkspaceActivities";
+import WorkspaceActivity from "./WorkspaceActivities";
+import WorkspaceBoards from "./WorkspaceBoards";
+import WorkspaceMembers from "./WorkspaceMembers";
+import WorkspaceSettings from "./WorkspaceSettings";
 
 export default function WorkspaceContent() {
   const navigate = useNavigate();
@@ -121,7 +121,7 @@ export default function WorkspaceContent() {
                     </span>
                   </Button>
 
-                  <Button
+                  {/* <Button
                     variant="ghost"
                     size="sm"
                     className="text-muted-foreground hover:bg-muted gap-1 hidden sm:flex"
@@ -129,7 +129,7 @@ export default function WorkspaceContent() {
                   >
                     <Share2 className="h-4 w-4" />
                     <span className="hidden md:inline text-xs">Chia sẻ</span>
-                  </Button>
+                  </Button> */}
 
                   <MembersDialog
                     type="workspace"
@@ -142,11 +142,16 @@ export default function WorkspaceContent() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-muted-foreground hover:bg-muted gap-1 cursor-pointer"
+                        className="text-muted-foreground hover:bg-muted gap-1 cursor-pointer relative"
                         title="Thành viên"
                       >
                         <Users className="h-4 w-4" />
                         <span className="text-xs">{workspaceMembers.length}</span>
+                        {pendingMembers.length > 0 && (
+                          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-white shadow-sm ring-2 ring-background">
+                            {pendingMembers.length}
+                          </span>
+                        )}
                       </Button>
                     }
                   />

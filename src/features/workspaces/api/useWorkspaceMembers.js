@@ -14,7 +14,7 @@ export function useWorkspaceJoinRequests(workspaceId) {
         queryFn: async () => {
             const res = await workspaceApi.getJoinRequests(workspaceId);
             if (!res.data?.success) throw new Error(res.data?.message);
-            return res.data.data.requests || [];
+            return res.data.data.join_requests || [];
         },
         enabled: !!workspaceId,
     });

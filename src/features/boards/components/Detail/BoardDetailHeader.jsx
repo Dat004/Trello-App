@@ -42,8 +42,8 @@ function BoardDetailHeader({ currentView, onViewChange, currentTheme, onThemeCha
     const favoriteBoards = useFavoritesStore((state) => state.favoriteBoards);
     const { toggleBoardStar, isTogglingBoard } = useFavorites();
 
-    const { mutate: handleJoinRequest } = useHandleBoardJoinRequest();
-    const { mutate: inviteMember } = useInviteBoardMember();
+    const { mutate: handleJoinRequest, isLoading: isHandlingJoinRequest } = useHandleBoardJoinRequest();
+    const { mutate: inviteMember, isLoading: isInviting } = useInviteBoardMember();
   
     const handleInviteMembers = ({ emails, role, message, onSuccess, onSettled }) => {
       inviteMember(
@@ -231,6 +231,7 @@ function BoardDetailHeader({ currentView, onViewChange, currentTheme, onThemeCha
                   activeUsers={boardData.activeUsers}
                   onAcceptRequest={!readOnly ? handleAcceptRequest : undefined}
                   onRejectRequest={!readOnly ? handleRejectRequest : undefined}
+                  isLoading={isHandlingJoinRequest}
                   trigger={
                     <Button
                       variant="ghost"
@@ -269,6 +270,7 @@ function BoardDetailHeader({ currentView, onViewChange, currentTheme, onThemeCha
                 <InviteMemberDialog
                   type="board"
                   onInvite={handleInviteMembers}
+                  isLoading={isInviting}
                   trigger={
                     <Button
                       size="sm"

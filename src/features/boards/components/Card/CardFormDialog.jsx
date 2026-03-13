@@ -1,4 +1,4 @@
-import { Plus, X } from "lucide-react";
+import { Loader2, Plus, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { BACKGROUND_COLORS } from "@/config/theme";
@@ -311,9 +311,17 @@ function CardFormDialog({
             </Button>
             <Button
               type="submit"
+              className="min-w-[100px] gap-2"
               disabled={isSubmitting || isLoading || !titleValue.trim()}
             >
-              {isEdit ? "Lưu thay đổi" : "Thêm thẻ"}
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Đang lưu...</span>
+                </>
+              ) : (
+                isEdit ? "Lưu thay đổi" : "Thêm thẻ"
+              )}
             </Button>
           </div>
         </form>

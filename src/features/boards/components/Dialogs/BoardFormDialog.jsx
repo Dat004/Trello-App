@@ -1,4 +1,4 @@
-import { Globe, Lock, Plus, Users } from "lucide-react";
+import { Globe, Loader2, Lock, Plus, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import {
@@ -196,8 +196,15 @@ function BoardFormDialog({ trigger, isEdit = false, boardData }) {
             >
               Hủy
             </Button>
-            <Button type="submit" className="leading-1.5" disabled={isLoading}>
-              {isLoading ? "Đang xử lý..." : (isEdit ? "Lưu thay đổi" : "Tạo bảng")}
+            <Button type="submit" className="leading-1.5 gap-2" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Đang xử lý...</span>
+                </>
+              ) : (
+                isEdit ? "Lưu thay đổi" : "Tạo bảng"
+              )}
             </Button>
           </DialogFooter>
         </form>

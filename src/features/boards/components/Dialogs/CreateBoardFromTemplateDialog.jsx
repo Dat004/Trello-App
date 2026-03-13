@@ -41,7 +41,7 @@ function CreateBoardFromTemplateDialog({ template, trigger }) {
   const queryClient = useQueryClient();
   const { addToast } = UserToast();
 
-  const { mutate: createBoardFromTemplate, isLoading } = useMutation({
+  const { mutate: createBoardFromTemplate, isPending: isLoading } = useMutation({
     mutationFn: (data) => templatesApi.createBoardFromTemplate(template._id, data),
     onSuccess: (res) => {
         if(res?.data?.success) {

@@ -1,4 +1,4 @@
-import { Palette, Plus, X } from "lucide-react";
+import { Loader2, Palette, Plus, X } from "lucide-react";
 import { useState } from "react";
 
 import { Button, Card, CardContent, Input } from "@/Components/UI";
@@ -97,7 +97,14 @@ function AddListButton({ boardId }) {
                 className="leading-1.5"
                 disabled={!title.trim() || isLoading}
               >
-                {isLoading ? "Đang thêm..." : "Thêm danh sách"}
+                {isLoading ? (
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Đang thêm...</span>
+                  </div>
+                ) : (
+                  "Thêm danh sách"
+                )}
               </Button>
               <Button
                 variant="ghost"

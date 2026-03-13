@@ -1,4 +1,4 @@
-import { LogOut, Settings } from "lucide-react";
+import { Loader2, LogOut, Settings } from "lucide-react";
 
 import {
   Avatar,
@@ -18,7 +18,7 @@ import {
 } from "@/Components/UI";
 import { getRoleText } from "@/helpers/role";
 
-function MemberItem({ workspace, member, isOwner = false, isAdmin = false, isMe = false, isOnline = false, readOnly = false, onUpdateRoleMember, onKickMember }) {
+function MemberItem({ workspace, member, isOwner = false, isAdmin = false, isMe = false, isOnline = false, readOnly = false, isLoading = false, onUpdateRoleMember, onKickMember }) {
     const memberUser = member.user || {};
     const memberId = memberUser._id || member.user;
     const memberName = memberUser.full_name || "Unknown";
@@ -84,9 +84,19 @@ function MemberItem({ workspace, member, isOwner = false, isAdmin = false, isMe 
                             onValueChange={(value) =>
                                 onUpdateRoleMember(value, member)
                             }
+                            disabled={isLoading}
                         >
                             <SelectTrigger className="h-8 w-[110px]">
-                                <SelectValue />
+                                <SelectValue>
+                                    {isLoading ? (
+                                        <div className="flex items-center gap-2">
+                                            <Loader2 className="h-3 w-3 animate-spin" />
+                                            <span>...</span>
+                                        </div>
+                                    ) : (
+                                        getRoleText(memberRole)
+                                    )}
+                                </SelectValue>
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="admin">Quản trị</SelectItem>
@@ -101,8 +111,12 @@ function MemberItem({ workspace, member, isOwner = false, isAdmin = false, isMe 
                 <section>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                                <Settings className="h-4 w-4" />
+                            <Button variant="ghost" className="h-8 w-8 p-0" disabled={isLoading}>
+                                {isLoading ? (
+                                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                                ) : (
+                                    <Settings className="h-4 w-4" />
+                                )}
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">

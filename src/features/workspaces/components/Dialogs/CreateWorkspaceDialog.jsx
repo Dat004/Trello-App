@@ -1,4 +1,4 @@
-import { Building2, Plus } from "lucide-react";
+import { Building2, Loader2, Plus } from "lucide-react";
 import { useState } from "react";
 
 import {
@@ -34,15 +34,19 @@ function CreateWorkSpaceDialog({ trigger }) {
   } = form;
 
   const handleCreateWorspace = (data) => {
-    createWorkspace({
-      ...data,
-      color: selectedColor,
-    });
-
-    // Reset data
-    setOpen(false);
-    setSelectedColor(BACKGROUND_COLORS[0].class);
-    form.reset();
+    createWorkspace(
+      {
+        ...data,
+        color: selectedColor,
+      },
+      {
+        onSuccess: () => {
+          setOpen(false);
+          setSelectedColor(BACKGROUND_COLORS[0].class);
+          form.reset();
+        },
+      }
+    );
   };
 
   return (
@@ -140,8 +144,15 @@ function CreateWorkSpaceDialog({ trigger }) {
             >
               Hủy
             </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Đang tạo..." : "Tạo workspace"}
+            <Button type="submit" disabled={isLoading} className="min-w-[120px]">
+              {isLoading ? (
+                <div className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Đang tạo...</span>
+                </div>
+              ) : (
+                "Tạo workspace"
+              )}
             </Button>
           </DialogFooter>
         </form>

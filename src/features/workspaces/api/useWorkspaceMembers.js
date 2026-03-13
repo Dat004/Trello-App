@@ -24,7 +24,7 @@ export function useUpdateMemberRole() {
     const queryClient = useQueryClient();
     const { addToast } = UserToast();
 
-    return useMutation({
+    const mutation = useMutation({
         mutationFn: ({ workspaceId, member_id, role }) =>
             workspaceApi.updateMemberRole(workspaceId, { member_id, role }),
         onSuccess: (res, variables) => {
@@ -44,13 +44,15 @@ export function useUpdateMemberRole() {
             addToast({ type: "error", title: err.response?.data?.message || "Lỗi kết nối" });
         }
     });
+
+    return { ...mutation, isLoading: mutation.isPending };
 }
 
 export function useKickMember() {
     const queryClient = useQueryClient();
     const { addToast } = UserToast();
 
-    return useMutation({
+    const mutation = useMutation({
         mutationFn: ({ workspaceId, member_id }) =>
             workspaceApi.kickMember(workspaceId, { member_id }),
         onSuccess: (res, variables) => {
@@ -65,13 +67,15 @@ export function useKickMember() {
             addToast({ type: "error", title: err.response?.data?.message || "Lỗi kết nối" });
         }
     });
+
+    return { ...mutation, isLoading: mutation.isPending };
 }
 
 export function useHandleJoinRequest(workspaceId) {
     const queryClient = useQueryClient();
     const { addToast } = UserToast();
 
-    return useMutation({
+    const mutation = useMutation({
         mutationFn: ({ requestId, status }) => workspaceApi.handleJoinRequest(workspaceId, requestId, { status }),
         onSuccess: (res) => {
             if (res.data?.success) {
@@ -89,6 +93,8 @@ export function useHandleJoinRequest(workspaceId) {
             addToast({ type: "error", title: err.response?.data?.message || "Lỗi kết nối" });
         }
     });
+
+    return { ...mutation, isLoading: mutation.isPending };
 }
 
 export function useInviteWorkspaceMember() {
@@ -105,7 +111,7 @@ export function useInviteWorkspaceMember() {
         return msgs;
     };
 
-    return useMutation({
+    const mutation = useMutation({
         mutationFn: ({ workspaceId, emails, role, message }) =>
             inviteApi.sendInvite("workspace", workspaceId, { emails, role, message }),
         onSuccess: (res, variables) => {
@@ -166,4 +172,6 @@ export function useInviteWorkspaceMember() {
             }
         }
     });
+
+    return { ...mutation, isLoading: mutation.isPending };
 }

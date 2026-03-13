@@ -25,7 +25,7 @@ export function useCreateWorkspace() {
     const queryClient = useQueryClient();
     const { addToast } = UserToast();
 
-    return useMutation({
+    const mutation = useMutation({
         mutationFn: (data) => workspaceApi.create(data),
         onSuccess: (res) => {
             if (res.data?.success) {
@@ -40,13 +40,15 @@ export function useCreateWorkspace() {
             addToast({ type: "error", title: err.response?.data?.message || "Lỗi kết nối server" });
         }
     });
+
+    return { ...mutation, isLoading: mutation.isPending };
 }
 
 export function useUpdateWorkspace() {
     const queryClient = useQueryClient();
     const { addToast } = UserToast();
 
-    return useMutation({
+    const mutation = useMutation({
         mutationFn: ({ id, data }) => workspaceApi.update(id, data),
         onSuccess: (res, variables) => {
             if (res.data?.success) {
@@ -61,13 +63,15 @@ export function useUpdateWorkspace() {
             addToast({ type: "error", title: err.response?.data?.message || "Lỗi kết nối server" });
         }
     });
+
+    return { ...mutation, isLoading: mutation.isPending };
 }
 
 export function useDeleteWorkspace() {
     const queryClient = useQueryClient();
     const { addToast } = UserToast();
 
-    return useMutation({
+    const mutation = useMutation({
         mutationFn: (id) => workspaceApi.delete(id),
         onSuccess: (res) => {
             if (res.data?.success) {
@@ -83,4 +87,6 @@ export function useDeleteWorkspace() {
             addToast({ type: "error", title: err.response?.data?.message || "Lỗi kết nối server" });
         }
     });
+
+    return { ...mutation, isLoading: mutation.isPending };
 }

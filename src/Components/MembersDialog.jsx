@@ -1,5 +1,5 @@
-import { Check, Users, X } from "lucide-react";
 import { useState } from "react";
+import { Check, Loader2, Users, X } from "lucide-react";
 
 import {
   Avatar,
@@ -37,6 +37,8 @@ function MembersDialog({
 }) {
   const [open, setOpen] = useState(false)
   const [tab, setTab] = useState("active")
+  const [processingMemberId, setProcessingMemberId] = useState(null);
+  const [processingRequestId, setProcessingRequestId] = useState(null);
 
   const user = useAuthStore((state) => state.user);
   const isWorkspace = type === 'workspace';
@@ -54,32 +56,46 @@ function MembersDialog({
 
   const handleUpdateRoleMember = (role, member) => {
     const memberId = member.user?._id || member.user;
+    setProcessingMemberId(memberId);
     if (isWorkspace) {
-        updateRoleWorkspace({
+        updateRoleWorkspace(
+          {
             workspaceId: entity._id,
             member_id: memberId,
             role,
-        });
+          },
+          { onSettled: () => setProcessingMemberId(null) }
+        );
     } else {
-        updateRoleBoard({
+        updateRoleBoard(
+          {
             boardId: entity._id,
             member_id: memberId,
             role,
-        });
+          },
+          { onSettled: () => setProcessingMemberId(null) }
+        );
     }
   };
 
   const handleKickMember = (targetUserId) => {
+    setProcessingMemberId(targetUserId);
     if (isWorkspace) {
-        kickMemberWorkspace({
+        kickMemberWorkspace(
+          {
             workspaceId: entity._id,
             member_id: targetUserId,
-        });
+          },
+          { onSettled: () => setProcessingMemberId(null) }
+        );
     } else {
-        kickMemberBoard({
+        kickMemberBoard(
+          {
             boardId: entity._id,
             member_id: targetUserId,
-        });
+          },
+          { onSettled: () => setProcessingMemberId(null) }
+        );
     }
   };
 
@@ -128,6 +144,7 @@ function MembersDialog({
                     isAdmin={isAdmin}
                     isOwner={isMyEntity}
                     isOnline={activeUsers.some(u => u._id === (member.user?._id || member.user))}
+                    isLoading={processingMemberId === (member.user?._id || member.user)}
                     onUpdateRoleMember={handleUpdateRoleMember}
                     onKickMember={handleKickMember}
                   />
@@ -171,19 +188,43 @@ function MembersDialog({
                             size="sm"
                             variant="default"
                             className="h-8 px-3 bg-emerald-600 hover:bg-emerald-700"
-                            onClick={() => onAcceptRequest?.(member._id)}
+                            disabled={!!processingRequestId}
+                            onClick={async () => {
+                                setProcessingRequestId(member._id);
+                                try {
+                                    await onAcceptRequest?.(member._id);
+                                } finally {
+                                    setProcessingRequestId(null);
+                                }
+                            }}
                             title="Chấp nhận"
                         >
-                            <Check className="h-4 w-4" />
+                            {processingRequestId === member._id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                                <Check className="h-4 w-4" />
+                            )}
                         </Button>
                         <Button
                             size="sm"
                             variant="outline"
                             className="h-8 px-3 text-destructive hover:bg-destructive/10 bg-transparent"
-                            onClick={() => onRejectRequest?.(member._id)}
+                            disabled={!!processingRequestId}
+                            onClick={async () => {
+                                setProcessingRequestId(member._id);
+                                try {
+                                    await onRejectRequest?.(member._id);
+                                } finally {
+                                    setProcessingRequestId(null);
+                                }
+                            }}
                             title="Từ chối"
                         >
-                            <X className="h-4 w-4" />
+                            {processingRequestId === member._id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                                <X className="h-4 w-4" />
+                            )}
                         </Button>
                     </div>
                     </div>

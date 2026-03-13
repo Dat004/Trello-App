@@ -138,7 +138,7 @@ function WorkspaceItem({ workspace }) {
                     <DeleteDialog
                         title="Xóa workspace này?"
                         description={`Bạn có chắc muốn xóa workspace "${workspace.name}"? Hành động này không thể hoàn tác.`}
-                        onConfirm={() => deleteWorkspace({ id: workspace._id })}
+                        onConfirm={() => deleteWorkspace(workspace._id)}
                         trigger={
                             <DropdownMenuItem
                               className="text-destructive focus:text-destructive focus:bg-destructive/10"

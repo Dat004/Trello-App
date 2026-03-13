@@ -1,4 +1,4 @@
-import { Settings, Trash2 } from "lucide-react";
+import { Loader2, Settings, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import DeleteDialog from "@/Components/DeleteDialog";
@@ -40,15 +40,18 @@ function SettingWorkspaceDialog({ workspace, trigger }) {
   const [activeTab, setActiveTab] = useState("general");
   const [open, setOpen] = useState(false);
   const [selectedColor, setSelectedColor] = useState(workspace.color);
+  const [processingMemberId, setProcessingMemberId] = useState(null);
   const { user } = useAuthStore();
 
   // React Query Hooks
-  const { mutate: updateWorkspace } = useUpdateWorkspace();
-  const { mutate: deleteWorkspace } = useDeleteWorkspace();
+  const { mutate: updateWorkspace, isLoading: isUpdating } = useUpdateWorkspace();
+  const { mutate: deleteWorkspace, isLoading: isDeleting } = useDeleteWorkspace();
   const members = workspace.members || [];
   const { mutate: updateMemberRole } = useUpdateMemberRole(workspace._id);
   const { mutate: kickMember } = useKickMember(workspace._id);
   const { mutate: inviteMember } = useInviteWorkspaceMember();
+
+  console.log(isUpdating)
 
   const handleInviteMembers = ({ emails, role, message, onSuccess, onSettled }) => {
     inviteMember(
@@ -88,26 +91,45 @@ function SettingWorkspaceDialog({ workspace, trigger }) {
   }, [open, workspace, setValue]);
 
   const handleUpdateWorkspace = (data) => {
-    updateWorkspace({
+    updateWorkspace(
+      {
         id: workspace._id,
-        data: { ...data, color: selectedColor }
-    });
-    setOpen(false);
+        data: { ...data, color: selectedColor },
+      },
+      {
+        onSuccess: () => {
+          setOpen(false);
+        },
+      }
+    );
   };
 
   const handleUpdateRoleMember = (role, member) => {
-    updateMemberRole({ 
+    const memberId = member.user?._id || member.user;
+    setProcessingMemberId(memberId);
+    updateMemberRole(
+      {
         workspaceId: workspace._id,
-        member_id: member.user._id, 
-        role 
-    });
+        member_id: memberId,
+        role,
+      },
+      {
+        onSettled: () => setProcessingMemberId(null),
+      }
+    );
   };
 
   const handleKickMemberAction = (member_id) => {
-     kickMember({ 
+    setProcessingMemberId(member_id);
+    kickMember(
+      {
         workspaceId: workspace._id,
-        member_id 
-    });
+        member_id,
+      },
+      {
+        onSettled: () => setProcessingMemberId(null),
+      }
+    );
   };
 
   return (
@@ -235,15 +257,25 @@ function SettingWorkspaceDialog({ workspace, trigger }) {
                 <Button
                   type="button"
                   variant="outline"
+                  disabled={isUpdating}
                   onClick={() => setOpen(false)}
                 >
                   Hủy
                 </Button>
                 <Button
                   type="button"
+                  disabled={isUpdating}
                   onClick={handleSubmit(handleUpdateWorkspace)}
+                  className="min-w-[120px]"
                 >
-                  Lưu thay đổi
+                  {isUpdating ? (
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Đang lưu...</span>
+                    </div>
+                  ) : (
+                    "Lưu thay đổi"
+                  )}
                 </Button>
               </div>
             </div>
@@ -269,6 +301,7 @@ function SettingWorkspaceDialog({ workspace, trigger }) {
                       isMe={member.user?._id === user._id}
                       isAdmin={isAdminWorkspace}
                       isOwner={isMyWorkspace}
+                      isLoading={processingMemberId === (member.user?._id || member.user)}
                       onKickMember={handleKickMemberAction}
                       onUpdateRoleMember={handleUpdateRoleMember}
                     />

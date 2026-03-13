@@ -1,4 +1,4 @@
-import { Check, LayoutGrid, Plus } from "lucide-react";
+import { Check, LayoutGrid, Loader2, Plus } from "lucide-react";
 import { useState } from "react";
 
 import { workspaceApi } from "@/api/workspace";
@@ -40,11 +40,11 @@ function AddBoardToWorkspaceDialog({ trigger, workspaceId }) {
   const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
   
-  const { mutate: createBoard } = useCreateBoard();
+  const { mutate: createBoard, isLoading: isCreating } = useCreateBoard();
   const { data: allBoards = [] } = useMyBoards();
 
   // Mutation to add existing boards
-  const { mutateAsync: addBoardsToWorkspace } = useMutation({
+  const { mutateAsync: addBoardsToWorkspace, isPending: isAdding } = useMutation({
     mutationFn: (data) => workspaceApi.addBoardsToWorkspace(workspaceId, data),
     onSuccess: () => {
          queryClient.invalidateQueries(WORKSPACE_BOARD_KEYS.list(workspaceId));
@@ -74,18 +74,22 @@ function AddBoardToWorkspaceDialog({ trigger, workspaceId }) {
   } = form;
 
   const handleCreateNewBoard = (data) => {
-    createBoard({
-      ...data,
-      color: selectedColor,
-      visibility: "workspace",
-      workspaceId: workspaceId,
-    });
-
-    // Reset
-    reset();
-    setOpen(false);
-    setSelectedColor(BACKGROUND_COLORS[0].class);
-  }
+    createBoard(
+      {
+        ...data,
+        color: selectedColor,
+        visibility: "workspace",
+        workspaceId: workspaceId,
+      },
+      {
+        onSuccess: () => {
+          reset();
+          setOpen(false);
+          setSelectedColor(BACKGROUND_COLORS[0].class);
+        },
+      }
+    );
+  };
 
   const handleToggleBoardSelection = (boardId) => {
     const newSelected = new Set(selectedBoards)
@@ -199,8 +203,19 @@ function AddBoardToWorkspaceDialog({ trigger, workspaceId }) {
                     >
                     Hủy
                     </Button>
-                    <Button type="submit" className="leading-1.5">
-                    Tạo bảng
+                    <Button
+                      type="submit" 
+                      className="leading-1.5 min-w-[100px]"
+                      disabled={isCreating}
+                    >
+                      {isCreating ? (
+                        <div className="flex items-center gap-2">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <span>Đang tạo...</span>
+                        </div>
+                      ) : (
+                        "Tạo bảng"
+                      )}
                     </Button>
                 </DialogFooter>
                 </form>
@@ -260,12 +275,21 @@ function AddBoardToWorkspaceDialog({ trigger, workspaceId }) {
                 Bỏ chọn { selectedBoards.size > 0 ? `(${selectedBoards.size})` : "" }
               </Button>
               <Button
-                disabled={selectedBoards.size === 0}
+                disabled={selectedBoards.size === 0 || isAdding}
                 onClick={handleAddSelectedBoards}
-                className="gap-2"
+                className="gap-2 min-w-[150px]"
               >
-                <Plus className="h-4 w-4" />
-                Thêm vào workspace ({selectedBoards.size})
+                {isAdding ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Đang thêm...</span>
+                  </>
+                ) : (
+                  <>
+                    <Plus className="h-4 w-4" />
+                    Thêm vào workspace ({selectedBoards.size})
+                  </>
+                )}
               </Button>
             </DialogFooter>
           </TabsContent>

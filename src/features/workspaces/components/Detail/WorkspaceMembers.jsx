@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Users as UsersIcon } from "lucide-react";
 
 import InviteMemberDialog from "@/Components/InviteMemberDialog";
@@ -13,24 +14,38 @@ function WorkspaceMembers({ workspace, readOnly }) {
   const myMemberInfo = members.find(m => (m.user?._id || m.user) === user._id);
   const isAdmin = myMemberInfo?.role === "admin";
   
+  const [processingMemberId, setProcessingMemberId] = useState(null);
+
   const { mutate: updateRole } = useUpdateMemberRole();
   const { mutate: kickMember } = useKickMember();
   const { mutate: inviteMember } = useInviteWorkspaceMember();
 
   const handleUpdateRoleMember = (role, member) => {
     const memberId = member.user?._id || member.user;
-    updateRole({
-      workspaceId: workspace._id,
-      member_id: memberId,
-      role,
-    });
+    setProcessingMemberId(memberId);
+    updateRole(
+      {
+        workspaceId: workspace._id,
+        member_id: memberId,
+        role,
+      },
+      {
+        onSettled: () => setProcessingMemberId(null),
+      }
+    );
   };
  
   const handleKickMember = (targetUserId) => {
-    kickMember({
-      workspaceId: workspace._id,
-      member_id: targetUserId,
-    });
+    setProcessingMemberId(targetUserId);
+    kickMember(
+      {
+        workspaceId: workspace._id,
+        member_id: targetUserId,
+      },
+      {
+        onSettled: () => setProcessingMemberId(null),
+      }
+    );
   };
 
   const handleInviteMembers = ({ emails, role, message, onSuccess, onSettled }) => {
@@ -85,6 +100,7 @@ function WorkspaceMembers({ workspace, readOnly }) {
               isAdmin={isAdmin}
               isOwner={isMyWorkspace}
               readOnly={readOnly}
+              isLoading={processingMemberId === (member.user?._id || member.user)}
               onKickMember={handleKickMember}
               onUpdateRoleMember={handleUpdateRoleMember}
             />

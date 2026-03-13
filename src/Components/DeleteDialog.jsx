@@ -1,5 +1,5 @@
+import { AlertTriangle, Loader2 } from "lucide-react"; // Icon cảnh báo
 import { useState } from "react";
-import { Trash2, AlertTriangle } from "lucide-react"; // Icon cảnh báo
 import {
   Dialog,
   DialogContent,
@@ -18,10 +18,16 @@ function DeleteDialog({
   trigger,
 }) {
   const [open, setOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleConfirm = async (e) => {
-    await onConfirm();
-    setOpen(false);
+    setIsLoading(true);
+    try {
+        await onConfirm();
+        setOpen(false);
+    } finally {
+        setIsLoading(false);
+    }
   };
 
   return (
@@ -43,12 +49,26 @@ function DeleteDialog({
           <Button
             type="button"
             variant="outline"
+            disabled={isLoading}
             onClick={() => setOpen(false)}
           >
             Hủy bỏ
           </Button>
-          <Button type="button" variant="destructive" onClick={handleConfirm}>
-            Xóa ngay
+          <Button 
+            type="button" 
+            variant="destructive" 
+            onClick={handleConfirm}
+            disabled={isLoading}
+            className="min-w-[100px]"
+          >
+            {isLoading ? (
+                <div className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Xóa...</span>
+                </div>
+            ) : (
+                "Xóa ngay"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

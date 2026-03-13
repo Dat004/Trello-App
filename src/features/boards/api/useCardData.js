@@ -46,7 +46,7 @@ export const useCardCommentReplies = (boardId, cardId, commentId, enabled = fals
 export const useAddComment = () => {
     const queryClient = useQueryClient();
     const { addToast } = UserToast();
-    return useMutation({
+    const mutation = useMutation({
         mutationFn: ({ boardId, cardId, data }) => commentsApi.addComment(boardId, cardId, data),
         onSuccess: (data, variables) => {
             // If it's a reply (data likely has parentId or similar, but the API might handle it)
@@ -62,12 +62,14 @@ export const useAddComment = () => {
             addToast({ type: "error", title: "Có lỗi xảy ra khi thêm bình luận" });
         }
     });
+
+    return { ...mutation, isLoading: mutation.isPending };
 };
 
 export const useDeleteComment = () => {
     const queryClient = useQueryClient();
     const { addToast } = UserToast();
-    return useMutation({
+    const mutation = useMutation({
         mutationFn: ({ boardId, cardId, commentId }) => commentsApi.deleteComment(boardId, cardId, commentId),
         onSuccess: (data, variables) => {
             queryClient.invalidateQueries(CARD_KEYS.comments(variables.cardId));
@@ -79,6 +81,8 @@ export const useDeleteComment = () => {
             addToast({ type: "error", title: "Có lỗi xảy ra khi xóa bình luận" });
         }
     });
+
+    return { ...mutation, isLoading: mutation.isPending };
 };
 
 // --- ATTACHMENTS ---
@@ -104,7 +108,7 @@ export const useCardAttachments = (boardId, cardId) => {
 export const useAddAttachment = () => {
     const queryClient = useQueryClient();
     const { addToast } = UserToast();
-    return useMutation({
+    const mutation = useMutation({
         mutationFn: ({ boardId, cardId, data }) => attachmentsApi.addAttachment(boardId, cardId, data),
         onSuccess: (data, variables) => {
             queryClient.invalidateQueries(CARD_KEYS.attachments(variables.cardId));
@@ -114,12 +118,14 @@ export const useAddAttachment = () => {
             addToast({ type: "error", title: "Có lỗi xảy ra khi thêm tệp" });
         }
     });
+
+    return { ...mutation, isLoading: mutation.isPending };
 };
 
 export const useDeleteAttachment = () => {
     const queryClient = useQueryClient();
     const { addToast } = UserToast();
-    return useMutation({
+    const mutation = useMutation({
         mutationFn: ({ boardId, cardId, attachmentId }) => attachmentsApi.deleteAttachment(boardId, cardId, attachmentId),
         onSuccess: (data, variables) => {
             queryClient.invalidateQueries(CARD_KEYS.attachments(variables.cardId));
@@ -129,4 +135,6 @@ export const useDeleteAttachment = () => {
             addToast({ type: "error", title: "Có lỗi xảy ra khi xóa tệp" });
         }
     });
+
+    return { ...mutation, isLoading: mutation.isPending };
 };

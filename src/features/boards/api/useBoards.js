@@ -24,7 +24,7 @@ export function useCreateBoard() {
     const queryClient = useQueryClient();
     const { addToast } = UserToast();
 
-    return useMutation({
+    const mutation = useMutation({
         mutationFn: (data) => boardApi.create(data),
         onSuccess: (res, variables) => {
             if (res.data?.success) {
@@ -43,13 +43,15 @@ export function useCreateBoard() {
             addToast({ type: "error", title: err.response?.data?.message || "Lỗi kết nối server" });
         }
     });
+
+    return { ...mutation, isLoading: mutation.isPending };
 }
 
 export function useUpdateBoard() {
     const queryClient = useQueryClient();
     const { addToast } = UserToast();
 
-    return useMutation({
+    const mutation = useMutation({
         mutationFn: ({ id, data }) => boardApi.update(id, data),
         onSuccess: (res, variables) => {
             if (res.data?.success) {
@@ -67,13 +69,15 @@ export function useUpdateBoard() {
             addToast({ type: "error", title: err.response?.data?.message || "Lỗi kết nối server" });
         }
     });
+
+    return { ...mutation, isLoading: mutation.isPending };
 }
 
 export function useDeleteBoard() {
     const queryClient = useQueryClient();
     const { addToast } = UserToast();
 
-    return useMutation({
+    const mutation = useMutation({
         mutationFn: ({ id }) => boardApi.delete(id),
         onSuccess: (res, variables) => {
             if (res.data?.success) {
@@ -92,4 +96,6 @@ export function useDeleteBoard() {
             addToast({ type: "error", title: err.response?.data?.message || "Lỗi kết nối server" });
         }
     });
+
+    return { ...mutation, isLoading: mutation.isPending };
 }

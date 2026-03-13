@@ -43,7 +43,7 @@ export function useUpdateBoardMemberRole() {
     const boardContext = useBoardContext(false); // ✅ Safe for non-board pages
     const updateBoardMember = boardContext?.updateBoardMember;
 
-    return useMutation({
+    const mutation = useMutation({
         mutationFn: ({ boardId, member_id, role }) =>
             boardApi.updateMemberRole(boardId, { member_id, role }),
 
@@ -79,6 +79,8 @@ export function useUpdateBoardMemberRole() {
             addToast({ type: "error", title: err.response?.data?.message || "Lỗi kết nối" });
         }
     });
+
+    return { ...mutation, isLoading: mutation.isPending };
 }
 
 export function useKickBoardMember() {
@@ -87,7 +89,7 @@ export function useKickBoardMember() {
     const boardContext = useBoardContext(false); // ✅ Safe for non-board pages
     const removeBoardMember = boardContext?.removeBoardMember;
 
-    return useMutation({
+    const mutation = useMutation({
         mutationFn: ({ boardId, member_id }) =>
             // boardApi expects (id, data), so we pass boardId and { member_id } as data
             boardApi.kickMember(boardId, { member_id }),
@@ -124,13 +126,15 @@ export function useKickBoardMember() {
             addToast({ type: "error", title: err.response?.data?.message || "Lỗi kết nối" });
         }
     });
+
+    return { ...mutation, isLoading: mutation.isPending };
 }
 
 export function useHandleBoardJoinRequest() {
     const queryClient = useQueryClient();
     const { addToast } = UserToast();
 
-    return useMutation({
+    const mutation = useMutation({
         mutationFn: ({ boardId, requestId, status }) => boardApi.handleJoinRequest(boardId, requestId, { status }),
         onSuccess: (res, variables) => {
             if (res.data?.success) {
@@ -148,6 +152,8 @@ export function useHandleBoardJoinRequest() {
             addToast({ type: "error", title: err.response?.data?.message || "Lỗi kết nối" });
         }
     });
+
+    return { ...mutation, isLoading: mutation.isPending };
 }
 
 export function useInviteBoardMember() {
@@ -164,7 +170,7 @@ export function useInviteBoardMember() {
         return msgs;
     };
 
-    return useMutation({
+    const mutation = useMutation({
         mutationFn: ({ boardId, emails, role, message }) =>
             inviteApi.sendInvite("board", boardId, { emails, role, message }),
         onSuccess: (res, variables) => {
@@ -225,4 +231,6 @@ export function useInviteBoardMember() {
             }
         },
     });
+
+    return { ...mutation, isLoading: mutation.isPending };
 }

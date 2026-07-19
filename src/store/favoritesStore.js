@@ -65,6 +65,14 @@ const useFavoritesStore = create((set) => ({
         set((state) => ({
             favoriteBoards: state.favoriteBoards.filter(b => b._id !== boardId)
         })),
+
+    removeFavoriteBoardsByWorkspace: (workspaceId) =>
+        set((state) => ({
+            favoriteBoards: state.favoriteBoards.filter((board) => {
+                const boardWorkspaceId = board.workspace?._id || board.workspace;
+                return boardWorkspaceId !== workspaceId;
+            }),
+        })),
 }));
 
 export default useFavoritesStore;

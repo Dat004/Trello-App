@@ -1,6 +1,7 @@
 import { boardApi } from "@/api/board";
 import { UserToast } from "@/context/ToastContext";
 import { BOARD_KEYS } from "@/query/queryKeys";
+import { useFavoritesStore } from "@/store";
 import { getApiErrorMessage, unwrapApiData } from "@/utils/apiError";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -73,11 +74,13 @@ export function useUpdateBoard() {
 export function useDeleteBoard() {
     const queryClient = useQueryClient();
     const { addToast } = UserToast();
+    const removeFavoriteBoard = useFavoritesStore((state) => state.removeFavoriteBoard);
 
     const mutation = useMutation({
         mutationFn: ({ id }) => boardApi.delete(id),
         onSuccess: (res, variables) => {
             if (res.data?.success) {
+                removeFavoriteBoard(variables.id);
                 queryClient.invalidateQueries({ queryKey: BOARD_KEYS.all });
                 if (variables.workspaceId) {
                     queryClient.invalidateQueries({ queryKey: BOARD_KEYS.list(variables.workspaceId) });
@@ -100,6 +103,7 @@ export function useDeleteBoard() {
 export function useArchiveBoard() {
     const queryClient = useQueryClient();
     const { addToast } = UserToast();
+    const removeFavoriteBoard = useFavoritesStore((state) => state.removeFavoriteBoard);
 
     const mutation = useMutation({
         mutationFn: ({ id }) => boardApi.archive(id),
@@ -107,6 +111,7 @@ export function useArchiveBoard() {
             if (!res.data?.success) {
                 throw new Error(res.data?.message || "Không thể lưu trữ bảng");
             }
+            removeFavoriteBoard(variables.id);
             queryClient.invalidateQueries({ queryKey: BOARD_KEYS.all });
             queryClient.invalidateQueries({ queryKey: BOARD_KEYS.workspaceLists });
             queryClient.removeQueries({ queryKey: BOARD_KEYS.detail(variables.id) });

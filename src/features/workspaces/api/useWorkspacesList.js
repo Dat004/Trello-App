@@ -1,6 +1,7 @@
 import { workspaceApi } from "@/api/workspace";
 import { UserToast } from "@/context/ToastContext";
 import { WORKSPACES_KEYS } from "@/query/queryKeys";
+import { useFavoritesStore } from "@/store";
 import { getApiErrorMessage, unwrapApiData } from "@/utils/apiError";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -67,11 +68,17 @@ export function useUpdateWorkspace() {
 export function useDeleteWorkspace() {
     const queryClient = useQueryClient();
     const { addToast } = UserToast();
+    const removeFavoriteWorkspace = useFavoritesStore((state) => state.removeFavoriteWorkspace);
+    const removeFavoriteBoardsByWorkspace = useFavoritesStore(
+        (state) => state.removeFavoriteBoardsByWorkspace
+    );
 
     const mutation = useMutation({
         mutationFn: (id) => workspaceApi.delete(id),
-        onSuccess: (res) => {
+        onSuccess: (res, workspaceId) => {
             if (res.data?.success) {
+                removeFavoriteWorkspace(workspaceId);
+                removeFavoriteBoardsByWorkspace(workspaceId);
                 queryClient.invalidateQueries({ queryKey: WORKSPACES_KEYS.list() });
                 addToast({ type: "success", title: "Đã xóa workspace" });
             } else {

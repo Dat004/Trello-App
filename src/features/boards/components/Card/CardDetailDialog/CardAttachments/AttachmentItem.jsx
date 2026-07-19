@@ -39,7 +39,7 @@ function AttachmentItem({ boardId, cardId, attachment, onDeleteSuccess }) {
          await deleteAttachmentAsync({ boardId, cardId, attachmentId: attachment._id });
          // Toast handled by hook
          if (onDeleteSuccess) onDeleteSuccess(attachment._id);
-     } catch (err) {
+        } catch {
          // Toast handled by hook
      }
   };

@@ -39,6 +39,7 @@ function BoardKanbanView() {
     handleDragStart,
     handleDragOver,
     handleDragEnd,
+    handleDragCancel,
   } = useBoardDnD(currentBoard?._id);
 
   if (!currentBoard) return null;
@@ -51,6 +52,7 @@ function BoardKanbanView() {
         onDragStart={!readOnly ? handleDragStart : undefined}
         onDragOver={!readOnly ? handleDragOver : undefined}
         onDragEnd={!readOnly ? handleDragEnd : undefined}
+        onDragCancel={handleDragCancel}
       >
         <div className="flex items-start gap-4 h-full">
           <SortableContext
@@ -79,6 +81,8 @@ function BoardKanbanView() {
               <BoardList
                 listId={activeId}
                 boardId={currentBoard._id}
+                card={boardData.cards[activeId]}
+                currentBoard={currentBoard}
                 isOverlay
               />
             </div>

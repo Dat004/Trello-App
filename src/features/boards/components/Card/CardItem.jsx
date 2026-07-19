@@ -1,4 +1,5 @@
 import { memo } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   AlertCircle,
   Calendar,
@@ -17,7 +18,6 @@ import { formatDueDate } from "@/helpers/formatTime";
 import DeleteDialog from "@/Components/DeleteDialog";
 import SortableItem from "@/Components/SortableItem";
 import { useBoardAccess } from "../BoardAccessGuard";
-import CardDetailDialog from "./CardDetailDialog";
 import CardFormDialog from "./CardFormDialog";
 import { usePermissions } from "@/hooks";
 import { cn } from "@/lib/utils";
@@ -35,26 +35,33 @@ import {
   Progress,
 } from "@/Components/UI";
 
-function CardItem({ cardId, listId, boardId, isOverlay = false, card, currentBoard, removeCard }) {
-  if (!card) return null;
-
+function CardItem({ cardId, listId, boardId, isOverlay = false, card, currentBoard }) {
   const { readOnly } = useBoardAccess();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const members = card._membersCache || card.members || [];
   const { canDelete } = usePermissions({
     board: currentBoard,
     entity: {
       ownerId: card?.creator,
     },
   });
+  const { mutate: deleteCard, isLoading } = useDeleteCard();
+
+  if (!card) return null;
+
+  const members = card._membersCache || card.members || [];
   const checklistProgress = getChecklistProgress(card);
   const dueDateInfo = formatDueDate(card.due_date);
 
-  const { mutate: deleteCard, isLoading } = useDeleteCard();
-
   const handleDelete = () => {
     deleteCard({ boardId, listId, id: cardId });
-    removeCard(cardId);
+  };
+
+  const openCard = () => {
+    if (isOverlay) return;
+    const next = new URLSearchParams(searchParams);
+    next.set("card", cardId);
+    setSearchParams(next);
   };
 
   return (
@@ -71,12 +78,17 @@ function CardItem({ cardId, listId, boardId, isOverlay = false, card, currentBoa
             isDragging && !isOverlay && "opacity-0"
           )}
         >
-          <CardDetailDialog
-            card={card}
-            listId={listId}
-            boardId={boardId}
-            trigger={
-              <div 
+              <div
+                role="button"
+                tabIndex={0}
+                aria-label={`Mở thẻ ${card.title}`}
+                onClick={openCard}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    openCard();
+                  }
+                }}
                 className={cn(
                   "bg-card p-3 rounded-md shadow-sm border border-border hover:shadow-md transition-all duration-200 cursor-pointer group",
                   isOverlay && "shadow-2xl ring-2 ring-primary/20 rotate-1"
@@ -92,6 +104,7 @@ function CardItem({ cardId, listId, boardId, isOverlay = false, card, currentBoa
                         readOnly ? "hidden" : "cursor-grab active:cursor-grabbing"
                       )}
                       onClick={(e) => e.stopPropagation()}
+                      aria-label={`Di chuyển thẻ ${card.title}`}
                     >
                       <GripVertical className="h-3 w-3 text-muted-foreground" />
                     </button>
@@ -187,7 +200,7 @@ function CardItem({ cardId, listId, boardId, isOverlay = false, card, currentBoa
                         <div className="flex items-center gap-0.5 mt-2">
                           {members.slice(0, 3).map((member) => {
                             const memberName = member.full_name || member.name || 'User';
-                            const memberAvatar = member.avatar.url || '';
+                            const memberAvatar = member.avatar?.url || '';
                             
                             return (
                               <Avatar 
@@ -222,6 +235,7 @@ function CardItem({ cardId, listId, boardId, isOverlay = false, card, currentBoa
                         className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity ml-2"
                         disabled={isLoading}
                         onClick={(e) => e.stopPropagation()}
+                        aria-label={`Thao tác với thẻ ${card.title}`}
                       >
                         <MoreHorizontal className="h-3 w-3" />
                       </Button>
@@ -258,8 +272,6 @@ function CardItem({ cardId, listId, boardId, isOverlay = false, card, currentBoa
                   )}
                 </div>
               </div>
-            }
-          />
         </div>
       )}
     />

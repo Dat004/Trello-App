@@ -79,7 +79,7 @@ function CommentItem({
       setShowReplyInput(false);
       
       // Invalidate replies cache to show new reply
-      await queryClient.invalidateQueries(CARD_KEYS.replies(comment._id));
+      await queryClient.invalidateQueries({ queryKey: CARD_KEYS.replies(comment._id) });
       
       // Ensure replies are shown
       if (!showReplies) setShowReplies(true);
@@ -96,7 +96,7 @@ function CommentItem({
       
       // If deleting a reply, invalidate parent thread
       if (comment.parent_comment) {
-           await queryClient.invalidateQueries(CARD_KEYS.replies(comment.parent_comment));
+           await queryClient.invalidateQueries({ queryKey: CARD_KEYS.replies(comment.parent_comment) });
       }
     } catch (error) {
        console.error("Error deleting comment:", error);

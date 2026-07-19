@@ -57,7 +57,7 @@ function BoardFormDialog({ trigger, isEdit = false, boardData }) {
         setSelectedColor(BACKGROUND_COLORS[0].class);
       }
     }
-  }, [open, boardData, isEdit]); // Added isEdit to deps
+  }, [open, boardData, form, isEdit, setValue]);
 
   const handleActionsCard = async (data) => {
     const payload = { ...data, color: selectedColor };
@@ -69,7 +69,7 @@ function BoardFormDialog({ trigger, isEdit = false, boardData }) {
             await createBoard(payload);
         }
         setOpen(false);
-    } catch (error) {
+    } catch {
         // Error handling is done in hooks
     }
   };

@@ -34,13 +34,13 @@ function CardAttachments({ card, boardId }) {
     fetchNextPage();
   };
 
-  const handleDeleteSuccess = (attachmentId) => {
+  const handleDeleteSuccess = () => {
     // Invalidate to refresh list and total count
-    queryClient.invalidateQueries(CARD_KEYS.attachments(card._id));
+    queryClient.invalidateQueries({ queryKey: CARD_KEYS.attachments(card._id) });
   };
 
-  const handleUploadSuccess = (newAttachment) => {
-    queryClient.invalidateQueries(CARD_KEYS.attachments(card._id));
+  const handleUploadSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: CARD_KEYS.attachments(card._id) });
     setShowUploadForm(false);
   };
 

@@ -44,7 +44,7 @@ function CardDetailDialog({ card, listId, boardId, trigger, open: externalOpen, 
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader className="flex flex-row items-start justify-between">
           <div>

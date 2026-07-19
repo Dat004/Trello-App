@@ -23,11 +23,6 @@ function TemplatePreviewDialog({ trigger, template }) {
   const ICON = getCategoryIcon[template.category] || Briefcase;
   const [open, setOpen] = useState(false);
 
-  const useTemplate = () => {
-    console.log("Using template:", template._id);
-    setOpen(false);
-  };
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
@@ -110,7 +105,7 @@ function TemplatePreviewDialog({ trigger, template }) {
               Cấu trúc bảng ({template.lists.length} cột)
             </h4>
             <section className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {template.lists.map((list, index) => (
+              {template.lists.map((list) => (
                 <section
                   key={list._id}
                   className="flex items-center gap-2 p-2 border rounded"

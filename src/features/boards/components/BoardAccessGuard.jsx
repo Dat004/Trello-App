@@ -1,5 +1,6 @@
+/* eslint-disable react-refresh/only-export-components */
 import { Loader2 } from 'lucide-react';
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import RequestAccessDialog from '@/Components/RequestAccessDialog';
@@ -28,8 +29,6 @@ export const BoardAccessGuard = ({ children }) => {
     // { board: {...}, is_member: bool, read_only: bool, redirect_workspace_id: string }
     const { data: boardData, isLoading, error } = useBoardDetail(boardId);
     
-    const [showRequestDialog, setShowRequestDialog] = useState(true);
-
     // Handle Redirects (Case 2: Workspace Board - Non-Member)
     useEffect(() => {
         if (boardData?.redirect_workspace_id) {
@@ -84,7 +83,7 @@ export const BoardAccessGuard = ({ children }) => {
                 <RequestAccessDialog
                     entity={board}
                     type="board"
-                    open={showRequestDialog}
+                    open
                     onOpenChange={(open) => !open && window.history.back()}
                     hasPendingRequest={boardData.has_pending_request}
                     requested_at={boardData.requested_at}

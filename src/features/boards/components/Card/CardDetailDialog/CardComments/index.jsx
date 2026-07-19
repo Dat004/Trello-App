@@ -93,7 +93,7 @@ function CardComments({ card, boardId, board }) {
       const response = await commentsApi.addComment(boardId, card._id, content);
       if (response.data.success) {
         // Invalidate query to refetch list
-        queryClient.invalidateQueries(CARD_KEYS.comments(card._id));
+        queryClient.invalidateQueries({ queryKey: CARD_KEYS.comments(card._id) });
         
         // Update card's comment_count locally
         const currentCount = card.comment_count || 0;
@@ -115,7 +115,7 @@ function CardComments({ card, boardId, board }) {
   const { mutateAsync: deleteCommentAsync, isPending: isDeletingComment, variables: deleteVars } = useMutation({
       mutationFn: ({ commentId }) => commentsApi.deleteComment(boardId, card._id, commentId),
       onSuccess: () => {
-        queryClient.invalidateQueries(CARD_KEYS.comments(card._id));
+        queryClient.invalidateQueries({ queryKey: CARD_KEYS.comments(card._id) });
         // Update card's comment_count
         const currentCount = card.comment_count || 0;
         updateCard(card._id, { comment_count: Math.max(0, currentCount - 1) });
@@ -125,7 +125,7 @@ function CardComments({ card, boardId, board }) {
       }
   });
 
-  const handleDeleteComment = async (commentId, parentCommentId) => {
+  const handleDeleteComment = async (commentId) => {
       await deleteCommentAsync({ commentId });
   };
 

@@ -99,7 +99,7 @@ function BoardFilterDialog({ trigger }) {
                       />
                       <div className="flex items-center gap-3 flex-1">
                          <div className="h-7 w-7 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-500 flex-shrink-0">
-                            {member.user.avatar.url ? (
+                            {member.user.avatar?.url ? (
                                 <img src={member.user.avatar.url} alt={member.user.full_name} className="h-full w-full object-cover" />
                             ) : (
                                 <div className="h-full w-full flex items-center justify-center text-[10px] font-bold text-white">

@@ -45,9 +45,9 @@ function CreateBoardFromTemplateDialog({ template, trigger }) {
     mutationFn: (data) => templatesApi.createBoardFromTemplate(template._id, data),
     onSuccess: (res) => {
         if(res?.data?.success) {
-             queryClient.invalidateQueries(BOARD_KEYS.all);
+             queryClient.invalidateQueries({ queryKey: BOARD_KEYS.all });
              if (selectedWorkspace) {
-                 queryClient.invalidateQueries(WORKSPACE_KEYS.detail(selectedWorkspace));
+                 queryClient.invalidateQueries({ queryKey: WORKSPACE_KEYS.detail(selectedWorkspace) });
              }
              addToast({ type: "success", title: "Tạo bảng thành công" });
              setOpen(false);
@@ -55,7 +55,7 @@ function CreateBoardFromTemplateDialog({ template, trigger }) {
              addToast({ type: "error", title: res?.data?.message || "Có lỗi xảy ra" });
         }
     },
-    onError: (err) => {
+    onError: () => {
         addToast({ type: "error", title: "Có lỗi xảy ra khi tạo bảng" });
     }
   });

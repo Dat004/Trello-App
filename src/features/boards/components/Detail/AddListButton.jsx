@@ -27,7 +27,8 @@ function AddListButton({ boardId }) {
       await createList({ boardId, data: newData });
       setTitle("");
       setIsAdding(false);
-    } catch (error) {
+    } catch {
+      return;
     }
   };
 

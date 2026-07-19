@@ -1,5 +1,5 @@
 import { Loader2, Send, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Button, Input } from "@/Components/UI";
 import { SOCKET_EVENTS } from "@/constants/socketEvents";
@@ -12,7 +12,6 @@ function CommentInput({
   onCancel, 
   isLoading, 
   placeholder = "Viết bình luận...", 
-  replyTo = null,
   replyToName = null 
 }) {
   const [value, setValue] = useState("");
@@ -20,7 +19,7 @@ function CommentInput({
   const typingTimeoutRef = useRef(null);
   const isTypingRef = useRef(false);
 
-  const emitTyping = (isTyping) => {
+  const emitTyping = useCallback((isTyping) => {
     if (!socket || !cardId || !user) return;
     
     if (isTyping) {
@@ -34,7 +33,7 @@ function CommentInput({
             isTypingRef.current = false;
         }
     }
-  };
+  }, [cardId, socket, user]);
 
   const handleValueChange = (e) => {
     const val = e.target.value;
@@ -56,7 +55,7 @@ function CommentInput({
         if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
         emitTyping(false);
     };
-  }, []);
+  }, [emitTyping]);
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {

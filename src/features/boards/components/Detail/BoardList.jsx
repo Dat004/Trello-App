@@ -29,9 +29,9 @@ import {
 
 function BoardList({ listId, boardId, isOverlay = false }) {
   // Use Context
-  const { boardData, removeCard } = useBoardContext();
+  const { boardData } = useBoardContext();
   const { readOnly } = useBoardAccess();
-  const { filters, isFiltering } = useBoardFilter();
+  const { isFiltering } = useBoardFilter();
   const { currentBoard, lists, cards } = boardData;
   const list = lists[listId];
 
@@ -50,6 +50,7 @@ function BoardList({ listId, boardId, isOverlay = false }) {
   // React Query Mutations
   const { mutate: updateListTitle, isLoading: isUpdating } = useUpdateList();
   const { mutate: deleteList, isLoading: isDeleting } = useDeleteList();
+  const { canDelete } = usePermissions({ board: currentBoard });
   
   const isLoading = isUpdating || isDeleting;
 
@@ -61,8 +62,6 @@ function BoardList({ listId, boardId, isOverlay = false }) {
 
   // Guard if list not found (e.g. deleted externally but not synced yet)
   if (!list) return null;
-
-  const { canDelete } = usePermissions({ board: currentBoard });
 
   const handleSaveTitle = () => {
     if (!title.trim() || title === list.title) {
@@ -225,7 +224,6 @@ function BoardList({ listId, boardId, isOverlay = false }) {
                           boardId={boardId}
                           card={boardData.cards[cardId]}
                           currentBoard={currentBoard}
-                          removeCard={removeCard}
                         />
                       ))}
                     </section>

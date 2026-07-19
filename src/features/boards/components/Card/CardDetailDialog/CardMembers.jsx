@@ -131,7 +131,7 @@ function CardMembers({ card, boardId, listId, activeUsers = [] }) {
                   availableMembers.map((boardMember) => {
                     const member = boardMember.user || boardMember;
                     const memberName = member.full_name || member.name || "Unknown";
-                    const memberAvatar = member.avatar.url || "";
+                    const memberAvatar = member.avatar?.url || "";
 
                     return (
                       <div
@@ -206,7 +206,7 @@ function CardMembers({ card, boardId, listId, activeUsers = [] }) {
         {cardMembers.length > 0 ? (
           cardMembers.map((member) => {
             const memberName = member.full_name || member.name || "Unknown";
-            const memberAvatar = member.avatar.url || "";
+            const memberAvatar = member.avatar?.url || "";
 
             return (
               <div

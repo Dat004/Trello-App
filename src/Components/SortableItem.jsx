@@ -28,8 +28,12 @@ function SortableItem({
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition: transition || "transform 250ms cubic-bezier(0.18, 0.67, 0.6, 1.22)",
-    opacity: isDragging ? 0.5 : 1,
+    transition: transition || (
+      type === "list"
+        ? "transform 280ms cubic-bezier(0.18, 0.67, 0.6, 1.22)"
+        : "transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1)"
+    ),
+    opacity: isDragging ? 0 : 1,
     zIndex: isDragging ? 100 : "auto",
     touchAction: "none",
     position: "relative",

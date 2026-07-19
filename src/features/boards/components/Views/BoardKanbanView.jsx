@@ -87,11 +87,16 @@ function BoardKanbanView() {
               />
             </div>
           ) : activeType === "card" ? (
-            <div className="w-full max-w-[280px]">
+            <div
+              className="w-full max-w-[280px]"
+              style={{ width: activeData?.width || 280 }}
+            >
               <CardItem
                 cardId={activeId}
                 listId={activeData?.listId}
                 boardId={currentBoard._id}
+                card={boardData.cards[activeId]}
+                currentBoard={currentBoard}
                 isOverlay
               />
             </div>

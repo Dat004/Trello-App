@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
+import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { Edit, GripVertical, MoreHorizontal, Plus, Trash2 } from "lucide-react";
 
@@ -34,6 +35,14 @@ function BoardList({ listId, boardId, isOverlay = false }) {
   const { isFiltering } = useBoardFilter();
   const { currentBoard, lists, cards } = boardData;
   const list = lists[listId];
+  const {
+    isOver: isCardContainerOver,
+    setNodeRef: setCardContainerRef,
+  } = useDroppable({
+    id: `card-container:${listId}`,
+    data: { type: "card-container", listId },
+    disabled: readOnly || isOverlay,
+  });
 
   const [title, setTitle] = useState(list?.title || "");
   const [isEditing, setIsEditing] = useState(false);
@@ -205,7 +214,13 @@ function BoardList({ listId, boardId, isOverlay = false }) {
               <CardContent className="p-4 pt-0 max-h-[calc(100vh-250px)] flex flex-col">
                 <section className="overflow-y-auto overflow-x-hidden custom-scrollbar pr-1 -mr-1">
                   <SortableContext items={filteredCardIds} strategy={verticalListSortingStrategy}>
-                    <section className="space-y-2 p-1 min-h-[10px]">
+                    <section
+                      ref={setCardContainerRef}
+                      className={cn(
+                        "space-y-2 p-1 min-h-24 rounded-xl transition-colors duration-200",
+                        isCardContainerOver && "bg-primary/10 ring-2 ring-primary/30"
+                      )}
+                    >
                       {filteredCardIds.length === 0 && (
                         <section className="text-center py-8 text-muted-foreground bg-muted/20 rounded-xl border border-dashed border-border/50">
                           <p className="text-sm font-medium">

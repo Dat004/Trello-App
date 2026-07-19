@@ -7,7 +7,7 @@ import {
 } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { useQueryClient } from "@tanstack/react-query";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 import { cardApi } from "@/api/card";
 import { listApi } from "@/api/list";
@@ -25,7 +25,8 @@ function useBoardDnD(boardId) {
     const [activeId, setActiveId] = useState(null);
     const [activeType, setActiveType] = useState(null);
     const [activeData, setActiveData] = useState(null);
-    const [sourceListId, setSourceListId] = useState(null);
+    const sourceListIdRef = useRef(null);
+    const lastOverListIdRef = useRef(null);
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -49,9 +50,15 @@ function useBoardDnD(boardId) {
         return foundListId || null;
     }, [lists]);
 
+    const resolveOverListId = useCallback((over) => {
+        if (!over) return null;
+        return over.data.current?.listId || findListIdByCardId(over.id);
+    }, [findListIdByCardId]);
+
     // Custom collision detection
     const customCollisionDetectionStrategy = useCallback((args) => {
-        if (activeType === "list") {
+        const draggedType = args.active.data.current?.type || activeType;
+        if (draggedType === "list") {
             return closestCorners({
                 ...args,
                 droppableContainers: args.droppableContainers.filter(
@@ -60,7 +67,12 @@ function useBoardDnD(boardId) {
             });
         }
 
-        return closestCorners(args);
+        return closestCorners({
+            ...args,
+            droppableContainers: args.droppableContainers.filter((container) =>
+                ["card", "card-container"].includes(container.data.current?.type)
+            ),
+        });
     }, [activeType]);
 
     const handleDragStart = (event) => {
@@ -70,26 +82,33 @@ function useBoardDnD(boardId) {
 
         setActiveId(id);
         setActiveType(type);
-        setActiveData(active.data.current);
+        setActiveData({
+            ...active.data.current,
+            width: active.rect.current.initial?.width,
+        });
 
         if (type === "card") {
-            setSourceListId(findListIdByCardId(id));
+            const sourceListId = active.data.current?.listId || findListIdByCardId(id);
+            sourceListIdRef.current = sourceListId;
+            lastOverListIdRef.current = sourceListId;
         }
     };
 
     const handleDragOver = (event) => {
         const { active, over } = event;
-        if (!over || activeType === "list") return;
+        const draggedType = active.data.current?.type || activeType;
+        if (!over || draggedType === "list") return;
 
         const activeId = active.id;
-        const overId = over.id;
         const activeListId = findListIdByCardId(activeId);
-        const overListId = findListIdByCardId(overId);
+        const overListId = resolveOverListId(over);
 
         if (!activeListId || !overListId) return;
+        lastOverListIdRef.current = overListId;
 
         if (activeListId !== overListId) {
-            moveCard(activeId, overId, activeListId, overListId);
+            const overCardId = over.data.current?.type === "card" ? over.id : null;
+            moveCard(activeId, overCardId, activeListId, overListId);
         }
     };
 
@@ -97,13 +116,14 @@ function useBoardDnD(boardId) {
         setActiveId(null);
         setActiveType(null);
         setActiveData(null);
-        setSourceListId(null);
+        sourceListIdRef.current = null;
+        lastOverListIdRef.current = null;
     };
 
     const handleDragEnd = async (event) => {
         const { active, over } = event;
 
-        if (!over || active.id === over.id) {
+        if (!over) {
             resetDragState();
             return;
         }
@@ -111,7 +131,10 @@ function useBoardDnD(boardId) {
         try {
             const overType = over.data.current?.type;
 
-            if (activeType === "list" && (overType === "list" || over.id)) {
+            const draggedType = active.data.current?.type || activeType;
+
+            if (draggedType === "list" && (overType === "list" || over.id)) {
+                if (active.id === over.id) return;
                 const oldIndex = listOrder.indexOf(active.id);
                 const newIndex = listOrder.indexOf(over.id);
                 if (oldIndex < 0 || newIndex < 0) return;
@@ -126,17 +149,23 @@ function useBoardDnD(boardId) {
 
                 await listApi.move(boardId, active.id, { prevListId, nextListId });
             } else {
+                const sourceListId = sourceListIdRef.current;
                 const activeListId = findListIdByCardId(active.id);
-                const overListId = findListIdByCardId(over.id);
+                const overListId = resolveOverListId(over) || lastOverListIdRef.current;
 
                 if (!activeListId || !overListId || !sourceListId) return;
 
                 const targetIds = [...(lists[overListId]?.cardOrderIds || [])]
                     .filter((id) => id !== active.id);
-                const overIndex = targetIds.indexOf(over.id);
+                const overCardId = overType === "card" && over.id !== active.id
+                    ? over.id
+                    : null;
+                const overIndex = overCardId ? targetIds.indexOf(overCardId) : -1;
                 const newIndex = overIndex < 0 ? targetIds.length : overIndex;
                 targetIds.splice(newIndex, 0, active.id);
-                moveCard(active.id, over.id, activeListId, overListId);
+
+                if (sourceListId === overListId && active.id === over.id) return;
+                moveCard(active.id, overCardId, activeListId, overListId);
 
                 await cardApi.move(boardId, sourceListId, active.id, {
                     prevCardId: newIndex > 0 ? targetIds[newIndex - 1] : null,
@@ -164,7 +193,13 @@ function useBoardDnD(boardId) {
         handleDragStart,
         handleDragOver,
         handleDragEnd,
-        handleDragCancel: resetDragState,
+        handleDragCancel: () => {
+            const currentListId = activeId ? findListIdByCardId(activeId) : null;
+            if (sourceListIdRef.current && currentListId !== sourceListIdRef.current) {
+                queryClient.invalidateQueries({ queryKey: BOARD_KEYS.detail(boardId) });
+            }
+            resetDragState();
+        },
     };
 }
 

@@ -68,6 +68,7 @@ function CardItem({ cardId, listId, boardId, isOverlay = false, card, currentBoa
     <SortableItem
       id={cardId}
       type="card"
+      disabled={isOverlay}
       data={{ listId }}
       renderComponent={({ setNodeRef, style, attributes, listeners, isDragging }) => (
         <div
@@ -90,8 +91,8 @@ function CardItem({ cardId, listId, boardId, isOverlay = false, card, currentBoa
                   }
                 }}
                 className={cn(
-                  "bg-card p-3 rounded-md shadow-sm border border-border hover:shadow-md transition-all duration-200 cursor-pointer group",
-                  isOverlay && "shadow-2xl ring-2 ring-primary/20 rotate-1"
+                  "bg-card p-3 rounded-md shadow-sm border border-border hover:shadow-md transition-[transform,box-shadow] duration-200 cursor-pointer group",
+                  isOverlay && "shadow-2xl ring-2 ring-primary/30 rotate-2 scale-[1.03]"
                 )}
               >
                 <div className="flex items-start justify-between mb-2">

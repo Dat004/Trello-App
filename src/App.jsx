@@ -1,8 +1,11 @@
 import routes from "@/config/routes";
+import { lazy, Suspense } from "react";
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 
 import { useGlobalRealtimeSync } from "@/hooks";
 import ConnectionIndicator from "./Components/ConnectionIndicator";
+import ErrorBoundary from "./Components/ErrorBoundary";
+import RouteFallback from "./Components/RouteFallback";
 import AppInitializer from "./initializers/AppInitializer";
 import SocketProvider from "./providers/ContextProvider";
 import GoogleProvider from "./providers/GoogleProvider";
@@ -11,6 +14,8 @@ import ToastProvider from "./providers/ToastProvider";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import PublicRoute from "./routes/PublicRoute";
 
+const NotFound = lazy(() => import("./Pages/NotFound"));
+
 function GlobalRealtimeSync() {
   useGlobalRealtimeSync();
   return null;
@@ -18,8 +23,9 @@ function GlobalRealtimeSync() {
 
 function App() {
   return (
-    <Router>
-      <AppInitializer>
+    <ErrorBoundary>
+      <Router>
+        <AppInitializer>
         <GoogleProvider>
           <ThemeProvider>
             <ToastProvider>
@@ -27,43 +33,47 @@ function App() {
                 <GlobalRealtimeSync />
                 <ConnectionIndicator />
                 
-                <Routes>
-                  {routes.map((route) => (
-                    <Route
-                      key={route.path}
-                      path={route.path}
-                      element={
-                        route.auth === "protected" ? (
-                          <ProtectedRoute>
-                            {route.layout ? (
-                              <route.layout>
+                <Suspense fallback={<RouteFallback />}>
+                  <Routes>
+                    {routes.map((route) => (
+                      <Route
+                        key={route.path}
+                        path={route.path}
+                        element={
+                          route.auth === "protected" ? (
+                            <ProtectedRoute>
+                              {route.layout ? (
+                                <route.layout>
+                                  <route.page />
+                                </route.layout>
+                              ) : (
                                 <route.page />
-                              </route.layout>
-                            ) : (
-                              <route.page />
-                            )}
-                          </ProtectedRoute>
-                        ) : (
-                          <PublicRoute>
-                            {route.layout ? (
-                              <route.layout>
+                              )}
+                            </ProtectedRoute>
+                          ) : (
+                            <PublicRoute>
+                              {route.layout ? (
+                                <route.layout>
+                                  <route.page />
+                                </route.layout>
+                              ) : (
                                 <route.page />
-                              </route.layout>
-                            ) : (
-                              <route.page />
-                            )}
-                          </PublicRoute>
-                        )
-                      }
-                    />
-                  ))}
-                </Routes>
+                              )}
+                            </PublicRoute>
+                          )
+                        }
+                      />
+                    ))}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
               </SocketProvider>
             </ToastProvider>
           </ThemeProvider>
         </GoogleProvider>
-      </AppInitializer>
-    </Router>
+        </AppInitializer>
+      </Router>
+    </ErrorBoundary>
   );
 }
 

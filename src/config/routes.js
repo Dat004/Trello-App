@@ -1,13 +1,25 @@
 import { DefaultLayout, BoardLayout } from "@/Layouts";
+import { lazy } from "react";
 import paths from "./paths";
-import pages from "@/Pages";
+
+const Home = lazy(() => import("@/Pages/Home"));
+const Workspaces = lazy(() => import("@/Pages/Workspaces"));
+const Workspace = lazy(() => import("@/Pages/Workspace"));
+const Boards = lazy(() => import("@/Pages/Boards"));
+const Board = lazy(() => import("@/Pages/Board"));
+const Templates = lazy(() => import("@/Pages/Templates"));
+const Members = lazy(() => import("@/Pages/Members"));
+const Settings = lazy(() => import("@/Pages/Settings"));
+const Notifications = lazy(() => import("@/Pages/Notifications"));
+const Login = lazy(() => import("@/Pages/Login"));
+const Register = lazy(() => import("@/Pages/Register"));
 
 const routes = [
   {
     id: 1,
     name: "Trang chủ",
     path: paths.home,
-    page: pages.Home,
+    page: Home,
     layout: DefaultLayout,
     auth: "protected",
   },
@@ -15,7 +27,7 @@ const routes = [
     id: 2,
     name: "Không gian làm việc",
     path: paths.workspaces,
-    page: pages.Workspaces,
+    page: Workspaces,
     layout: DefaultLayout,
     auth: "protected",
   },
@@ -23,7 +35,7 @@ const routes = [
     id: 3,
     name: "Bảng làm việc",
     path: paths.boards,
-    page: pages.Boards,
+    page: Boards,
     layout: DefaultLayout,
     auth: "protected",
   },
@@ -31,7 +43,7 @@ const routes = [
     id: 4,
     name: "Mẫu",
     path: paths.templates,
-    page: pages.Templates,
+    page: Templates,
     layout: DefaultLayout,
     auth: "protected",
   },
@@ -39,7 +51,7 @@ const routes = [
     id: 5,
     name: "Thành viên",
     path: paths.members,
-    page: pages.Members,
+    page: Members,
     layout: DefaultLayout,
     auth: "protected",
   },
@@ -47,7 +59,7 @@ const routes = [
     id: 6,
     name: "Cài đặt",
     path: paths.settings,
-    page: pages.Settings,
+    page: Settings,
     layout: DefaultLayout,
     auth: "protected",
   },
@@ -55,7 +67,7 @@ const routes = [
     id: 7,
     name: "Chi tiết bảng",
     path: paths.board,
-    page: pages.Board,
+    page: Board,
     layout: BoardLayout,
     auth: "protected",
   },
@@ -63,7 +75,7 @@ const routes = [
     id: 8,
     name: "Chi tiết không gian làm việc",
     path: paths.workspace,
-    page: pages.Workspace,
+    page: Workspace,
     layout: DefaultLayout,
     auth: "protected",
   },
@@ -71,7 +83,7 @@ const routes = [
     id: 9,
     name: "Thông báo",
     path: paths.notifications,
-    page: pages.Notifications,
+    page: Notifications,
     layout: DefaultLayout,
     auth: "protected",
   },
@@ -79,7 +91,7 @@ const routes = [
     id: 10,
     name: "Đăng nhập",
     path: paths.login,
-    page: pages.Login,
+    page: Login,
     layout: null,
     auth: "guest",
   },
@@ -87,7 +99,7 @@ const routes = [
     id: 11,
     name: "Đăng ký",
     path: paths.register,
-    page: pages.Register,
+    page: Register,
     layout: null,
     auth: "guest",
   },

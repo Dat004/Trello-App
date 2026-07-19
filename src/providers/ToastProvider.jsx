@@ -90,7 +90,11 @@ function ToastProvider({ children }) {
     >
       {children}
 
-      <div className="fixed top-4 right-4 z-9999 space-y-2">
+      <div
+        className="fixed top-4 right-4 z-9999 space-y-2"
+        aria-live="polite"
+        aria-atomic="false"
+      >
         {toasts.map((toast) => (
           <div
             key={toast.id}
@@ -120,6 +124,7 @@ function ToastProvider({ children }) {
                 size="sm"
                 className="h-6 w-6 p-0"
                 onClick={() => closeToast(toast.id)}
+                aria-label="Đóng thông báo"
               >
                 <X className="h-4 w-4" />
               </Button>

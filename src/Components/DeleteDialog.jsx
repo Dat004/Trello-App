@@ -20,7 +20,7 @@ function DeleteDialog({
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleConfirm = async (e) => {
+  const handleConfirm = async () => {
     setIsLoading(true);
     try {
         await onConfirm();

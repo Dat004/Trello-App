@@ -28,7 +28,7 @@ export const useFavoritesInit = () => {
         };
 
         fetchFavorites();
-    }, [user]);
+    }, [clearFavorites, setFavorites, user]);
 }
 
 export const useFavorites = () => {

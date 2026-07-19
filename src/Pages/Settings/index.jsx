@@ -30,7 +30,7 @@ function Settings() {
   useEffect(() => {
     // Chuyển hướng sang các tab settings tương ứng
     navigate(`/settings/${tab}`);
-  }, [tab]);
+  }, [navigate, tab]);
 
   // Xử lý cập nhât tab state tương ứng
   const navigateTab = (currentTab) => {

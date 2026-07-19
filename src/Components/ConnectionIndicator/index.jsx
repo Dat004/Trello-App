@@ -78,7 +78,11 @@ export default function ConnectionIndicator() {
   if (!show) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 animate-in slide-in-from-bottom-2 fade-in">
+    <div
+      className="fixed bottom-4 right-4 z-50 animate-in slide-in-from-bottom-2 fade-in"
+      role="status"
+      aria-live="polite"
+    >
       <div
         className={cn(
           "flex items-center gap-2 rounded-lg px-4 py-2 shadow-lg backdrop-blur-sm text-white transition-all",

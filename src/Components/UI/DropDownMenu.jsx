@@ -135,6 +135,7 @@ const DropdownMenuSeparator = forwardRef(({ className, ...props }, ref) => (
 
 const DropdownMenuShortcut = forwardRef(({ className, ...props }, ref) => (
   <span
+    ref={ref}
     className={cn("ml-auto text-xs tracking-widest opacity-60", className)}
     {...props}
   />

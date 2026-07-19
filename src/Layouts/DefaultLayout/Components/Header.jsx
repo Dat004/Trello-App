@@ -1,11 +1,11 @@
 import { Link, useNavigate } from "react-router-dom";
-import { LogOut, Plus, Settings, User } from "lucide-react";
+import { LogOut, Menu, Plus, Search, User } from "lucide-react";
 
 import BoardFormDialog from "@/features/boards/components/Dialogs/BoardFormDialog";
 import NotificationsPanel from "@/Components/NotificationsPanel";
 import GlobalSearch from "@/Components/GlobalSearch";
 import { headerMenuData } from "@/config/data";
-import { useAuthStore } from "@/store";
+import { useAuthStore, useUIStore } from "@/store";
 import { useAuth } from "@/hooks";
 import {
   Avatar,
@@ -23,6 +23,7 @@ function Header() {
   const navigate = useNavigate();
 
   const { user } = useAuthStore();
+  const toggleMobileSidebar = useUIStore((state) => state.toggleMobileSidebar);
   const { logout } = useAuth();
 
   return (
@@ -30,6 +31,16 @@ function Header() {
       <section className="container mx-auto flex items-center px-4">
         {/* Logo và Navigation */}
         <div className="flex items-center gap-6">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            onClick={toggleMobileSidebar}
+            aria-label="Mở menu điều hướng"
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
           <Link to="/">
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded bg-primary flex items-center justify-center">
@@ -37,7 +48,7 @@ function Header() {
                   T
                 </span>
               </div>
-              <h1 className="text-xl font-bold text-foreground">
+              <h1 className="hidden text-xl font-bold text-foreground lg:block">
                 Trello Clone
               </h1>
             </div>
@@ -65,6 +76,15 @@ function Header() {
           <div className="hidden sm:block">
             <GlobalSearch />
           </div>
+          <div className="sm:hidden">
+            <GlobalSearch
+              trigger={
+                <Button type="button" variant="ghost" size="icon" aria-label="Tìm kiếm">
+                  <Search className="h-5 w-5" />
+                </Button>
+              }
+            />
+          </div>
 
           {/* Create Button */}
           <BoardFormDialog
@@ -83,10 +103,11 @@ function Header() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                <span className="sr-only">Mở menu tài khoản</span>
                 {/* Avatar */}
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={user.avatar.url} alt={user.full_name} />
-                  <AvatarFallback>{user.full_name.charAt(0)}</AvatarFallback>
+                  <AvatarImage src={user?.avatar?.url || ""} alt={user?.full_name || "User"} />
+                  <AvatarFallback>{user?.full_name?.charAt(0) || "U"}</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>

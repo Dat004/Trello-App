@@ -27,9 +27,9 @@ function AccountTab() {
         </section>
         <CardContent className="space-y-6">
           <div className="space-y-4">
-            <Button className="gap-2 h-9">
+            <Button className="gap-2 h-9" disabled title="Tính năng chưa được hỗ trợ">
               <Lock className="h-4 w-4" />
-              Đổi mật khẩu
+              Đổi mật khẩu (sắp có)
             </Button>
 
             <div className="flex items-center justify-between p-4 border rounded-lg">
@@ -53,8 +53,8 @@ function AccountTab() {
                   Quản lý các thiết bị đã đăng nhập
                 </p>
               </div>
-              <Button variant="outline" size="sm">
-                Xem chi tiết
+              <Button variant="outline" size="sm" disabled title="Tính năng chưa được hỗ trợ">
+                Chưa hỗ trợ
               </Button>
             </div>
           </div>
@@ -76,9 +76,9 @@ function AccountTab() {
                 Xóa vĩnh viễn tài khoản và tất cả dữ liệu
               </p>
             </div>
-            <Button variant="destructive" size="sm" className="gap-2">
+            <Button variant="destructive" size="sm" className="gap-2" disabled title="Tính năng chưa được hỗ trợ">
               <Trash2 className="h-4 w-4" />
-              Xóa tài khoản
+              Xóa tài khoản (sắp có)
             </Button>
           </div>
         </CardContent>

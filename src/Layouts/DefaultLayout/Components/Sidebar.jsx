@@ -1,4 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import {
   Briefcase,
   ChevronLeft,
@@ -16,6 +17,7 @@ import { useFavoritesStore, useUIStore } from "@/store";
 import ThemeToggle from "@/Components/ThemeToggle";
 import { useFavorites } from "@/hooks";
 import { cn } from "@/lib/utils";
+import CreateWorkspaceDialog from "@/features/workspaces/components/Dialogs/CreateWorkspaceDialog";
 
 function Sidebar() {
   const navigate = useNavigate();
@@ -24,7 +26,13 @@ function Sidebar() {
   // UI Store for Sidebar State
   const isSidebarOpen = useUIStore((s) => s.isSidebarOpen);
   const toggleSidebar = useUIStore((s) => s.toggleSidebar);
+  const isMobileSidebarOpen = useUIStore((s) => s.isMobileSidebarOpen);
+  const closeMobileSidebar = useUIStore((s) => s.closeMobileSidebar);
   const collapsed = !isSidebarOpen;
+
+  useEffect(() => {
+    closeMobileSidebar();
+  }, [location.pathname, closeMobileSidebar]);
 
   // Data Hooks
   const { data: workspaces = [], isLoading: isLoadingWorkspaces } = useWorkspacesList();
@@ -36,10 +44,20 @@ function Sidebar() {
   const isActive = (path) => location.pathname === path;
 
   return (
+    <>
+    {isMobileSidebarOpen && (
+      <button
+        type="button"
+        className="fixed inset-0 z-40 bg-black/40 md:hidden"
+        onClick={closeMobileSidebar}
+        aria-label="Đóng menu điều hướng"
+      />
+    )}
     <aside
       className={cn(
-        "bg-background border-r transition-all duration-300 overflow-hidden flex flex-col h-screen sticky top-0",
-        collapsed ? "w-16" : "w-64"
+        "fixed inset-y-0 left-0 z-50 flex h-screen flex-col overflow-hidden border-r bg-background transition-all duration-300 md:sticky md:top-0 md:z-auto md:translate-x-0",
+        isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full",
+        collapsed ? "w-64 md:w-16" : "w-64"
       )}
     >
         <header className="flex items-center h-14 px-3 border-b shrink-0">
@@ -52,6 +70,7 @@ function Sidebar() {
             onClick={toggleSidebar}
             className={cn("h-8 w-8 p-0 ml-auto")}
             variant="ghost"
+            aria-label={collapsed ? "Mở rộng thanh bên" : "Thu gọn thanh bên"}
           >
             {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
           </Button>
@@ -97,9 +116,14 @@ function Sidebar() {
                 {!collapsed ? (
                   <div className="flex items-center justify-between px-3 py-2">
                       <span className="text-xs font-semibold text-muted-foreground uppercase">Workspace</span>
-                      <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => navigate("/workspaces/create")}>
-                          <Plus className="h-3 w-3" />
-                      </Button>
+                      <CreateWorkspaceDialog
+                        trigger={
+                          <Button variant="ghost" size="icon" className="h-5 w-5">
+                            <span className="sr-only">Tạo workspace</span>
+                            <Plus className="h-3 w-3" />
+                          </Button>
+                        }
+                      />
                   </div>
                 ) : (
                   <div className="flex justify-center py-2">
@@ -145,6 +169,7 @@ function Sidebar() {
                                               e.stopPropagation();
                                               toggleWorkspaceStar(ws);
                                           }}
+                                          aria-label={`Bỏ yêu thích workspace ${ws.name}`}
                                       >
                                           <Star className={cn("h-3 w-3", isStarred ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground")} />
                                       </Button>
@@ -180,9 +205,9 @@ function Sidebar() {
                       {favoriteBoards.slice(0, 5).map((board) => (
                           <div key={board._id} className="group relative">
                               <Button
-                                  variant={isActive(`/boards/${board._id}`) ? "secondary" : "ghost"}
+                                  variant={isActive(`/board/${board._id}`) ? "secondary" : "ghost"}
                                   className={cn("w-full justify-start", collapsed ? "px-2 justify-center" : "px-3", !collapsed && "pr-8")}
-                                  onClick={() => navigate(`/boards/${board._id}`)}
+                                  onClick={() => navigate(`/board/${board._id}`)}
                                   title={board.title}
                               >
                                   <div className={cn("h-5 w-5 rounded flex items-center justify-center shrink-0 border text-[10px] font-bold text-white", board.color || "bg-primary")}>
@@ -201,6 +226,7 @@ function Sidebar() {
                                           e.stopPropagation();
                                           toggleBoardStar(board);
                                       }}
+                                      aria-label={`Bỏ yêu thích bảng ${board.title}`}
                                   >
                                       <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
                                   </Button>
@@ -235,6 +261,7 @@ function Sidebar() {
           </Button>
         </footer>
     </aside>
+    </>
   );
 }
 

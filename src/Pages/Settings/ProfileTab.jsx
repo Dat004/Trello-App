@@ -35,7 +35,7 @@ function ProfileTab() {
   const avatarFileRef = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
   const [pendingAvatar, setPendingAvatar] = useState({
-    url: user.avatar.url,
+    url: user.avatar?.url || "",
     public_id: user.avatar.public_id,
   });
 

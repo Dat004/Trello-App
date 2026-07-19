@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { IlamyCalendar, useIlamyCalendarContext } from '@ilamy/calendar';
 
 import dayjs from 'dayjs';
@@ -10,7 +11,6 @@ import utc from 'dayjs/plugin/utc.js';
 
 import { useBoardContext } from "../../context/BoardStateContext";
 import { useFilteredCards } from "../../hooks/useFilteredCards";
-import CardDetailDialog from "../Card/CardDetailDialog";
 import { Button } from '@/Components/UI';
 
 dayjs.extend(isSameOrAfter);
@@ -38,10 +38,9 @@ function CustomHeader() {
 }
 
 function BoardCalendarView() {
-  const [selectedCardId, setSelectedCardId] = useState(null);
-
   const { boardData } = useBoardContext();
-  const { cards, currentBoard } = boardData;
+  const { cards } = boardData;
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const filteredCardsArray = useFilteredCards(Object.values(cards));
 
@@ -64,10 +63,12 @@ function BoardCalendarView() {
           description: c.description,
         }
       })
-  }, [cards]);
+  }, [filteredCardsArray]);
 
   const handleEventClick = (event) => {
-    setSelectedCardId(event.id);
+    const next = new URLSearchParams(searchParams);
+    next.set("card", event.id);
+    setSearchParams(next);
   };
 
   return (
@@ -75,7 +76,6 @@ function BoardCalendarView() {
       <div className="flex-1 bg-card rounded-xl border border-border shadow-md overflow-hidden ilamy-calendar-container">
         <IlamyCalendar 
           onEventClick={handleEventClick}
-          onCellClick={(cell) => console.log(cell)}
           disableDragAndDrop
           stickyViewHeader
           timeFormat="24-hour"
@@ -88,15 +88,6 @@ function BoardCalendarView() {
           dayMaxEvents={3}
         />
       </div>
-
-      <CardDetailDialog 
-        card={Object.values(cards).find(c => c._id === selectedCardId)}
-        cardId={selectedCardId}
-        listId={Object.values(cards).find(c => c._id === selectedCardId)?.listId}
-        boardId={currentBoard?._id}
-        open={!!selectedCardId}
-        onOpenChange={(open) => !open && setSelectedCardId(null)}
-      />
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { Edit, Loader2, MoreHorizontal, Star, Trash2 } from "lucide-react";
+import { Archive, Edit, Loader2, MoreHorizontal, Star, Trash2 } from "lucide-react";
 
 import DeleteDialog from "@/Components/DeleteDialog";
 import {
@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/Components/UI";
-import { useDeleteBoard } from "@/features/boards/api/useBoards";
+import { useArchiveBoard, useDeleteBoard } from "@/features/boards/api/useBoards";
 import { useFavorites } from "@/hooks";
 import { cn } from "@/lib/utils";
 import BoardFormDialog from "../Dialogs/BoardFormDialog";
@@ -17,6 +17,7 @@ import BoardFormDialog from "../Dialogs/BoardFormDialog";
 const BoardActions = ({ board, canDelete }) => {
   const { toggleBoardStar, isTogglingBoard } = useFavorites();
   const { mutateAsync: deleteBoard } = useDeleteBoard();
+  const { mutate: archiveBoard, isLoading: isArchiving } = useArchiveBoard();
 
   const handleToggleStar = (e) => {
     e.preventDefault();
@@ -38,6 +39,7 @@ const BoardActions = ({ board, canDelete }) => {
         className="h-6 w-6 p-0 cursor-pointer hover:bg-transparent"
         onClick={(e) => handleToggleStar(e)}
         disabled={isTogglingBoard}
+        aria-label={board.is_starred ? "Bỏ đánh dấu yêu thích" : "Đánh dấu yêu thích"}
       >
         {isTogglingBoard ? (
           <Loader2 className="h-3 w-3 animate-spin text-primary" />
@@ -63,6 +65,7 @@ const BoardActions = ({ board, canDelete }) => {
               e.preventDefault();
               e.stopPropagation();
             }}
+            aria-label={`Thao tác với bảng ${board.title}`}
           >
             <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
           </Button>
@@ -83,6 +86,20 @@ const BoardActions = ({ board, canDelete }) => {
           {canDelete && (
             <>
               <DropdownMenuSeparator />
+              <DeleteDialog
+                title="Lưu trữ bảng này?"
+                description={`Bảng "${board.title}" sẽ được ẩn khỏi danh sách bảng.`}
+                onConfirm={() => archiveBoard({ id: board._id })}
+                trigger={
+                  <DropdownMenuItem
+                    disabled={isArchiving}
+                    onSelect={(event) => event.preventDefault()}
+                  >
+                    <Archive className="mr-2 h-4 w-4" />
+                    Lưu trữ bảng
+                  </DropdownMenuItem>
+                }
+              />
               <DeleteDialog
                 title="Xóa bảng này?"
                 description={`Bạn có chắc muốn xóa bảng "${board.title}"? Hành động này không thể hoàn tác.`}

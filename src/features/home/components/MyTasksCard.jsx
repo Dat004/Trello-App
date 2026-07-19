@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { format, isToday, isTomorrow, parseISO } from "date-fns";
 import { AlertCircle, Calendar, CheckCircle2, ListTodo } from "lucide-react";
 
@@ -16,7 +17,7 @@ import {
 import { useMyTasks } from "@/features/home/api/useMyTasks";
 import { cn } from "@/lib/utils";
 
-const formatDueDate = (dateString, isCompleted) => {
+const formatDueDate = (dateString) => {
   if (!dateString) return null;
   
   try {
@@ -35,6 +36,7 @@ const formatDueDate = (dateString, isCompleted) => {
 function MyTasksCard() {
   const [taskFilter, setTaskFilter] = useState("all");
   const { data: tasks = [], isLoading } = useMyTasks(taskFilter);
+  const navigate = useNavigate();
 
   return (
     <Card className="border-muted/50 shadow-sm flex flex-col">
@@ -75,20 +77,18 @@ function MyTasksCard() {
           ) : (
             <div className="divide-y divide-muted/50">
               {tasks.map((task) => {
-                const dateInfo = formatDueDate(
-                  task.due_date,
-                  task.due_complete
-                );
+                const dateInfo = formatDueDate(task.due_date);
                 const boardName = task.board?.title || "Bảng không tên";
                 const workspaceName =
                   task.workspace?.title || task.workspace?.name || "Không gian làm việc";
-                const listId = task.list?._id;
-
                 return (
-                  <div
+                  <button
+                    type="button"
                     key={task._id}
+                    onClick={() => navigate(`/board/${task.board?._id || task.board}?card=${task._id}`)}
+                    disabled={!task.board}
                     className={cn(
-                      "p-4 hover:bg-muted/30 transition-colors flex items-start gap-3 group cursor-pointer",
+                      "flex w-full items-start gap-3 p-4 text-left transition-colors hover:bg-muted/30 disabled:cursor-default",
                       task.due_complete && "bg-green-50/30 dark:bg-green-950/10 opacity-80"
                     )}
                   >
@@ -145,7 +145,7 @@ function MyTasksCard() {
                         )}
                       </div>
                     </div>
-                  </div>
+                  </button>
                 );
               })}
             </div>

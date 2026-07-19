@@ -39,7 +39,7 @@ const GlobalSearch = ({ trigger }) => {
     try {
       const saved = localStorage.getItem("trello_recent_searches");
       return saved ? JSON.parse(saved) : [];
-    } catch (e) {
+    } catch {
       return [];
     }
   });
@@ -102,9 +102,9 @@ const GlobalSearch = ({ trigger }) => {
     if (item.type === "board") {
       navigate(`/board/${item._id}`);
     } else if (item.type === "card") {
-      navigate(`/board/${item.boardId}`);
+      navigate(`/board/${item.boardId}?card=${item._id}`);
     } else if (item.type === "member") {
-      navigate(`/settings/profile/${item._id}`);
+      navigate("/members");
     }
   }, [navigate]);
 
@@ -248,9 +248,10 @@ const SearchGroup = ({ title, children }) => (
 
 const SearchItem = ({ item, onClick }) => {
   return (
-    <div 
+    <button
+      type="button"
       onClick={onClick}
-      className="group flex items-center gap-3 p-2.5 rounded-xl hover:bg-muted cursor-pointer transition-all duration-200 border border-transparent hover:border-border active:scale-[0.98]"
+      className="group flex w-full items-center gap-3 rounded-xl border border-transparent p-2.5 text-left transition-all duration-200 hover:border-border hover:bg-muted active:scale-[0.98]"
     >
       <div className={cn(
         "h-10 w-10 rounded-lg flex items-center justify-center shadow-sm shrink-0 overflow-hidden",
@@ -292,7 +293,7 @@ const SearchItem = ({ item, onClick }) => {
       </div>
 
       <ArrowRight className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all duration-300" />
-    </div>
+    </button>
   );
 };
 

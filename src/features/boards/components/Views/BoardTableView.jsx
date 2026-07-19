@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   Calendar,
   MessageSquare,
@@ -9,7 +10,6 @@ import { format } from "date-fns";
 
 import { useBoardContext } from "../../context/BoardStateContext";
 import { useFilteredCards } from "../../hooks/useFilteredCards";
-import CardDetailDialog from "../Card/CardDetailDialog";
 import { cn } from "@/lib/utils";
 import {
   Avatar,
@@ -21,9 +21,15 @@ import {
 
 function BoardTableView() {
   const { boardData } = useBoardContext();
-  const { cards, lists, listOrder, currentBoard } = boardData;
+  const { cards, lists, listOrder } = boardData;
   const [search, setSearch] = useState("");
-  const [selectedCardId, setSelectedCardId] = useState(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const openCard = (cardId) => {
+    const next = new URLSearchParams(searchParams);
+    next.set("card", cardId);
+    setSearchParams(next);
+  };
 
   const allCards = useMemo(() => {
     const flattened = [];
@@ -105,7 +111,14 @@ function BoardTableView() {
                 <tr 
                   key={card._id} 
                   className="hover:bg-muted/30 transition-colors group cursor-pointer"
-                  onClick={() => setSelectedCardId(card._id)}
+                  onClick={() => openCard(card._id)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      openCard(card._id);
+                    }
+                  }}
+                  tabIndex={0}
                 >
                   <td className="px-6 py-4">
                     <div className="flex flex-col gap-1">
@@ -178,14 +191,6 @@ function BoardTableView() {
         </table>
       </div>
 
-      <CardDetailDialog 
-        card={cards[selectedCardId]}
-        cardId={selectedCardId}
-        listId={cards[selectedCardId]?.listId}
-        boardId={currentBoard?._id}
-        open={!!selectedCardId}
-        onOpenChange={(open) => !open && setSelectedCardId(null)}
-      />
     </div>
   );
 }

@@ -72,6 +72,7 @@ function Boards() {
                 <button
                   onClick={() => setSearchQuery("")}
                   className="absolute right-3 top-1/2 -translate-y-1/2"
+                  aria-label="Xóa từ khóa tìm kiếm"
                 >
                   <X className="h-4 w-4 text-muted-foreground hover:text-foreground" />
                 </button>
@@ -113,6 +114,8 @@ function Boards() {
                   size="sm"
                   onClick={() => setViewMode("grid")}
                   className="h-8 w-8 p-0"
+                  aria-label="Hiển thị dạng lưới"
+                  aria-pressed={viewMode === "grid"}
                 >
                   <Grid3x3 className="h-4 w-4" />
                 </Button>
@@ -121,6 +124,8 @@ function Boards() {
                   size="sm"
                   onClick={() => setViewMode("list")}
                   className="h-8 w-8 p-0"
+                  aria-label="Hiển thị dạng danh sách"
+                  aria-pressed={viewMode === "list"}
                 >
                   <List className="h-4 w-4" />
                 </Button>

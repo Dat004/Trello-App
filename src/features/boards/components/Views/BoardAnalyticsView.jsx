@@ -41,8 +41,9 @@ function BoardAnalyticsView() {
         });
     });
 
-    const completionRate = totalCards > 0 
-      ? Math.round((allCards.filter(c => c.listName?.toLowerCase().includes('xong') || c.listName?.toLowerCase().includes('done')).length / totalCards) * 100) 
+    const completedCards = allCards.filter(card => card.due_complete).length;
+    const completionRate = totalCards > 0
+      ? Math.round((completedCards / totalCards) * 100)
       : 0;
 
     return { totalCards, byList, byPriority, completionRate, totalLists: listOrder.length };
@@ -72,7 +73,7 @@ function BoardAnalyticsView() {
         />
         <StatCard 
           title="Thẻ quá hạn" 
-          value={Object.values(cards).filter(c => c.due_date && new Date(c.due_date) < new Date()).length} 
+          value={Object.values(cards).filter(c => c.due_date && !c.due_complete && new Date(c.due_date) < new Date()).length}
           icon={<AlertCircle className="h-5 w-5" />}
           color="red"
         />
@@ -113,15 +114,23 @@ function BoardAnalyticsView() {
               Mức độ ưu tiên
             </h3>
           </div>
-          <div className="flex items-center justify-around h-64">
-             {/* Visual "Donut" using pseudo circles if no library */}
-             <div className="relative h-40 w-40 flex items-center justify-center rounded-full border-8 border-muted">
-                <div className="text-center">
+          <div className="flex min-h-64 flex-col items-center justify-around gap-6 sm:flex-row">
+             <div
+               className="relative flex h-40 w-40 shrink-0 items-center justify-center rounded-full"
+               role="img"
+               aria-label={`Biểu đồ mức ưu tiên của ${stats.totalCards} thẻ`}
+               style={{
+                 background: createPriorityGradient(stats.byPriority, stats.totalCards),
+               }}
+             >
+                <div className="flex h-28 w-28 items-center justify-center rounded-full bg-card text-center shadow-inner">
+                  <div>
                     <div className="text-2xl font-bold">{stats.totalCards}</div>
                     <div className="text-[10px] text-muted-foreground uppercase">Tổng số</div>
+                  </div>
                 </div>
              </div>
-             <div className="space-y-3">
+             <div className="w-full max-w-56 space-y-3">
                 {stats.byPriority.map(item => (
                     <div key={item.key} className="flex items-center gap-3">
                         <div className={cn("w-3 h-3 rounded-full", 
@@ -139,6 +148,23 @@ function BoardAnalyticsView() {
       </div>
     </div>
   );
+}
+
+function createPriorityGradient(items, total) {
+    if (!total) return "conic-gradient(var(--muted) 0 100%)";
+    const colors = {
+        high: "#ef4444",
+        medium: "#f97316",
+        low: "#22c55e",
+        none: "#9ca3af"
+    };
+    let cursor = 0;
+    const segments = items.map((item) => {
+        const start = cursor;
+        cursor += (item.count / total) * 100;
+        return `${colors[item.key]} ${start}% ${cursor}%`;
+    });
+    return `conic-gradient(${segments.join(", ")})`;
 }
 
 function StatCard({ title, value, icon, color }) {

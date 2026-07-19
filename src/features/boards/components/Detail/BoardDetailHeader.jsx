@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
 import {
   Activity,
   ArrowLeft,
+  ChartNoAxesCombined,
   Calendar,
   Filter,
   Kanban,
@@ -14,6 +14,7 @@ import {
   UserPlus,
   Users
 } from "lucide-react";
+import { motion as Motion } from "framer-motion";
 
 import { useHandleBoardJoinRequest, useInviteBoardMember } from "@/features/boards/api/useBoardMembers";
 import { useBoardContext } from "@/features/boards/context/BoardStateContext";
@@ -80,45 +81,48 @@ function BoardDetailHeader({ currentView, onViewChange, currentTheme, onThemeCha
       { id: 'kanban', label: 'Bảng', icon: Kanban },
       { id: 'table', label: 'Bảng biểu', icon: Table },
       { id: 'calendar', label: 'Lịch', icon: Calendar },
+      { id: 'analytics', label: 'Phân tích', icon: ChartNoAxesCombined },
     ];
 
     if (!currentBoard) return null;
 
     return (
-        <section className="container mx-auto px-4 py-3">
-          <section className="flex items-center justify-between">
-            <section className="flex items-center gap-6">
+        <section className="container relative mx-auto px-4 pb-14 pt-3 lg:py-3">
+          <section className="flex flex-wrap items-center justify-between gap-2">
+            <section className="flex min-w-0 items-center gap-3 lg:gap-6">
               <div className="flex items-center gap-3">
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => navigate(-1)}
                   className="text-muted-foreground hover:bg-muted h-8 w-8"
+                  aria-label="Quay lại"
                 >
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
                 <section>
-                  <h1 className="text-xl font-bold text-foreground">
+                  <h1 className="max-w-36 truncate text-base font-bold text-foreground sm:max-w-none sm:text-xl">
                     {currentBoard.title}
                   </h1>
                 </section>
               </div>
 
               {/* View Switcher */}
-              <div className="hidden lg:flex items-center bg-muted/50 p-1 rounded-xl border border-border/50 backdrop-blur-sm">
+              <div className="absolute bottom-0 left-0 right-0 flex translate-y-full items-center gap-1 overflow-x-auto border-b border-border/50 bg-background/95 p-2 backdrop-blur lg:static lg:translate-y-0 lg:rounded-xl lg:border">
                 {views.map((view) => {
                   const isActive = currentView === view.id;
                   return (
                     <button
                       key={view.id}
                       onClick={() => onViewChange(view.id)}
+                      aria-pressed={isActive}
                       className={cn(
-                        "relative flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-300",
+                        "relative flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold transition-all duration-300 lg:px-4",
                         isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
                       )}
                     >
                       {isActive && (
-                        <motion.div
+                        <Motion.div
                           layoutId="activeView"
                           className="absolute inset-0 bg-background rounded-lg shadow-sm border border-border/50"
                           transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
@@ -132,12 +136,13 @@ function BoardDetailHeader({ currentView, onViewChange, currentTheme, onThemeCha
               </div>
             </section>
 
-            <section className="flex items-center gap-2">
+            <section className="flex min-w-0 items-center gap-1 overflow-x-auto sm:gap-2">
               <Button
                 size="sm"
                 variant="ghost"
                 onClick={() => toggleBoardStar(currentBoard)}
                 className="text-muted-foreground cursor-pointer hover:bg-muted"
+                aria-label="Đánh dấu bảng yêu thích"
               >
                 {isTogglingBoard ? (
                   <Loader2 className="h-4 w-4 animate-spin text-primary" />
@@ -199,6 +204,7 @@ function BoardDetailHeader({ currentView, onViewChange, currentTheme, onThemeCha
                       size="sm"
                       className="h-8 w-8 p-0 text-muted-foreground hover:bg-muted rounded-lg transition-colors"
                       title="Thay đổi chủ đề"
+                      aria-label="Thay đổi chủ đề"
                     >
                       <Palette className="h-4 w-4" />
                     </Button>
@@ -214,6 +220,7 @@ function BoardDetailHeader({ currentView, onViewChange, currentTheme, onThemeCha
                     size="sm"
                     className="text-muted-foreground hover:bg-muted h-8 w-8 p-0"
                     title="Hoạt động"
+                    aria-label="Xem hoạt động"
                   >
                     <Activity className="h-4 w-4" />
                   </Button>

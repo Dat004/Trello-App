@@ -1,5 +1,6 @@
-import { Check, CheckCheck, Loader2, Trash2, X } from "lucide-react";
+import { Check, CheckCheck, ExternalLink, Loader2, Trash2, X } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { Avatar, AvatarFallback, AvatarImage, Badge, Button, Card, CardContent } from "@/Components/UI";
 import { getNotificationIcon, getNotificationIconColor } from "../helpers/getNotificationIcon";
@@ -15,11 +16,16 @@ function NotificationCard({
   isLoading = false,
 }) {
   const [responded, setResponded] = useState(null);
+  const navigate = useNavigate();
   const ICON = getNotificationIcon(notification.type);
   const COLOR = getNotificationIconColor(notification.type);
   const senderName = notification.sender?.full_name || "Hệ thống";
   const avatarUrl = notification.sender?.avatar?.url;
   const isInvite = INVITE_TYPES.includes(notification.type);
+  const boardId = notification.board?._id || notification.board;
+  const cardId = notification.card?._id
+    || notification.card
+    || (notification.entity_type === "card" ? notification.entity_id : null);
 
   const handleRespond = (action, notification) => {
     setResponded(action);
@@ -84,6 +90,18 @@ function NotificationCard({
                         </Badge>
                       </>
                     )}
+                    {boardId && cardId && (
+                      <Button
+                        type="button"
+                        variant="link"
+                        size="sm"
+                        className="h-auto gap-1 p-0 text-xs"
+                        onClick={() => navigate(`/board/${boardId}?card=${cardId}`)}
+                      >
+                        Mở thẻ
+                        <ExternalLink className="h-3 w-3" />
+                      </Button>
+                    )}
                   </div>
                 </div>
 
@@ -96,6 +114,7 @@ function NotificationCard({
                       onClick={() => onMarkAsRead(notification._id)}
                       className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary transition-colors"
                       title="Đánh dấu đã đọc"
+                      aria-label="Đánh dấu thông báo đã đọc"
                     >
                       <Check className="h-4 w-4" />
                     </Button>
@@ -106,6 +125,7 @@ function NotificationCard({
                     onClick={() => onRemove(notification._id)}
                     className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                     title="Xóa"
+                    aria-label="Xóa thông báo"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>

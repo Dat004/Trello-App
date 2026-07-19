@@ -1,6 +1,6 @@
 
 import { Upload, X } from "lucide-react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Button, Input } from "@/Components/UI";
 import { UserToast } from "@/context/ToastContext";
@@ -17,10 +17,32 @@ function UploadForm({ boardId, cardId, onUploadSuccess, onCancel }) {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploadingCloudinary, setIsUploadingCloudinary] = useState(false);
   const [error, setError] = useState("");
+  const [previewUrl, setPreviewUrl] = useState("");
   const fileInputRef = useRef(null);
 
   // Save attachment to DB
   const { mutateAsync: addAttachmentAsync, isLoading: isSaving } = useAddAttachment();
+
+  useEffect(() => {
+    if (!selectedFile || !isPreviewableImage(selectedFile.type)) {
+      setPreviewUrl("");
+      return undefined;
+    }
+
+    const objectUrl = URL.createObjectURL(selectedFile);
+    setPreviewUrl(objectUrl);
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [selectedFile]);
+
+  const resetForm = useCallback(() => {
+    setSelectedFile(null);
+    setMessage("");
+    setError("");
+    setIsDragging(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  }, []);
 
   const handleFileSelect = (file) => {
     setError("");
@@ -87,12 +109,9 @@ function UploadForm({ boardId, cardId, onUploadSuccess, onCancel }) {
       };
 
       const response = await addAttachmentAsync({ boardId, cardId, data: attachmentData });
-      
-      if (response && response.data && response.data.attachment) {
-          onUploadSuccess(response.data.attachment);
-          setSelectedFile(null);
-          setMessage("");
-      }
+      const attachment = response?.data?.data?.attachment;
+      resetForm();
+      onUploadSuccess(attachment);
     } catch (err) {
       console.error("Upload error:", err);
       addToast({
@@ -106,11 +125,7 @@ function UploadForm({ boardId, cardId, onUploadSuccess, onCancel }) {
   };
 
   const handleRemoveFile = () => {
-    setSelectedFile(null);
-    setError("");
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+    resetForm();
   };
 
   const isProcessing = isUploadingCloudinary || isSaving;
@@ -154,7 +169,7 @@ function UploadForm({ boardId, cardId, onUploadSuccess, onCancel }) {
           <div className="w-12 h-12 rounded-md bg-muted flex items-center justify-center shrink-0">
             {isPreviewableImage(selectedFile.type) ? (
               <img
-                src={URL.createObjectURL(selectedFile)}
+                src={previewUrl}
                 alt={selectedFile.name}
                 className="w-full h-full object-cover rounded-md"
               />

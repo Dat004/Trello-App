@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Clock, Users } from "lucide-react";
 
 import { Badge, Card, CardContent, CardHeader, CardTitle } from "@/Components/UI";
+import { boardDetailPath } from "@/config/paths";
 import { getRoleText, getRoleVariant } from "@/helpers/role";
 import { formatRelativeTime } from "@/helpers/formatTime";
 import { getBoardGradient } from "@/helpers/board";
@@ -14,8 +15,6 @@ function BoardCard({ index, board, view = "grid" }) {
 
   const renderRoleBadge = () => {
     if (!role && !isBoardOwner) return null;
-
-    console.log(role)
 
     return (
       <Badge
@@ -37,7 +36,7 @@ function BoardCard({ index, board, view = "grid" }) {
   if (view === "grid") {
     return (
       <div {...animationProps}>
-        <Link to={`/board/${board._id}`} className="block h-full">
+        <Link to={boardDetailPath(board._id)} className="block h-full">
           <Card className="group relative h-full cursor-pointer overflow-hidden border-none bg-card/60 backdrop-blur-sm transition-all duration-300 hover:shadow-2xl hover:shadow-primary/20 hover:-translate-y-2 ring-1 ring-border/50 hover:ring-primary/40">
             {/* Gradient Header Overlay */}
             <div
@@ -92,7 +91,7 @@ function BoardCard({ index, board, view = "grid" }) {
   // --- VIEW: LIST ---
   return (
     <div {...animationProps}>
-      <Link to={`/board/${board._id}`}>
+      <Link to={boardDetailPath(board._id)}>
         <div
           className={cn(
             "bg-card border border-border rounded-lg p-3 cursor-pointer group flex items-center gap-4 transition-all hover:border-primary/50 hover:shadow-sm"

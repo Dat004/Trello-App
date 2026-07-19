@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Avatar, AvatarFallback, AvatarImage, Badge, Button, Card, CardContent } from "@/Components/UI";
+import { boardDetailPath } from "@/config/paths";
 import { getNotificationIcon, getNotificationIconColor } from "../helpers/getNotificationIcon";
 import { formatRelativeTime } from "@/helpers/formatTime";
 
@@ -96,7 +97,7 @@ function NotificationCard({
                         variant="link"
                         size="sm"
                         className="h-auto gap-1 p-0 text-xs"
-                        onClick={() => navigate(`/board/${boardId}?card=${cardId}`)}
+                        onClick={() => navigate(boardDetailPath(boardId, cardId))}
                       >
                         Mở thẻ
                         <ExternalLink className="h-3 w-3" />

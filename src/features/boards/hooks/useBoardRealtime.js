@@ -1,4 +1,5 @@
 import { ROOM_TYPES, SOCKET_EVENTS } from "@/constants/socketEvents";
+import { boardListPath } from "@/config/paths";
 import { UserToast } from "@/context/ToastContext";
 import { BOARD_ACTIVITIES_KEYS } from "@/features/boards/api/useBoardActivities";
 import { useSocket } from "@/hooks";
@@ -46,7 +47,7 @@ export const useBoardRealtime = (boardId, actions) => {
         const handleBoardDeleted = (deletedBoardId) => {
             if (deletedBoardId === boardId) {
                 addToast({ title: "Bảng này đã bị xóa", type: "warning" });
-                navigate('/boards');
+                navigate(boardListPath);
             }
         };
 

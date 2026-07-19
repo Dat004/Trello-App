@@ -15,6 +15,7 @@ import { UserToast } from "@/context/ToastContext";
 import PromptStep from "./AiGenerator/PromptStep";
 import AILoader from "./AiGenerator/AILoader";
 import { aiApi } from "@/api/ai";
+import { boardDetailPath } from "@/config/paths";
 import {
   Button,
   Card,
@@ -79,7 +80,7 @@ function AiTemplateGenerator() {
   const handleBoardCreated = (board) => {
     setOpen(false);
     resetState();
-    navigate(`/board/${board._id}`);
+    navigate(boardDetailPath(board._id));
   };
 
   const resetState = () => {

@@ -76,7 +76,9 @@ function BoardContent() {
     if (open) return;
     const next = new URLSearchParams(searchParams);
     next.delete("card");
-    setSearchParams(next);
+    // Closing a URL-driven dialog should replace its history entry. Pushing
+    // another board URL makes Back alternate forever between open and closed.
+    setSearchParams(next, { replace: true });
   };
 
   const renderView = () => {

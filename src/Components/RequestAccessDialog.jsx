@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 
 import { boardApi } from "@/api/board";
 import { workspaceApi } from "@/api/workspace";
+import { boardListPath } from "@/config/paths";
 import {
   Button,
   Dialog,
@@ -105,7 +106,7 @@ function RequestAccessDialog({
               type="button"
               className="w-full"
             >
-              <Link to={isWorkspace ? "/workspaces" : "/boards"}>Quay lại</Link>
+              <Link to={isWorkspace ? "/workspaces" : boardListPath}>Quay lại</Link>
             </Button>
           </div>
         ) : (
@@ -136,7 +137,7 @@ function RequestAccessDialog({
                 variant="outline"
                 disabled={isLoading}
               >
-                <Link to={isWorkspace ? "/workspaces" : "/boards"}>Quay lại</Link>
+                <Link to={isWorkspace ? "/workspaces" : boardListPath}>Quay lại</Link>
               </Button>
               <Button
                 type="submit"

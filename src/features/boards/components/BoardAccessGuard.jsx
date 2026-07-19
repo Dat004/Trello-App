@@ -5,6 +5,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 import RequestAccessDialog from '@/Components/RequestAccessDialog';
 import { Button } from '@/Components/UI';
+import { boardListPath } from '@/config/paths';
 import { UserToast } from '@/context/ToastContext';
 import { useBoardDetail } from '../api/useBoardDetail';
 import { BoardStateProvider } from '../context/BoardStateContext';
@@ -55,7 +56,7 @@ export const BoardAccessGuard = ({ children }) => {
                  <p className="text-muted-foreground text-center max-w-md">
                     {error?.message || "Bảng không tồn tại hoặc bạn không có quyền truy cập."}
                  </p>
-                 <Button onClick={() => navigate('/boards')} variant="outline">
+                 <Button onClick={() => navigate(boardListPath)} variant="outline">
                     Quay về danh sách bảng
                  </Button>
              </div>

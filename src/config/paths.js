@@ -12,4 +12,11 @@ const paths = {
   login: "/login",
 };
 
+export const boardListPath = paths.boards;
+
+export const boardDetailPath = (boardId, cardId) => {
+  const pathname = `/board/${boardId}`;
+  return cardId ? `${pathname}?card=${cardId}` : pathname;
+};
+
 export default paths;

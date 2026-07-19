@@ -15,6 +15,7 @@ import {
   TabsTrigger,
 } from "@/Components/UI";
 import { useMyTasks } from "@/features/home/api/useMyTasks";
+import { boardDetailPath } from "@/config/paths";
 import { cn } from "@/lib/utils";
 
 const formatDueDate = (dateString) => {
@@ -85,7 +86,7 @@ function MyTasksCard() {
                   <button
                     type="button"
                     key={task._id}
-                    onClick={() => navigate(`/board/${task.board?._id || task.board}?card=${task._id}`)}
+                    onClick={() => navigate(boardDetailPath(task.board?._id || task.board, task._id))}
                     disabled={!task.board}
                     className={cn(
                       "flex w-full items-start gap-3 p-4 text-left transition-colors hover:bg-muted/30 disabled:cursor-default",

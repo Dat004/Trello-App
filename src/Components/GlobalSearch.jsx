@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 
 import { searchApi } from "@/api/search";
+import { boardDetailPath } from "@/config/paths";
 import { useDebounce } from "@/hooks";
 import { cn } from "@/lib/utils";
 import {
@@ -100,9 +101,9 @@ const GlobalSearch = ({ trigger }) => {
 
     // Navigate
     if (item.type === "board") {
-      navigate(`/board/${item._id}`);
+      navigate(boardDetailPath(item._id));
     } else if (item.type === "card") {
-      navigate(`/board/${item.boardId}?card=${item._id}`);
+      navigate(boardDetailPath(item.boardId, item._id));
     } else if (item.type === "member") {
       navigate("/members");
     }

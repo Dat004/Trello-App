@@ -17,6 +17,7 @@ import { useFavoritesStore, useUIStore } from "@/store";
 import ThemeToggle from "@/Components/ThemeToggle";
 import { useFavorites } from "@/hooks";
 import { cn } from "@/lib/utils";
+import { boardDetailPath, boardListPath } from "@/config/paths";
 import CreateWorkspaceDialog from "@/features/workspaces/components/Dialogs/CreateWorkspaceDialog";
 
 function Sidebar() {
@@ -99,9 +100,9 @@ function Sidebar() {
                 {!collapsed && <span className="ml-3 truncate">Không gian làm việc</span>}
               </Button>
               <Button
-                variant={isActive("/boards") ? "secondary" : "ghost"}
+                variant={isActive(boardListPath) ? "secondary" : "ghost"}
                 className={cn("w-full justify-start", collapsed ? "px-2 justify-center" : "px-3")}
-                onClick={() => navigate("/boards")}
+                onClick={() => navigate(boardListPath)}
                 title="Bảng"
               >
                 <Trello className="h-4 w-4 shrink-0" />
@@ -205,9 +206,9 @@ function Sidebar() {
                       {favoriteBoards.slice(0, 5).map((board) => (
                           <div key={board._id} className="group relative">
                               <Button
-                                  variant={isActive(`/board/${board._id}`) ? "secondary" : "ghost"}
+                                  variant={isActive(boardDetailPath(board._id)) ? "secondary" : "ghost"}
                                   className={cn("w-full justify-start", collapsed ? "px-2 justify-center" : "px-3", !collapsed && "pr-8")}
-                                  onClick={() => navigate(`/board/${board._id}`)}
+                                  onClick={() => navigate(boardDetailPath(board._id))}
                                   title={board.title}
                               >
                                   <div className={cn("h-5 w-5 rounded flex items-center justify-center shrink-0 border text-[10px] font-bold text-white", board.color || "bg-primary")}>
@@ -235,7 +236,7 @@ function Sidebar() {
                       ))}
                       {favoriteBoards.length > 5 && !collapsed && (
                         <section className="flex justify-end">
-                          <Link to="/boards" className="text-xs hover:underline">
+                          <Link to={boardListPath} className="text-xs hover:underline">
                             Xem tất cả
                           </Link>
                         </section>

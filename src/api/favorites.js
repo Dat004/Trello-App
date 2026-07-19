@@ -6,24 +6,12 @@ const boardsRoute = "/boards";
 
 export const favoritesApi = {
     async getMyFavorites() {
-        try {
-            return await axiosClient.get(`${favoritesRoute}`);
-        } catch (err) {
-            return err.response;
-        }
+        return await axiosClient.get(`${favoritesRoute}`);
     },
     async toggleStarWorkspace(workspaceId) {
-        try {
-            return await axiosClient.patch(`${favoritesRoute}${workspacesRoute}/${workspaceId}`);
-        } catch (err) {
-            return err.response;
-        }
+        return await axiosClient.patch(`${favoritesRoute}${workspacesRoute}/${workspaceId}`);
     },
     async toggleStarBoard(boardId) {
-        try {
-            return await axiosClient.patch(`${favoritesRoute}${boardsRoute}/${boardId}`);
-        } catch (err) {
-            return err.response;
-        }
+        return await axiosClient.patch(`${favoritesRoute}${boardsRoute}/${boardId}`);
     }
 };

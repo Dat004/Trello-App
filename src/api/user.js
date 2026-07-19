@@ -6,35 +6,18 @@ const meRoute = '/users/me';
 
 export const userApi = {
     async me() {
-        try {
-            return await axiosClient.get(meRoute);
-        }
-        catch(err) {
-            return err.response;
-        }
+        return await axiosClient.get(meRoute);
     },
     async updateSettings(data) {
-        try {
-            return await axiosClient.patch(updateSettingsRoute, data);
-        }
-        catch(err) {
-            return err.response;
-        }
+        return await axiosClient.patch(updateSettingsRoute, data);
     },
     async updateInfo(data) {
-        try {
-            return await axiosClient.patch(updateInfoRoute, data);
-        }
-        catch(err) {
-            return err.response;
-        }
+        return await axiosClient.patch(updateInfoRoute, data);
     },
     async getMyTasks(params) {
-        try {
-            return await axiosClient.get(`${meRoute}/tasks`, { params });
-        }
-        catch(err) {
-            return err.response;
-        }
+        return await axiosClient.get(`${meRoute}/tasks`, { params });
+    },
+    async getMembershipDirectory() {
+        return await axiosClient.get(`${meRoute}/memberships/directory`);
     }
 }

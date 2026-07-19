@@ -12,25 +12,31 @@ export const useAuthInit = () => {
 
   useEffect(() => {
     const initAuth = async () => {
-      const res = await userApi.me();
+      try {
+        const res = await userApi.me();
 
-      if (res.data.success) {
-        const user = res.data.data.user;
-        setUser(user);
+        if (res.data.success) {
+          const user = res.data.data.user;
+          setUser(user);
 
-        const userTheme = user?.settings?.appearance?.theme;
-        if (userTheme) {
-          useUIStore.getState().setTheme(userTheme);
+          const userTheme = user?.settings?.appearance?.theme;
+          if (userTheme) {
+            useUIStore.getState().setTheme(userTheme);
+          }
+
+          return;
         }
-
-        return;
+      } catch {
+        // An expired/missing session is an unauthenticated state.
+      } finally {
+        if (useAuthStore.getState().loading) {
+          clearUser();
+        }
       }
-
-      clearUser();
     };
 
     initAuth();
-  }, []);
+  }, [clearUser, setUser]);
 };
 
 export const useAuth = () => {
@@ -65,62 +71,67 @@ export const useAuth = () => {
   };
 
   const login = async (data) => {
-    const res = await authApi.login(data);
-
-    if (res.data.success) {
+    try {
+      const res = await authApi.login(data);
+      if (!res.data?.success) {
+        handleError(res.data?.message || "Đăng nhập thất bại");
+        return;
+      }
       handleSuccess(
-        res.data.data.user,
-        res.data.message,
-        "Chúng tôi sẽ tự động chuyển hướng bạn trong vài giây..."
-      );
-
-      return;
+          res.data.data.user,
+          res.data.message,
+          "Chúng tôi sẽ tự động chuyển hướng bạn trong vài giây..."
+        );
+    } catch (error) {
+      handleError(error.response?.data?.message || "Đăng nhập thất bại");
     }
-
-    handleError(res.data.message);
   };
 
   const register = async (data) => {
-    const res = await authApi.register(data);
-
-    if (res.data.success) {
+    try {
+      const res = await authApi.register(data);
+      if (!res.data?.success) {
+        handleError(res.data?.message || "Đăng ký thất bại");
+        return;
+      }
       handleSuccess(
         res.data.data.user,
         res.data.message,
         "Tự động đăng nhập. Chúng tôi sẽ tự động chuyển hướng bạn trong vài giây..."
       );
-
-      return;
+    } catch (error) {
+      handleError(error.response?.data?.message || "Đăng ký thất bại");
     }
-
-    handleError(res.data.message);
   };
 
   const logout = async () => {
-    const res = await authApi.logout();
-
-    if (res.data.success) {
+    try {
+      const res = await authApi.logout();
+      if (!res.data?.success) {
+        handleError(res.data?.message || "Đăng xuất thất bại");
+        return;
+      }
       clearUser();
-
-      return;
+    } catch (error) {
+      handleError(error.response?.data?.message || "Đăng xuất thất bại");
     }
-
-    handleError(res.data.message);
   };
 
   const googleLogin = async (idToken) => {
-    const res = await authApi.googleLogin({ idToken });
-
-    if (res.data.success) {
+    try {
+      const res = await authApi.googleLogin({ idToken });
+      if (!res.data?.success) {
+        handleError(res.data?.message || "Đăng nhập Google thất bại");
+        return;
+      }
       handleSuccess(
         res.data.data.user,
         res.data.message,
         "Đăng nhập thành công qua Google. Đang chuyển hướng..."
       );
-      return;
+    } catch (error) {
+      handleError(error.response?.data?.message || "Đăng nhập Google thất bại");
     }
-
-    handleError(res.data.message);
   };
 
   return { login, register, logout, googleLogin };

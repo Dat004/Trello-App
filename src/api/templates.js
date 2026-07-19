@@ -6,24 +6,12 @@ const useTemplateRoute = "/use";
 
 export const templatesApi = {
     async getAllTemplates() {
-        try {
-            return await axiosClient.get(templatesRoute);
-        } catch (error) {
-            return error.response;
-        }
+        return await axiosClient.get(templatesRoute);
     },
     async getPopularTemplates() {
-        try {
-            return await axiosClient.get(`${templatesRoute}${popularTemplatesRoute}`);
-        } catch (error) {
-            return error.response;
-        }
+        return await axiosClient.get(`${templatesRoute}${popularTemplatesRoute}`);
     },
     async createBoardFromTemplate(templateId, data) {
-        try {
-            return await axiosClient.post(`${templatesRoute}/${templateId}${useTemplateRoute}`, data);
-        } catch (error) {
-            return error.response;
-        }
+        return await axiosClient.post(`${templatesRoute}/${templateId}${useTemplateRoute}`, data);
     }
 };

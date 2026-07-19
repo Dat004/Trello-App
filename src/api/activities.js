@@ -6,24 +6,12 @@ const boardRoute = "/board";
 
 export const activitiesApi = {
     async getActivitiesInWorkspace(workspaceId, params) {
-        try {
-            return await axiosClient.get(`${activitiesRoute}${workspaceRoute}/${workspaceId}`, { params });
-        } catch (err) {
-            return err.response;
-        }
+        return await axiosClient.get(`${activitiesRoute}${workspaceRoute}/${workspaceId}`, { params });
     },
     async getActivitiesInBoard(boardId, params) {
-        try {
-            return await axiosClient.get(`${activitiesRoute}${boardRoute}/${boardId}`, { params });
-        } catch (err) {
-            return err.response;
-        }
+        return await axiosClient.get(`${activitiesRoute}${boardRoute}/${boardId}`, { params });
     },
     async getMyActivities(params) {
-        try {
-            return await axiosClient.get(`${activitiesRoute}/me`, { params });
-        } catch (err) {
-            return err.response;
-        }
+        return await axiosClient.get(`${activitiesRoute}/me`, { params });
     }
 }

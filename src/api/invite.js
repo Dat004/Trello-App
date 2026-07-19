@@ -8,17 +8,9 @@ const entityRoute = (entityType, entityId) => {
 
 export const inviteApi = {
     async sendInvite(entityType, entityId, data) {
-        try {
-            return await axiosClient.post(`${entityRoute(entityType, entityId)}/invite`, data);
-        } catch (err) {
-            return err.response;
-        }
+        return await axiosClient.post(`${entityRoute(entityType, entityId)}/invite`, data);
     },
     async respondInvite(entityType, entityId, data) {
-        try {
-            return await axiosClient.patch(`${entityRoute(entityType, entityId)}/invite`, data);
-        } catch (err) {
-            return err.response;
-        }
+        return await axiosClient.patch(`${entityRoute(entityType, entityId)}/invite`, data);
     },
 };

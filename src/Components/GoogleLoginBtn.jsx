@@ -2,7 +2,7 @@ import { GoogleLogin, useGoogleOneTapLogin } from "@react-oauth/google";
 
 import { useAuth } from "@/hooks";
 
-const GoogleLoginBtn = ({ onSuccess, onError, onCancel }) => {
+const GoogleLoginBtn = ({ onSuccess, onError }) => {
   const { googleLogin } = useAuth();
 
   const handleSuccess = async (response) => {

@@ -9,93 +9,55 @@ const joinRoute = "/join";
 
 export const boardApi = {
   async getMyBoards() {
-    try {
-      return await axiosClient.get(boardsRoute);
-    } catch (err) {
-      return err.response;
-    }
+    return await axiosClient.get(boardsRoute);
   },
   async getBoardsInWorkspace(workspaceId) {
-    try {
-      return await axiosClient.get(`${boardsRoute}${workspaceRoute}/${workspaceId}`);
-    } catch (err) {
-      return err.response;
-    }
+    return await axiosClient.get(`${boardsRoute}${workspaceRoute}/${workspaceId}`);
   },
   async create(data) {
-    try {
-      return await axiosClient.post(`${boardsRoute}${createRoute}`, data);
-    } catch (err) {
-      return err.response;
-    }
+    return await axiosClient.post(`${boardsRoute}${createRoute}`, data);
   },
   async update(id, data) {
-    try {
-      return await axiosClient.patch(`${boardsRoute}/${id}`, data);
-    } catch (err) {
-      return err.response;
-    }
+    return await axiosClient.patch(`${boardsRoute}/${id}`, data);
   },
   async delete(id, data) {
-    try {
-      return await axiosClient.delete(`${boardsRoute}/${id}`, {
-        data: data || {},
-      });
-    } catch (err) {
-      return err.response;
-    }
+    return await axiosClient.delete(`${boardsRoute}/${id}`, {
+      data: data || {},
+    });
+  },
+  async archive(id) {
+    return await axiosClient.patch(`${boardsRoute}/${id}/archive`);
+  },
+  async unarchive(id) {
+    return await axiosClient.patch(`${boardsRoute}/${id}/unarchive`);
   },
   async detailBoard(id) {
-    try {
-      return await axiosClient.get(`${boardsRoute}/${id}`);
-    } catch (err) {
-      return err.response;
-    }
+    return await axiosClient.get(`${boardsRoute}/${id}`);
   },
 
   // MEMBERS
   async updateMemberRole(id, data) {
-    try {
-      return await axiosClient.patch(
-        `${boardsRoute}/${id}${memberRoleRoute}`,
-        data
-      );
-    } catch (err) {
-      return err.response;
-    }
+    return await axiosClient.patch(
+      `${boardsRoute}/${id}${memberRoleRoute}`,
+      data
+    );
   },
   async kickMember(id, data) {
-    try {
-      return await axiosClient.delete(
-        `${boardsRoute}/${id}${membersRoute}`,
-        {
-          data,
-        }
-      );
-    } catch (err) {
-      return err.response;
-    }
+    return await axiosClient.delete(
+      `${boardsRoute}/${id}${membersRoute}`,
+      {
+        data,
+      }
+    );
   },
   // JOIN
   async getJoinRequests(id) {
-    try {
-      return await axiosClient.get(`${boardsRoute}/${id}${joinRoute}`);
-    } catch (err) {
-      return err.response;
-    }
+    return await axiosClient.get(`${boardsRoute}/${id}${joinRoute}`);
   },
   async joinBoard(id, data) {
-    try {
-      return await axiosClient.post(`${boardsRoute}/${id}${joinRoute}`, data);
-    } catch (err) {
-      return err.response;
-    }
+    return await axiosClient.post(`${boardsRoute}/${id}${joinRoute}`, data);
   },
   async handleJoinRequest(boardId, requestId, data) {
-    try {
-      return await axiosClient.patch(`${boardsRoute}/${boardId}${joinRoute}/${requestId}`, data);
-    } catch (err) {
-      return err.response;
-    }
+    return await axiosClient.patch(`${boardsRoute}/${boardId}${joinRoute}/${requestId}`, data);
   }
 };

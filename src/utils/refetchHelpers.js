@@ -1,13 +1,12 @@
-import { WORKSPACES_KEYS } from "@/features/workspaces/api/useWorkspacesList";
-import { BOARD_KEYS } from "@/features/boards/api/useBoardDetail";
 import { queryClient } from "@/lib/react-query";
+import { BOARD_KEYS, WORKSPACES_KEYS, WORKSPACE_KEYS } from "@/query/queryKeys";
 
 // Refetch danh sách workspaces và cập nhật store
 export const refetchWorkspaces = async () => {
     try {
         console.log("[Refetch] Fetching workspaces...");
         
-        await queryClient.invalidateQueries(WORKSPACES_KEYS.all);
+        await queryClient.invalidateQueries({ queryKey: WORKSPACES_KEYS.all });
         return true;
     } catch (error) {
         console.error("[Refetch] Failed to fetch workspaces:", error);
@@ -20,7 +19,7 @@ export const refetchBoards = async () => {
     try {
         console.log("[Refetch] Fetching boards...");
         
-        await queryClient.invalidateQueries(['boards']);
+        await queryClient.invalidateQueries({ queryKey: BOARD_KEYS.all });
         return true;
     } catch (error) {
         console.error("[Refetch] Failed to fetch boards:", error);
@@ -35,7 +34,7 @@ export const refetchCurrentWorkspace = async (workspaceId) => {
     try {
         console.log("[Refetch] Fetching current workspace:", workspaceId);
         
-        await queryClient.invalidateQueries(['workspace', workspaceId]);
+        await queryClient.invalidateQueries({ queryKey: WORKSPACE_KEYS.detail(workspaceId) });
         
         return true;
     } catch (error) {
@@ -50,7 +49,7 @@ export const refetchCurrentBoard = async (boardId) => {
 
     console.log("[Refetch] Invalidating board detail query:", boardId);
     
-    await queryClient.invalidateQueries(BOARD_KEYS.detail(boardId));
+    await queryClient.invalidateQueries({ queryKey: BOARD_KEYS.detail(boardId) });
 
     return true;
 };

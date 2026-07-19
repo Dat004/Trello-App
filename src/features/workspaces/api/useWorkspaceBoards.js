@@ -1,11 +1,8 @@
 import { boardApi } from "@/api/board";
+import { BOARD_KEYS } from "@/query/queryKeys";
 import { useQuery } from "@tanstack/react-query";
 
-export const BOARD_KEYS = {
-    all: ['boards'],
-    detail: (id) => ['board', id],
-    list: (workspaceId) => ['workspace-boards', workspaceId]
-};
+export { BOARD_KEYS };
 
 export function useWorkspaceBoards(workspaceId) {
     return useQuery({

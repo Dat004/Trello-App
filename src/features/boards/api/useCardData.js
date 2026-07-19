@@ -1,13 +1,10 @@
 import { attachmentsApi } from "@/api/attachments";
 import { commentsApi } from "@/api/comments";
 import { UserToast } from "@/context/ToastContext";
+import { CARD_KEYS } from "@/query/queryKeys";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-export const CARD_KEYS = {
-    comments: (cardId) => ['card', cardId, 'comments'],
-    replies: (commentId) => ['comment', commentId, 'replies'],
-    attachments: (cardId) => ['card', cardId, 'attachments'],
-};
+export { CARD_KEYS };
 
 // --- COMMENTS ---
 
@@ -51,7 +48,7 @@ export const useAddComment = () => {
         onSuccess: (data, variables) => {
             // If it's a reply (data likely has parentId or similar, but the API might handle it)
             // Invalidating the card comments will refresh the top-level count/list if needed
-            queryClient.invalidateQueries(CARD_KEYS.comments(variables.cardId));
+            queryClient.invalidateQueries({ queryKey: CARD_KEYS.comments(variables.cardId) });
             addToast({ type: "success", title: "Thêm bình luận thành công" });
 
             // If we knew the parentId, we could invalidate replies too. 
@@ -72,7 +69,7 @@ export const useDeleteComment = () => {
     const mutation = useMutation({
         mutationFn: ({ boardId, cardId, commentId }) => commentsApi.deleteComment(boardId, cardId, commentId),
         onSuccess: (data, variables) => {
-            queryClient.invalidateQueries(CARD_KEYS.comments(variables.cardId));
+            queryClient.invalidateQueries({ queryKey: CARD_KEYS.comments(variables.cardId) });
             // Also invalidate replies if we deleted a reply, but difficult to know parentId without passing it
             // Ideally we iterate valid keys or just rely on parent invalidation
             addToast({ type: "success", title: "Xóa bình luận thành công" });
@@ -111,7 +108,7 @@ export const useAddAttachment = () => {
     const mutation = useMutation({
         mutationFn: ({ boardId, cardId, data }) => attachmentsApi.addAttachment(boardId, cardId, data),
         onSuccess: (data, variables) => {
-            queryClient.invalidateQueries(CARD_KEYS.attachments(variables.cardId));
+            queryClient.invalidateQueries({ queryKey: CARD_KEYS.attachments(variables.cardId) });
             addToast({ type: "success", title: "Thêm tệp đính kèm thành công" });
         },
         onError: () => {
@@ -128,7 +125,7 @@ export const useDeleteAttachment = () => {
     const mutation = useMutation({
         mutationFn: ({ boardId, cardId, attachmentId }) => attachmentsApi.deleteAttachment(boardId, cardId, attachmentId),
         onSuccess: (data, variables) => {
-            queryClient.invalidateQueries(CARD_KEYS.attachments(variables.cardId));
+            queryClient.invalidateQueries({ queryKey: CARD_KEYS.attachments(variables.cardId) });
             addToast({ type: "success", title: "Xóa tệp đính kèm thành công" });
         },
         onError: () => {

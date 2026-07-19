@@ -1,12 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { notificationApi } from "@/api/notifications";
+import { NOTIFICATION_KEYS } from "@/query/queryKeys";
 
-export const NOTIFICATION_KEYS = {
-    all: ["notifications"],
-    list: () => [...NOTIFICATION_KEYS.all, "list"],
-    unreadCount: () => [...NOTIFICATION_KEYS.all, "unread-count"],
-};
+export { NOTIFICATION_KEYS };
 
 export const useNotifications = () => {
     return useQuery({
@@ -36,7 +33,7 @@ export const useMarkNotificationRead = () => {
     const mutation = useMutation({
         mutationFn: notificationApi.markNotificationAsRead,
         onMutate: async (notificationId) => {
-            await queryClient.cancelQueries(NOTIFICATION_KEYS.all);
+            await queryClient.cancelQueries({ queryKey: NOTIFICATION_KEYS.all });
 
             // Lưu cache
             const previousData = queryClient.getQueryData(NOTIFICATION_KEYS.list());
@@ -60,10 +57,10 @@ export const useMarkNotificationRead = () => {
             if (context?.previousData) {
                 queryClient.setQueryData(NOTIFICATION_KEYS.list(), context.previousData);
             }
-            queryClient.invalidateQueries(NOTIFICATION_KEYS.unreadCount());
+            queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.unreadCount() });
         },
         onSettled: () => {
-            queryClient.invalidateQueries(NOTIFICATION_KEYS.unreadCount());
+            queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.unreadCount() });
         },
     });
 
@@ -76,7 +73,7 @@ export const useMarkAllNotificationsRead = () => {
     const mutation = useMutation({
         mutationFn: notificationApi.markAllNotificationsAsRead,
         onSuccess: () => {
-            queryClient.invalidateQueries(NOTIFICATION_KEYS.all);
+            queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.all });
         },
     });
 
@@ -89,8 +86,8 @@ export const useDeleteNotification = () => {
     const mutation = useMutation({
         mutationFn: ({ id, data }) => notificationApi.deleteNotification(id, data),
         onSuccess: () => {
-            queryClient.invalidateQueries(NOTIFICATION_KEYS.list());
-            queryClient.invalidateQueries(NOTIFICATION_KEYS.unreadCount());
+            queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.list() });
+            queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.unreadCount() });
         },
     });
 

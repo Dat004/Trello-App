@@ -5,11 +5,13 @@ import { useSocket } from "@/hooks";
 import { useAuthStore } from "@/store";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 
 export const useBoardRealtime = (boardId, actions) => {
     const { socket, joinRoom, leaveRoom, isConnected } = useSocket();
     const { addToast } = UserToast();
     const queryClient = useQueryClient();
+    const navigate = useNavigate();
     const user = useAuthStore((state) => state.user);
 
     const actionsRef = useRef(actions);
@@ -35,9 +37,9 @@ export const useBoardRealtime = (boardId, actions) => {
         };
 
         // Handlers
-        const handleActivityCreated = (activity) => {
+        const handleActivityCreated = () => {
             // Invalidate activities query to fetch new logs
-            queryClient.invalidateQueries(BOARD_ACTIVITIES_KEYS.list(boardId));
+            queryClient.invalidateQueries({ queryKey: BOARD_ACTIVITIES_KEYS.list(boardId) });
         };
 
 
@@ -175,6 +177,6 @@ export const useBoardRealtime = (boardId, actions) => {
         };
     }, [
         boardId, isConnected, socket,
-        joinRoom, leaveRoom, addToast, queryClient, user?._id
+        joinRoom, leaveRoom, addToast, navigate, queryClient, user?._id
     ]);
 };

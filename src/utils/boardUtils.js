@@ -62,7 +62,8 @@ export const normalizeBoard = (inputData) => {
   const currentBoard = { ...boardDetail };
 
   if (inputData.board) {
-    const { board, ...extras } = inputData;
+    const extras = { ...inputData };
+    delete extras.board;
     Object.assign(currentBoard, extras);
   }
 

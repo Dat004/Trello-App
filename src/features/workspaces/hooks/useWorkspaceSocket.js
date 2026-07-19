@@ -29,12 +29,12 @@ export function useWorkspaceSocket(workspaceId) {
         // --- Granular Invalidation Handlers ---
 
         const handleWorkspaceInfoUpdate = () => {
-            queryClient.invalidateQueries(WORKSPACE_KEYS.detail(workspaceId));
-            queryClient.invalidateQueries(WORKSPACE_ACTIVITIES_KEYS.list(workspaceId));
+            queryClient.invalidateQueries({ queryKey: WORKSPACE_KEYS.detail(workspaceId) });
+            queryClient.invalidateQueries({ queryKey: WORKSPACE_ACTIVITIES_KEYS.list(workspaceId) });
         };
 
         const handleWorkspaceDelete = (wsId) => {
-            queryClient.invalidateQueries(WORKSPACE_ACTIVITIES_KEYS.list(workspaceId));
+            queryClient.invalidateQueries({ queryKey: WORKSPACE_ACTIVITIES_KEYS.list(workspaceId) });
             queryClient.removeQueries(WORKSPACE_KEYS.detail(workspaceId));
 
             if (wsId === workspaceId) {
@@ -43,25 +43,25 @@ export function useWorkspaceSocket(workspaceId) {
             }
         }
 
-        const handleRemoveMember = ({ workspaceId: wsId, member_id, userId }) => {
+        const handleRemoveMember = ({ workspaceId: wsId, userId }) => {
             if (userId === user?._id) {
-                queryClient.invalidateQueries(WORKSPACES_KEYS.list());
-                queryClient.invalidateQueries(WORKSPACE_KEYS.detail(wsId));
+                queryClient.invalidateQueries({ queryKey: WORKSPACES_KEYS.list() });
+                queryClient.invalidateQueries({ queryKey: WORKSPACE_KEYS.detail(wsId) });
 
                 if (wsId === workspaceId) {
                     addToast({ title: "Bạn đã bị xóa khỏi workspace", type: "warning" });
                 }
             } else {
-                queryClient.invalidateQueries(WORKSPACE_KEYS.detail(wsId));
-                queryClient.invalidateQueries(WORKSPACE_ACTIVITIES_KEYS.list(wsId));
+                queryClient.invalidateQueries({ queryKey: WORKSPACE_KEYS.detail(wsId) });
+                queryClient.invalidateQueries({ queryKey: WORKSPACE_ACTIVITIES_KEYS.list(wsId) });
             }
         }
 
         const handleMembersUpdate = () => {
             // Invalidate workspace detail (chứa members bên trong)
-            queryClient.invalidateQueries(WORKSPACE_KEYS.detail(workspaceId));
+            queryClient.invalidateQueries({ queryKey: WORKSPACE_KEYS.detail(workspaceId) });
             // Activities often involve member actions
-            queryClient.invalidateQueries(WORKSPACE_ACTIVITIES_KEYS.list(workspaceId));
+            queryClient.invalidateQueries({ queryKey: WORKSPACE_ACTIVITIES_KEYS.list(workspaceId) });
         };
 
         const handleJoinRequestsUpdate = () => {
@@ -70,16 +70,16 @@ export function useWorkspaceSocket(workspaceId) {
                 type: "info"
             });
 
-            queryClient.invalidateQueries(WORKSPACE_KEYS.detail(workspaceId));
-            queryClient.invalidateQueries(WORKSPACE_MEMBERS_KEYS.joinRequests(workspaceId));
-            queryClient.invalidateQueries(WORKSPACE_ACTIVITIES_KEYS.list(workspaceId));
+            queryClient.invalidateQueries({ queryKey: WORKSPACE_KEYS.detail(workspaceId) });
+            queryClient.invalidateQueries({ queryKey: WORKSPACE_MEMBERS_KEYS.joinRequests(workspaceId) });
+            queryClient.invalidateQueries({ queryKey: WORKSPACE_ACTIVITIES_KEYS.list(workspaceId) });
         };
 
         const handleBoardsUpdate = () => {
             // Only invalidate boards list
-            queryClient.invalidateQueries(BOARD_KEYS.list(workspaceId));
-            queryClient.invalidateQueries(WORKSPACE_ACTIVITIES_KEYS.list(workspaceId));
-            queryClient.invalidateQueries(WORKSPACES_KEYS.list());
+            queryClient.invalidateQueries({ queryKey: BOARD_KEYS.list(workspaceId) });
+            queryClient.invalidateQueries({ queryKey: WORKSPACE_ACTIVITIES_KEYS.list(workspaceId) });
+            queryClient.invalidateQueries({ queryKey: WORKSPACES_KEYS.list() });
         };
 
         // Listen to workspace-related events
@@ -124,5 +124,5 @@ export function useWorkspaceSocket(workspaceId) {
 
             leaveRoom(ROOM_TYPES.WORKSPACE, workspaceId);
         };
-    }, [workspaceId, isConnected, joinRoom, leaveRoom, on, off, queryClient]);
+    }, [workspaceId, isConnected, joinRoom, leaveRoom, on, off, queryClient, addToast, navigate, user?._id]);
 }

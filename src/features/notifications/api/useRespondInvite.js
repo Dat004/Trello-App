@@ -31,9 +31,9 @@ export function useRespondInvite() {
                 if (action === "accept") {
                     // Invalidate danh sách để sidebar/dashboard tự cập nhật khi navigate vào
                     if (entityType === "workspace") {
-                        queryClient.invalidateQueries(WORKSPACE_KEYS.all);
+                        queryClient.invalidateQueries({ queryKey: WORKSPACE_KEYS.all });
                     } else {
-                        queryClient.invalidateQueries(BOARD_KEYS.all);
+                        queryClient.invalidateQueries({ queryKey: BOARD_KEYS.all });
                     }
 
                     addToast({

@@ -3,7 +3,10 @@ import { useEffect, useRef } from "react";
 
 import { ROOM_TYPES, SOCKET_EVENTS } from "@/constants/socketEvents";
 import { UserToast } from "@/context/ToastContext";
-import { NOTIFICATION_KEYS } from "@/features/notifications";
+import {
+    NOTIFICATION_KEYS,
+    REALTIME_QUERY_PREFIXES,
+} from "@/query/queryKeys";
 import { useAuthStore } from "@/store";
 import { useNetworkStatus } from "./useNetworkStatus";
 import useSocket from "./useSocket";
@@ -12,7 +15,7 @@ export function useGlobalRealtimeSync() {
     const wasDisconnectedRef = useRef(false);
     const lastRefetchTimeRef = useRef(0);
 
-    const { socket, isConnected, joinRoom, leaveRoom, on, off } = useSocket();
+    const { socket, isConnected, joinRoom, leaveRoom } = useSocket();
     const { addToast } = UserToast();
     const { isOnline } = useNetworkStatus();
 
@@ -42,8 +45,12 @@ export function useGlobalRealtimeSync() {
 
                 lastRefetchTimeRef.current = now;
 
-                // Invalidate valid queries to force refetch
-                await queryClient.invalidateQueries();
+                // Refresh only server data that can be changed by realtime events.
+                await Promise.all(
+                    REALTIME_QUERY_PREFIXES.map((queryKey) =>
+                        queryClient.invalidateQueries({ queryKey })
+                    )
+                );
 
                 addToast({ title: "Đã kết nối lại và đồng bộ dữ liệu", type: 'success', duration: 2000 });
                 wasDisconnectedRef.current = false;
@@ -147,7 +154,7 @@ export function useGlobalRealtimeSync() {
             leaveRoom(ROOM_TYPES.USER, user._id);
             // ids.forEach(wsId => leaveRoom(ROOM_TYPES.WORKSPACE, wsId));
         };
-    }, [user?._id, isConnected, socket, joinRoom, leaveRoom]);
+    }, [user, isConnected, socket, joinRoom, leaveRoom]);
 
     // Network Status Toast
     useEffect(() => {
@@ -156,7 +163,7 @@ export function useGlobalRealtimeSync() {
         } else {
             if (socket && !socket.connected) socket.connect();
         }
-    }, [isOnline, socket]);
+    }, [isOnline, socket, addToast]);
 
     return null;
 }

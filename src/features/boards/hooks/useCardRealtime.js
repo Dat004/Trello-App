@@ -27,16 +27,16 @@ export const useCardRealtime = (cardId) => {
         // --- Event Handlers ---
 
         const handleCommentAdded = (newComment) => {
-            queryClient.invalidateQueries(CARD_KEYS.comments(cardId));
+            queryClient.invalidateQueries({ queryKey: CARD_KEYS.comments(cardId) });
             if (newComment.parent_comment) {
-                queryClient.invalidateQueries(CARD_KEYS.replies(newComment.parent_comment));
+                queryClient.invalidateQueries({ queryKey: CARD_KEYS.replies(newComment.parent_comment) });
             }
         };
 
         const handleCommentDeleted = (data) => {
-            queryClient.invalidateQueries(CARD_KEYS.comments(cardId));
+            queryClient.invalidateQueries({ queryKey: CARD_KEYS.comments(cardId) });
             if (data.parentId) {
-                queryClient.invalidateQueries(CARD_KEYS.replies(data.parentId));
+                queryClient.invalidateQueries({ queryKey: CARD_KEYS.replies(data.parentId) });
             }
         };
 

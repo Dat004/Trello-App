@@ -1,13 +1,13 @@
 import { boardApi } from "@/api/board";
 import { inviteApi } from "@/api/invite";
 import { UserToast } from "@/context/ToastContext";
+import { BOARD_KEYS, queryKeys } from "@/query/queryKeys";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useBoardContext } from "../context/BoardStateContext";
-import { BOARD_KEYS } from "./useBoards";
 
 export const BOARD_MEMBERS_KEYS = {
-    list: (boardId) => ['board', id, 'members'], // Usually part of detail, but good to have dedicated key
-    joinRequests: (boardId) => ['board', boardId, 'requests'],
+    list: queryKeys.boards.members,
+    joinRequests: queryKeys.boards.joinRequests,
 };
 
 export function useBoardMembers(boardId) {
@@ -49,7 +49,7 @@ export function useUpdateBoardMemberRole() {
 
         onMutate: async (variables) => {
             // Cancel outgoing refetches
-            await queryClient.cancelQueries(BOARD_KEYS.detail(variables.boardId));
+            await queryClient.cancelQueries({ queryKey: BOARD_KEYS.detail(variables.boardId) });
 
             // Snapshot previous value
             const previousBoard = queryClient.getQueryData(BOARD_KEYS.detail(variables.boardId));
@@ -96,7 +96,7 @@ export function useKickBoardMember() {
 
         onMutate: async (variables) => {
             // Cancel outgoing refetches
-            await queryClient.cancelQueries(BOARD_KEYS.detail(variables.boardId));
+            await queryClient.cancelQueries({ queryKey: BOARD_KEYS.detail(variables.boardId) });
 
             // Snapshot previous value
             const previousBoard = queryClient.getQueryData(BOARD_KEYS.detail(variables.boardId));
@@ -138,10 +138,10 @@ export function useHandleBoardJoinRequest() {
         mutationFn: ({ boardId, requestId, status }) => boardApi.handleJoinRequest(boardId, requestId, { status }),
         onSuccess: (res, variables) => {
             if (res.data?.success) {
-                queryClient.invalidateQueries(BOARD_MEMBERS_KEYS.joinRequests(variables.boardId));
+                queryClient.invalidateQueries({ queryKey: BOARD_MEMBERS_KEYS.joinRequests(variables.boardId) });
                 // If accepted, members list changes
                 if (variables.status === 'accepted') {
-                    queryClient.invalidateQueries(BOARD_KEYS.detail(variables.boardId));
+                    queryClient.invalidateQueries({ queryKey: BOARD_KEYS.detail(variables.boardId) });
                 }
                 addToast({ type: "success", title: "Đã xử lý yêu cầu tham gia" });
             } else {
@@ -177,7 +177,7 @@ export function useInviteBoardMember() {
             const results = res.data?.data?.results || res.data?.results;
 
             if (res.data?.success) {
-                queryClient.invalidateQueries(BOARD_KEYS.detail(variables.boardId));
+                queryClient.invalidateQueries({ queryKey: BOARD_KEYS.detail(variables.boardId) });
 
                 if (results) {
                     const invitedCount = results.invited?.length || 0;

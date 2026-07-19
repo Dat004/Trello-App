@@ -7,8 +7,6 @@ import { CARD_KEYS } from "./useCards";
 
 // Get members in card
 export function useGetCardMembers() {
-    const queryClient = useQueryClient();
-
     const mutation = useMutation({
         mutationFn: ({ boardId, listId, cardId }) =>
             cardApi.getMembersInCard(boardId, listId, cardId),
@@ -29,8 +27,8 @@ export function useAssignCardMember() {
 
         onMutate: async (variables) => {
             // Cancel outgoing refetches
-            await queryClient.cancelQueries(BOARD_KEYS.detail(variables.boardId));
-            await queryClient.cancelQueries(CARD_KEYS.detail(variables.cardId));
+            await queryClient.cancelQueries({ queryKey: BOARD_KEYS.detail(variables.boardId) });
+            await queryClient.cancelQueries({ queryKey: CARD_KEYS.detail(variables.cardId) });
 
             // Snapshot previous values
             const previousBoard = queryClient.getQueryData(
@@ -108,8 +106,8 @@ export function useRemoveCardMember() {
 
         onMutate: async (variables) => {
             // Cancel outgoing refetches
-            await queryClient.cancelQueries(BOARD_KEYS.detail(variables.boardId));
-            await queryClient.cancelQueries(CARD_KEYS.detail(variables.cardId));
+            await queryClient.cancelQueries({ queryKey: BOARD_KEYS.detail(variables.boardId) });
+            await queryClient.cancelQueries({ queryKey: CARD_KEYS.detail(variables.cardId) });
 
             // Snapshot previous values
             const previousBoard = queryClient.getQueryData(

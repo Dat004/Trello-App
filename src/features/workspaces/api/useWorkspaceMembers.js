@@ -1,11 +1,11 @@
 import { inviteApi } from "@/api/invite";
 import { workspaceApi } from "@/api/workspace";
 import { UserToast } from "@/context/ToastContext";
+import { queryKeys, WORKSPACE_KEYS } from "@/query/queryKeys";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { WORKSPACE_KEYS } from "./useWorkspaceDetail";
 
 export const WORKSPACE_MEMBERS_KEYS = {
-    joinRequests: (workspaceId) => ['workspaces', 'members', 'requests', workspaceId],
+    joinRequests: queryKeys.workspaces.joinRequests,
 };
 
 export function useWorkspaceJoinRequests(workspaceId) {
@@ -30,7 +30,7 @@ export function useUpdateMemberRole() {
         onSuccess: (res, variables) => {
             if (res.data?.success) {
                 // Invalidate detail to refresh members list inside workspace object
-                queryClient.invalidateQueries(WORKSPACE_KEYS.detail(variables.workspaceId));
+                queryClient.invalidateQueries({ queryKey: WORKSPACE_KEYS.detail(variables.workspaceId) });
                 // And explicit members list if used separate hook
                 // queryClient.invalidateQueries(WORKSPACE_MEMBERS_KEYS.list(variables.workspaceId));
 
@@ -57,7 +57,7 @@ export function useKickMember() {
             workspaceApi.kickMember(workspaceId, { member_id }),
         onSuccess: (res, variables) => {
             if (res.data?.success) {
-                queryClient.invalidateQueries(WORKSPACE_KEYS.detail(variables.workspaceId));
+                queryClient.invalidateQueries({ queryKey: WORKSPACE_KEYS.detail(variables.workspaceId) });
                 addToast({ type: "success", title: "Đã xóa thành viên khỏi workspace" });
             } else {
                 addToast({ type: "error", title: res.data?.message || "Lỗi xóa thành viên" });
@@ -79,10 +79,10 @@ export function useHandleJoinRequest(workspaceId) {
         mutationFn: ({ requestId, status }) => workspaceApi.handleJoinRequest(workspaceId, requestId, { status }),
         onSuccess: (res) => {
             if (res.data?.success) {
-                queryClient.invalidateQueries(WORKSPACE_MEMBERS_KEYS.joinRequests(workspaceId));
+                queryClient.invalidateQueries({ queryKey: WORKSPACE_MEMBERS_KEYS.joinRequests(workspaceId) });
                 // Khi chấp nhận, invalidate workspace detail để cập nhật danh sách members
                 if (res.data.status === 'accepted') {
-                    queryClient.invalidateQueries(WORKSPACE_KEYS.detail(workspaceId));
+                    queryClient.invalidateQueries({ queryKey: WORKSPACE_KEYS.detail(workspaceId) });
                 }
                 addToast({ type: "success", title: "Đã xử lý yêu cầu tham gia" });
             } else {
@@ -118,7 +118,7 @@ export function useInviteWorkspaceMember() {
             const results = res.data?.data?.results || res.data?.results;
 
             if (res.data?.success) {
-                queryClient.invalidateQueries(WORKSPACE_KEYS.detail(variables.workspaceId));
+                queryClient.invalidateQueries({ queryKey: WORKSPACE_KEYS.detail(variables.workspaceId) });
 
                 if (results) {
                     const invitedCount = results.invited?.length || 0;

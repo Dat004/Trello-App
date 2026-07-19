@@ -1,34 +1,20 @@
 import { cardApi } from "@/api/card";
 import { UserToast } from "@/context/ToastContext";
+import { CARD_KEYS } from "@/query/queryKeys";
+import { getApiErrorMessage } from "@/utils/apiError";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useBoardContext } from "../context/BoardStateContext";
-import { BOARD_KEYS } from "./useBoards";
 
-export const CARD_KEYS = {
-    detail: (cardId) => ['card', cardId],
-    comments: (cardId) => ['card', cardId, 'comments'],
-    replies: (commentId) => ['comment', commentId, 'replies']
-};
+export { CARD_KEYS };
 
 export function useCreateCard() {
-    const queryClient = useQueryClient();
     const { addToast } = UserToast();
     const { addCard } = useBoardContext();
 
     const mutation = useMutation({
         mutationFn: ({ boardId, listId, ...data }) => cardApi.create(boardId, listId, data),
 
-        onMutate: async (variables) => {
-            // Cancel outgoing refetches
-            await queryClient.cancelQueries(BOARD_KEYS.detail(variables.boardId));
-
-            // Snapshot previous value for rollback
-            const previousBoard = queryClient.getQueryData(BOARD_KEYS.detail(variables.boardId));
-
-            return { previousBoard };
-        },
-
-        onSuccess: (res, variables) => {
+        onSuccess: (res) => {
             if (res.data?.success) {
                 // ✅ Optimistically update context with server data
                 const newCard = res.data.data.card;
@@ -40,15 +26,8 @@ export function useCreateCard() {
             }
         },
 
-        onError: (err, variables, context) => {
-            // Rollback on error
-            if (context?.previousBoard) {
-                queryClient.setQueryData(
-                    BOARD_KEYS.detail(variables.boardId),
-                    context.previousBoard
-                );
-            }
-            addToast({ type: "error", title: err.response?.data?.message || "Lỗi kết nối server" });
+        onError: (err) => {
+            addToast({ type: "error", title: getApiErrorMessage(err, "Lỗi kết nối server") });
         }
     });
 
@@ -63,18 +42,6 @@ export function useUpdateCard() {
     const mutation = useMutation({
         mutationFn: ({ boardId, listId, id, data }) => cardApi.update(boardId, listId, id, data),
 
-        onMutate: async (variables) => {
-            // Cancel outgoing refetches
-            await queryClient.cancelQueries(BOARD_KEYS.detail(variables.boardId));
-            await queryClient.cancelQueries(CARD_KEYS.detail(variables.id));
-
-            // Snapshot previous values
-            const previousBoard = queryClient.getQueryData(BOARD_KEYS.detail(variables.boardId));
-            const previousCard = queryClient.getQueryData(CARD_KEYS.detail(variables.id));
-
-            return { previousBoard, previousCard };
-        },
-
         onSuccess: (res, variables) => {
             if (res.data?.success) {
                 // ✅ Update context with server data
@@ -88,21 +55,8 @@ export function useUpdateCard() {
             }
         },
 
-        onError: (err, variables, context) => {
-            // Rollback on error
-            if (context?.previousBoard) {
-                queryClient.setQueryData(
-                    BOARD_KEYS.detail(variables.boardId),
-                    context.previousBoard
-                );
-            }
-            if (context?.previousCard) {
-                queryClient.setQueryData(
-                    CARD_KEYS.detail(variables.id),
-                    context.previousCard
-                );
-            }
-            addToast({ type: "error", title: err.response?.data?.message || "Lỗi kết nối server" });
+        onError: (err) => {
+            addToast({ type: "error", title: getApiErrorMessage(err, "Lỗi kết nối server") });
         }
     });
 
@@ -117,18 +71,6 @@ export function useUpdateCardComplete() {
     const mutation = useMutation({
         mutationFn: ({ boardId, listId, id, data }) => cardApi.updateComplete(boardId, listId, id, data),
 
-        onMutate: async (variables) => {
-            // Cancel outgoing refetches
-            await queryClient.cancelQueries(BOARD_KEYS.detail(variables.boardId));
-            await queryClient.cancelQueries(CARD_KEYS.detail(variables.id));
-
-            // Snapshot previous values
-            const previousBoard = queryClient.getQueryData(BOARD_KEYS.detail(variables.boardId));
-            const previousCard = queryClient.getQueryData(CARD_KEYS.detail(variables.id));
-
-            return { previousBoard, previousCard };
-        },
-
         onSuccess: (res, variables) => {
             if (res.data?.success) {
                 // Update context with server data
@@ -140,24 +82,11 @@ export function useUpdateCardComplete() {
             }
         },
 
-        onError: (err, variables, context) => {
-            // Rollback on error
-            if (context?.previousBoard) {
-                queryClient.setQueryData(
-                    BOARD_KEYS.detail(variables.boardId),
-                    context.previousBoard
-                );
-            }
-            if (context?.previousCard) {
-                queryClient.setQueryData(
-                    CARD_KEYS.detail(variables.id),
-                    context.previousCard
-                );
-            }
-            addToast({ type: "error", title: err.response?.data?.message || "Lỗi kết nối server" });
+        onError: (err) => {
+            addToast({ type: "error", title: getApiErrorMessage(err, "Lỗi kết nối server") });
         },
         onSettled: (data, error, variables) => {
-            queryClient.invalidateQueries(CARD_KEYS.detail(variables.id));
+            queryClient.invalidateQueries({ queryKey: CARD_KEYS.detail(variables.id) });
         }
     });
 
@@ -165,22 +94,11 @@ export function useUpdateCardComplete() {
 }
 
 export function useDeleteCard() {
-    const queryClient = useQueryClient();
     const { addToast } = UserToast();
     const { removeCard } = useBoardContext();
 
     const mutation = useMutation({
         mutationFn: ({ boardId, listId, id }) => cardApi.delete(boardId, listId, id),
-
-        onMutate: async (variables) => {
-            // Cancel outgoing refetches
-            await queryClient.cancelQueries(BOARD_KEYS.detail(variables.boardId));
-
-            // Snapshot previous value
-            const previousBoard = queryClient.getQueryData(BOARD_KEYS.detail(variables.boardId));
-
-            return { previousBoard };
-        },
 
         onSuccess: (res, variables) => {
             if (res.data?.success) {
@@ -193,15 +111,8 @@ export function useDeleteCard() {
             }
         },
 
-        onError: (err, variables, context) => {
-            // Rollback on error
-            if (context?.previousBoard) {
-                queryClient.setQueryData(
-                    BOARD_KEYS.detail(variables.boardId),
-                    context.previousBoard
-                );
-            }
-            addToast({ type: "error", title: err.response?.data?.message || "Lỗi kết nối server" });
+        onError: (err) => {
+            addToast({ type: "error", title: getApiErrorMessage(err, "Lỗi kết nối server") });
         }
     });
 
@@ -220,7 +131,7 @@ export function useAddChecklistItem() {
 
         onMutate: async (variables) => {
             // Cancel outgoing refetches
-            await queryClient.cancelQueries(CARD_KEYS.detail(variables.cardId));
+            await queryClient.cancelQueries({ queryKey: CARD_KEYS.detail(variables.cardId) });
 
             // Snapshot previous values
             const previousCard = queryClient.getQueryData(CARD_KEYS.detail(variables.cardId));
@@ -266,6 +177,7 @@ export function useAddChecklistItem() {
 
 export function useToggleChecklistItem() {
     const queryClient = useQueryClient();
+    const { addToast } = UserToast();
     const { toggleChecklistItem } = useBoardContext();
 
     const mutation = useMutation({
@@ -273,7 +185,7 @@ export function useToggleChecklistItem() {
 
         onMutate: async (variables) => {
             // Cancel outgoing refetches
-            await queryClient.cancelQueries(CARD_KEYS.detail(variables.cardId));
+            await queryClient.cancelQueries({ queryKey: CARD_KEYS.detail(variables.cardId) });
 
             // Snapshot previous values
             const previousCard = queryClient.getQueryData(CARD_KEYS.detail(variables.cardId));
@@ -310,6 +222,7 @@ export function useToggleChecklistItem() {
                     context.previousCard
                 );
             }
+            addToast({ type: "error", title: err.response?.data?.message || "Lỗi cập nhật checklist" });
         }
     });
 
@@ -326,7 +239,7 @@ export function useDeleteChecklistItem() {
 
         onMutate: async (variables) => {
             // Cancel outgoing refetches
-            await queryClient.cancelQueries(CARD_KEYS.detail(variables.cardId));
+            await queryClient.cancelQueries({ queryKey: CARD_KEYS.detail(variables.cardId) });
 
             // Snapshot previous values
             const previousCard = queryClient.getQueryData(CARD_KEYS.detail(variables.cardId));

@@ -1,11 +1,8 @@
 import { boardApi } from '@/api/board';
+import { BOARD_KEYS } from '@/query/queryKeys';
 import { useQuery } from '@tanstack/react-query';
 
-export const BOARD_KEYS = {
-    all: ['boards'],
-    list: (params) => ['boards', 'list', params],
-    detail: (id) => ['board', id],
-};
+export { BOARD_KEYS };
 
 export const useBoardDetail = (boardId) => {
     return useQuery({

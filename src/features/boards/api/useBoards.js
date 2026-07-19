@@ -1,20 +1,17 @@
 import { boardApi } from "@/api/board";
 import { UserToast } from "@/context/ToastContext";
+import { BOARD_KEYS } from "@/query/queryKeys";
+import { getApiErrorMessage, unwrapApiData } from "@/utils/apiError";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-export const BOARD_KEYS = {
-    all: ['boards'],
-    detail: (id) => ['board', id],
-    list: (workspaceId) => ['workspace-boards', workspaceId]
-};
+export { BOARD_KEYS };
 
 export function useMyBoards() {
     return useQuery({
         queryKey: BOARD_KEYS.all,
         queryFn: async () => {
             const res = await boardApi.getMyBoards();
-            if (!res.data?.success) throw new Error(res.data?.message || "Failed to fetch boards");
-            return res.data.data.boards || [];
+            return unwrapApiData(res, "Failed to fetch boards").boards || [];
         },
         staleTime: 1000 * 60 * 5
     });
@@ -29,10 +26,10 @@ export function useCreateBoard() {
         onSuccess: (res, variables) => {
             if (res.data?.success) {
                 // Invalidate my boards list
-                queryClient.invalidateQueries(BOARD_KEYS.all);
+                queryClient.invalidateQueries({ queryKey: BOARD_KEYS.all });
 
                 if (variables.workspace) {
-                    queryClient.invalidateQueries(BOARD_KEYS.list(variables.workspace));
+                    queryClient.invalidateQueries({ queryKey: BOARD_KEYS.list(variables.workspace) });
                 }
                 addToast({ type: "success", title: "Tạo bảng thành công!" });
             } else {
@@ -40,7 +37,7 @@ export function useCreateBoard() {
             }
         },
         onError: (err) => {
-            addToast({ type: "error", title: err.response?.data?.message || "Lỗi kết nối server" });
+            addToast({ type: "error", title: getApiErrorMessage(err, "Lỗi kết nối server") });
         }
     });
 
@@ -55,10 +52,10 @@ export function useUpdateBoard() {
         mutationFn: ({ id, data }) => boardApi.update(id, data),
         onSuccess: (res, variables) => {
             if (res.data?.success) {
-                queryClient.invalidateQueries(BOARD_KEYS.detail(variables.id));
-                queryClient.invalidateQueries(BOARD_KEYS.all);
+                queryClient.invalidateQueries({ queryKey: BOARD_KEYS.detail(variables.id) });
+                queryClient.invalidateQueries({ queryKey: BOARD_KEYS.all });
                 if (res.data.data?.workspace) {
-                    queryClient.invalidateQueries(BOARD_KEYS.list(res.data.data.workspace));
+                    queryClient.invalidateQueries({ queryKey: BOARD_KEYS.list(res.data.data.workspace) });
                 }
                 addToast({ type: "success", title: "Cập nhật bảng thành công!" });
             } else {
@@ -66,7 +63,7 @@ export function useUpdateBoard() {
             }
         },
         onError: (err) => {
-            addToast({ type: "error", title: err.response?.data?.message || "Lỗi kết nối server" });
+            addToast({ type: "error", title: getApiErrorMessage(err, "Lỗi kết nối server") });
         }
     });
 
@@ -81,11 +78,11 @@ export function useDeleteBoard() {
         mutationFn: ({ id }) => boardApi.delete(id),
         onSuccess: (res, variables) => {
             if (res.data?.success) {
-                queryClient.invalidateQueries(BOARD_KEYS.all);
+                queryClient.invalidateQueries({ queryKey: BOARD_KEYS.all });
                 if (variables.workspaceId) {
-                    queryClient.invalidateQueries(BOARD_KEYS.list(variables.workspaceId));
+                    queryClient.invalidateQueries({ queryKey: BOARD_KEYS.list(variables.workspaceId) });
                 } else {
-                    queryClient.invalidateQueries(['workspace-boards']);
+                    queryClient.invalidateQueries({ queryKey: BOARD_KEYS.workspaceLists });
                 }
                 addToast({ type: "success", title: "Đã xóa bảng" });
             } else {
@@ -93,8 +90,34 @@ export function useDeleteBoard() {
             }
         },
         onError: (err) => {
-            addToast({ type: "error", title: err.response?.data?.message || "Lỗi kết nối server" });
+            addToast({ type: "error", title: getApiErrorMessage(err, "Lỗi kết nối server") });
         }
+    });
+
+    return { ...mutation, isLoading: mutation.isPending };
+}
+
+export function useArchiveBoard() {
+    const queryClient = useQueryClient();
+    const { addToast } = UserToast();
+
+    const mutation = useMutation({
+        mutationFn: ({ id }) => boardApi.archive(id),
+        onSuccess: (res, variables) => {
+            if (!res.data?.success) {
+                throw new Error(res.data?.message || "Không thể lưu trữ bảng");
+            }
+            queryClient.invalidateQueries({ queryKey: BOARD_KEYS.all });
+            queryClient.invalidateQueries({ queryKey: BOARD_KEYS.workspaceLists });
+            queryClient.removeQueries({ queryKey: BOARD_KEYS.detail(variables.id) });
+            addToast({ type: "success", title: "Đã lưu trữ bảng" });
+        },
+        onError: (error) => {
+            addToast({
+                type: "error",
+                title: getApiErrorMessage(error, "Không thể lưu trữ bảng"),
+            });
+        },
     });
 
     return { ...mutation, isLoading: mutation.isPending };

@@ -25,7 +25,7 @@ export const useNotificationRealtime = () => {
             });
 
             // Cập nhật số lượng thông báo chưa đọc
-            queryClient.invalidateQueries(NOTIFICATION_KEYS.unreadCount());
+            queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.unreadCount() });
 
             // Thêm thông báo vào danh sách
             queryClient.setQueryData(NOTIFICATION_KEYS.list(), (old = []) => [notification, ...old]);

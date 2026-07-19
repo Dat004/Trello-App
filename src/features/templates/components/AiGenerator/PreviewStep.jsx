@@ -1,7 +1,6 @@
 import { Bot, ChevronRight, ListTodo, RefreshCw, Tag } from "lucide-react";
 import { itemScale, staggerContainer } from "./variants";
 import { Badge, Button } from "@/Components/UI";
-import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 function PreviewStep({ template, onRegenerate, onUse, isRegenerating }) {

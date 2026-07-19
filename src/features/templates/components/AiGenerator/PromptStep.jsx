@@ -1,5 +1,4 @@
 import { Button, Label, TextArea } from "@/Components/UI";
-import { motion } from "framer-motion";
 import { Bot, Sparkles, Wand2 } from "lucide-react";
 
 function PromptStep({ prompt, setPrompt, isLoading, onGenerate, onCancel }) {

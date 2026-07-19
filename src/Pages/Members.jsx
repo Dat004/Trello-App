@@ -1,19 +1,6 @@
-import {
-    Activity,
-    Calendar,
-    Crown,
-    Eye,
-    Mail,
-    MoreHorizontal,
-    Search,
-    Settings,
-    Shield,
-    Users,
-} from "lucide-react";
-import { useEffect, useState } from "react";
+import { AlertCircle, Building2, Search, Shield, Users } from "lucide-react";
+import { useMemo, useState } from "react";
 
-import MemberDetailsDialog from "@/Components/MemberDetailsDialog";
-import InviteMemberDialog from "@/Components/InviteMemberDialog";
 import {
   Avatar,
   AvatarFallback,
@@ -25,439 +12,187 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
   Input,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-  StatsSkeleton,
 } from "@/Components/UI";
 import { MembersSkeleton } from "@/Components/UI/LoadingSkeleton";
+import { useMemberDirectory } from "@/features/members/api/useMemberDirectory";
 
-const members = [
-  {
-    id: "1",
-    name: "Nguyễn Văn An",
-    email: "an@company.com",
-    avatar: "/placeholder.svg?height=40&width=40",
-    role: "owner",
-    status: "active",
-    joinedAt: "2024-01-15",
-    lastActive: "2 phút trước",
-    boardsCount: 12,
-    workspacesCount: 3,
-  },
-  {
-    id: "2",
-    name: "Trần Thị Bình",
-    email: "binh@company.com",
-    role: "admin",
-    status: "active",
-    joinedAt: "2024-02-01",
-    lastActive: "1 giờ trước",
-    boardsCount: 8,
-    workspacesCount: 2,
-  },
-  {
-    id: "3",
-    name: "Lê Văn Cường",
-    email: "cuong@company.com",
-    role: "member",
-    status: "active",
-    joinedAt: "2024-02-15",
-    lastActive: "3 giờ trước",
-    boardsCount: 5,
-    workspacesCount: 1,
-  },
-  {
-    id: "4",
-    name: "Phạm Thị Dung",
-    email: "dung@company.com",
-    role: "member",
-    status: "pending",
-    joinedAt: "2024-03-01",
-    lastActive: "Chưa kích hoạt",
-    boardsCount: 0,
-    workspacesCount: 0,
-  },
-  {
-    id: "5",
-    name: "Hoàng Văn Em",
-    email: "em@company.com",
-    role: "viewer",
-    status: "active",
-    joinedAt: "2024-03-10",
-    lastActive: "1 ngày trước",
-    boardsCount: 2,
-    workspacesCount: 1,
-  },
-  {
-    id: "6",
-    name: "Vũ Thị Phương",
-    email: "phuong@company.com",
-    role: "member",
-    status: "inactive",
-    joinedAt: "2024-01-20",
-    lastActive: "2 tuần trước",
-    boardsCount: 3,
-    workspacesCount: 1,
-  },
-];
+const roleLabels = {
+  owner: "Chủ sở hữu",
+  admin: "Quản trị",
+  member: "Thành viên",
+  viewer: "Chỉ xem",
+};
 
 function Members() {
-  const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [roleFilter, setRoleFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [search, setSearch] = useState("");
+  const [role, setRole] = useState("all");
+  const [workspaceId, setWorkspaceId] = useState("all");
+  const { data: workspaces = [], isLoading, isError, error, refetch } = useMemberDirectory();
 
-  // Simulate loading
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1000);
-    return () => clearTimeout(timer);
-  }, []);
+  const visibleWorkspaces = useMemo(() => {
+    const normalizedSearch = search.trim().toLocaleLowerCase("vi");
+    return workspaces
+      .filter((workspace) => workspaceId === "all" || workspace._id === workspaceId)
+      .map((workspace) => ({
+        ...workspace,
+        members: workspace.members.filter((member) => {
+          const matchesSearch = !normalizedSearch
+            || member.full_name?.toLocaleLowerCase("vi").includes(normalizedSearch)
+            || member.email?.toLocaleLowerCase("vi").includes(normalizedSearch);
+          return matchesSearch && (role === "all" || member.role === role);
+        }),
+      }))
+      .filter((workspace) => workspace.members.length > 0);
+  }, [role, search, workspaceId, workspaces]);
 
-  const getRoleIcon = (role) => {
-    switch (role) {
-      case "owner":
-        return <Crown className="h-4 w-4 text-yellow-500" />;
-      case "admin":
-        return <Shield className="h-4 w-4 text-blue-500" />;
-      case "member":
-        return <Users className="h-4 w-4 text-green-500" />;
-      case "viewer":
-        return <Eye className="h-4 w-4 text-gray-500" />;
-      default:
-        return <Users className="h-4 w-4" />;
-    }
-  };
+  const uniqueMembers = useMemo(
+    () => new Set(workspaces.flatMap((workspace) => workspace.members.map((member) => member._id))).size,
+    [workspaces],
+  );
+  const memberships = workspaces.reduce((count, workspace) => count + workspace.members.length, 0);
 
-  const getRoleText = (role) => {
-    switch (role) {
-      case "owner":
-        return "Chủ sở hữu";
-      case "admin":
-        return "Quản trị";
-      case "member":
-        return "Thành viên";
-      case "viewer":
-        return "Xem";
-      default:
-        return "Thành viên";
-    }
-  };
+  if (isLoading) {
+    return (
+      <div aria-live="polite">
+        <h1 className="mb-6 text-2xl font-bold">Thành viên</h1>
+        <MembersSkeleton />
+      </div>
+    );
+  }
 
-  const getStatusBadge = (status) => {
-    switch (status) {
-      case "active":
-        return (
-          <Badge className="bg-green-500/10 text-green-600 hover:bg-green-500/20 shadow-none border-none">
-            Hoạt động
-          </Badge>
-        );
-      case "pending":
-        return (
-          <Badge className="bg-yellow-500/10 text-yellow-600 hover:bg-yellow-500/20 shadow-none border-none">
-            Chờ xác nhận
-          </Badge>
-        );
-      case "inactive":
-        return (
-          <Badge className="bg-muted text-muted-foreground hover:bg-muted/80 shadow-none border-none">
-            Không hoạt động
-          </Badge>
-        );
-      default:
-        return <Badge variant="secondary">{status}</Badge>;
-    }
-  };
-
-  const filteredMembers = members.filter((member) => {
-    const matchesSearch =
-      member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      member.email.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesRole = roleFilter === "all" || member.role === roleFilter;
-    const matchesStatus =
-      statusFilter === "all" || member.status === statusFilter;
-    return matchesSearch && matchesRole && matchesStatus;
-  });
-
-  const stats = {
-    total: members.length,
-    active: members.filter((m) => m.status === "active").length,
-    pending: members.filter((m) => m.status === "pending").length,
-    admins: members.filter((m) => m.role === "admin" || m.role === "owner")
-      .length,
-  };
+  if (isError) {
+    return (
+      <Card className="mx-auto max-w-xl border-destructive/40">
+        <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
+          <AlertCircle className="h-10 w-10 text-destructive" />
+          <h1 className="text-xl font-semibold">Không thể tải thành viên</h1>
+          <p className="text-sm text-muted-foreground">{error?.message}</p>
+          <Button onClick={() => refetch()}>Thử lại</Button>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <>
-      {/* Welcome Section */}
-      <div className="flex flex-col mb-6 md:mb-8 sm:flex-row sm:items-center sm:justify-between gap-4">
-        <section>
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1 sm:mb-2">
-            Thành viên
-          </h1>
-          <p className="text-sm sm:text-base md:text-base text-muted-foreground">
-            Quản lý thành viên và quyền truy cập trong workspace
-          </p>
-        </section>
-        <section className="sm:ml-auto">
-          <InviteMemberDialog />
-        </section>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold md:text-3xl">Thành viên</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Directory theo các workspace bạn đang tham gia
+        </p>
       </div>
 
-      {/* Stats Cards */}
-      <section className="mb-6 md:mb-8">
-        {isLoading ? (
-          <StatsSkeleton />
-        ) : (
-          <section className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                    <Users className="h-5 w-5 text-blue-500" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">
-                      Tổng thành viên
-                    </p>
-                    <p className="text-2xl font-bold">{stats.total}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-green-500/10 flex items-center justify-center">
-                    <Activity className="h-5 w-5 text-green-500" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">
-                      Đang hoạt động
-                    </p>
-                    <p className="text-2xl font-bold">{stats.active}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-yellow-500/10 flex items-center justify-center">
-                    <Mail className="h-5 w-5 text-yellow-500" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">
-                      Chờ xác nhận
-                    </p>
-                    <p className="text-2xl font-bold">{stats.pending}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
-                    <Shield className="h-5 w-5 text-purple-500" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">
-                      Quản trị viên
-                    </p>
-                    <p className="text-2xl font-bold">{stats.admins}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </section>
-        )}
+      <section className="mb-6 grid gap-4 sm:grid-cols-3" aria-label="Tổng quan thành viên">
+        <SummaryCard icon={<Users className="h-5 w-5" />} label="Thành viên duy nhất" value={uniqueMembers} />
+        <SummaryCard icon={<Building2 className="h-5 w-5" />} label="Workspace" value={workspaces.length} />
+        <SummaryCard icon={<Shield className="h-5 w-5" />} label="Lượt membership" value={memberships} />
       </section>
 
-      {/* Search and Filter */}
-      <section className="mb-6">
-        <section className="flex flex-col sm:items-center sm:flex-row gap-4 gap-y-2">
-          <section className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Tìm kiếm thành viên..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 text-sm"
-            />
-          </section>
-          <section className="flex items-center gap-2">
-            <Select value={roleFilter} onValueChange={setRoleFilter}>
-              <SelectTrigger className="w-full sm:w-[150px]">
-                <SelectValue placeholder="Vai trò" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tất cả vai trò</SelectItem>
-                <SelectItem value="owner">Chủ sở hữu</SelectItem>
-                <SelectItem value="admin">Quản trị</SelectItem>
-                <SelectItem value="member">Thành viên</SelectItem>
-                <SelectItem value="viewer">Xem</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full sm:w-[150px]">
-                <SelectValue placeholder="Trạng thái" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tất cả</SelectItem>
-                <SelectItem value="active">Hoạt động</SelectItem>
-                <SelectItem value="pending">Chờ xác nhận</SelectItem>
-                <SelectItem value="inactive">Không hoạt động</SelectItem>
-              </SelectContent>
-            </Select>
-          </section>
-        </section>
+      <section className="mb-6 flex flex-col gap-3 lg:flex-row" aria-label="Bộ lọc directory">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            aria-label="Tìm thành viên"
+            placeholder="Tìm theo tên hoặc email..."
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            className="pl-10"
+          />
+        </div>
+        <Select value={workspaceId} onValueChange={setWorkspaceId}>
+          <SelectTrigger className="w-full lg:w-56" aria-label="Lọc theo workspace">
+            <SelectValue placeholder="Workspace" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tất cả workspace</SelectItem>
+            {workspaces.map((workspace) => (
+              <SelectItem key={workspace._id} value={workspace._id}>{workspace.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={role} onValueChange={setRole}>
+          <SelectTrigger className="w-full lg:w-48" aria-label="Lọc theo vai trò">
+            <SelectValue placeholder="Vai trò" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tất cả vai trò</SelectItem>
+            {Object.entries(roleLabels).map(([value, label]) => (
+              <SelectItem key={value} value={value}>{label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </section>
 
-      {/* Members List */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Danh sách thành viên ({filteredMembers.length})</CardTitle>
-          <CardDescription>
-            Quản lý thành viên và phân quyền trong workspace
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-0">
-          {filteredMembers.length === 0 ? (
-            <section className="text-center py-12">
-              <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">
-                Không tìm thấy thành viên
-              </h3>
-              <p className="text-muted-foreground mb-4">
-                Thử thay đổi bộ lọc hoặc mời thành viên mới
-              </p>
-              <InviteMemberDialog />
-            </section>
-          ) : (
-            <section>
-              {isLoading ? (
-                <MembersSkeleton />
-              ) : (
-                <section className="divide-y">
-                  {filteredMembers.map((member) => (
-                    <section
-                      key={member.id}
-                      className="p-4 hover:bg-muted/50 transition-colors"
-                    >
-                      <section className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                        <section className="flex items-center gap-4">
-                          <Avatar className="h-12 w-12">
-                            <AvatarImage
-                              src={member.avatar || "/placeholder.svg"}
-                              alt={member.name}
-                            />
-                            <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
-                              {member.name.charAt(0)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <section className="flex-1">
-                            <section className="flex items-center gap-2 mb-1">
-                              <h3 className="font-medium">{member.name}</h3>
-                              {getRoleIcon(member.role)}
-                              <span className="ml-auto sm:ml-0">
-                                {getStatusBadge(member.status)}
-                              </span>
-                            </section>
-                            <p className="text-sm text-muted-foreground">
-                              {member.email}
-                            </p>
-                            <span className="mt-2 whitespace-pre-wrap text-xs text-muted-foreground">
-                              <div className="inline-flex h-4 items-end">
-                                <Calendar className="inline-block h-3 w-3" />
-                              </div>
-                              <span className="ml-1">
-                                Tham gia {member.joinedAt}
-                              </span>
-                              <span className="mx-1"></span>
-                              <div className="inline-flex h-4 items-end">
-                                <Activity className="inline-block h-3 w-3" />
-                              </div>
-                              <span className="ml-1">
-                                Hoạt động {member.lastActive}
-                              </span>
-                            </span>
-                          </section>
-                        </section>
-
-                        <section className="flex items-center justify-between gap-4">
-                          <section className="sm:text-right text-sm">
-                            <p className="font-medium">
-                              {getRoleText(member.role)}
-                            </p>
-                            <p className="text-muted-foreground">
-                              {member.boardsCount} bảng •{" "}
-                              {member.workspacesCount} workspace
-                            </p>
-                          </section>
-
-                          <section className="flex items-center gap-2">
-                            <MemberDetailsDialog
-                              member={member}
-                              trigger={
-                                <Button
-                                  className="leading-1.5 text-xs font-normal"
-                                  variant="outline"
-                                  size="sm"
-                                >
-                                  Chi tiết
-                                </Button>
-                              }
-                            />
-
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-8 w-8 p-0"
-                                >
-                                  <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem>
-                                  <Settings className="h-4 w-4 mr-2" />
-                                  Chỉnh sửa quyền
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                  <Mail className="h-4 w-4 mr-2" />
-                                  Gửi lời mời lại
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem className="text-destructive">
-                                  Xóa khỏi workspace
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </section>
-                        </section>
-                      </section>
-                    </section>
-                  ))}
-                </section>
-              )}
-            </section>
-          )}
-        </CardContent>
-      </Card>
+      {workspaces.length === 0 ? (
+        <EmptyState title="Chưa có workspace" description="Tham gia một workspace để xem directory thành viên." />
+      ) : visibleWorkspaces.length === 0 ? (
+        <EmptyState title="Không tìm thấy thành viên" description="Hãy thử thay đổi từ khóa hoặc bộ lọc." />
+      ) : (
+        <div className="space-y-5">
+          {visibleWorkspaces.map((workspace) => (
+            <Card key={workspace._id}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <span className={`h-3 w-3 rounded-full ${workspace.color || "bg-primary"}`} />
+                  {workspace.name}
+                </CardTitle>
+                <CardDescription>{workspace.members.length} kết quả</CardDescription>
+              </CardHeader>
+              <CardContent className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                {workspace.members.map((member) => (
+                  <article key={member._id} className="flex items-center gap-3 rounded-lg border p-3">
+                    <Avatar className="h-11 w-11">
+                      <AvatarImage src={member.avatar?.url} alt={member.full_name} />
+                      <AvatarFallback>{member.full_name?.charAt(0)?.toUpperCase() || "U"}</AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-medium">{member.full_name}</p>
+                      <p className="truncate text-xs text-muted-foreground">{member.email}</p>
+                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                        <Badge variant="secondary">{roleLabels[member.role] || member.role}</Badge>
+                        <span className="text-xs text-muted-foreground">{member.boardsCount} bảng</span>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </>
+  );
+}
+
+function SummaryCard({ icon, label, value }) {
+  return (
+    <Card>
+      <CardContent className="flex items-center gap-3 p-4">
+        <div className="rounded-lg bg-primary/10 p-2 text-primary">{icon}</div>
+        <div>
+          <p className="text-xs text-muted-foreground">{label}</p>
+          <p className="text-2xl font-bold">{value}</p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function EmptyState({ title, description }) {
+  return (
+    <Card className="border-dashed">
+      <CardContent className="py-12 text-center">
+        <Users className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
+        <h2 className="font-semibold">{title}</h2>
+        <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+      </CardContent>
+    </Card>
   );
 }
 

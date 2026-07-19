@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { Sparkles } from "lucide-react";
 
 function AILoader() {
@@ -17,7 +17,7 @@ function AILoader() {
       setTextIndex((prev) => (prev + 1) % loadingTexts.length);
     }, 2500);
     return () => clearInterval(timer);
-  }, []);
+  }, [loadingTexts.length]);
 
   return (
     <div className="flex flex-col items-center justify-center py-12 space-y-6">

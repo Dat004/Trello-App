@@ -36,7 +36,7 @@ import { useAuthStore } from "@/store";
 import BoardsInWorkspaceDialog from "../Dialogs/BoardsInWorkspaceDialog";
 import SettingWorkspaceDialog from "../Dialogs/SettingWorkspaceDialog";
 
-import { useHandleJoinRequest, useWorkspaceJoinRequests } from "@/features/workspaces/api/useWorkspaceMembers";
+import { useHandleJoinRequest } from "@/features/workspaces/api/useWorkspaceMembers";
 import { useDeleteWorkspace } from "@/features/workspaces/api/useWorkspacesList";
 
 function WorkspaceItem({ workspace }) {

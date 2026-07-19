@@ -10,7 +10,7 @@ import { useAuthStore } from "@/store";
 
 function Home() {
   const { user } = useAuthStore();
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery] = useState("");
 
   return (
     <div className="space-y-6 pb-12 animate-fade-in">

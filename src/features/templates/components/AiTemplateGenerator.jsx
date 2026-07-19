@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import {
   Bot,
   MousePointer2,
@@ -64,7 +64,7 @@ function AiTemplateGenerator() {
       } else {
         addToast({ type: "error", title: res?.data?.message || "AI gặp chút sự cố, hãy thử lại!" });
       }
-    } catch (err) {
+    } catch {
       addToast({ type: "error", title: "Mất kết nối với AI Lab" });
     } finally {
       setIsLoading(false);

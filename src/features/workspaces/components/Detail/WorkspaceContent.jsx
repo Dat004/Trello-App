@@ -29,7 +29,7 @@ export default function WorkspaceContent() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { workspace, isMember, readOnly } = useWorkspaceContext();
+  const { workspace, readOnly } = useWorkspaceContext();
   
   // Setup Realtime Scoped
   useWorkspaceSocket(workspace._id);
@@ -55,7 +55,7 @@ export default function WorkspaceContent() {
 
     const res = await handleJoinRequest(requestId, { status: "accepted" });
     if (res?.success) {
-      queryClient.invalidateQueries(WORKSPACE_KEYS.detail(workspace._id));
+      queryClient.invalidateQueries({ queryKey: WORKSPACE_KEYS.detail(workspace._id) });
     }
   }
 
@@ -64,7 +64,7 @@ export default function WorkspaceContent() {
 
     const res = await handleJoinRequest(requestId, { status: "declined" });
     if (res?.success) {
-      queryClient.invalidateQueries(WORKSPACE_KEYS.detail(workspace._id));
+      queryClient.invalidateQueries({ queryKey: WORKSPACE_KEYS.detail(workspace._id) });
     }
   }
 

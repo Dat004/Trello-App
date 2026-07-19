@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { motion } from "framer-motion";
 import { ArrowLeft, Bot, ChevronRight, Layout, Loader2 } from "lucide-react";
 
 import { useWorkspacesList } from "@/features/workspaces/api/useWorkspacesList";
@@ -44,15 +43,15 @@ function CreateBoardStep({ template, onBack, onCreated }) {
       });
 
       if (res?.data?.success) {
-        queryClient.invalidateQueries(BOARD_KEYS.all);
+        queryClient.invalidateQueries({ queryKey: BOARD_KEYS.all });
         if (workspaceId) {
-          queryClient.invalidateQueries(WORKSPACE_KEYS.detail(workspaceId));
+          queryClient.invalidateQueries({ queryKey: WORKSPACE_KEYS.detail(workspaceId) });
         }
         onCreated(res.data.data.board);
       } else {
         addToast({ type: "error", title: res?.data?.message || "Lỗi tạo bảng" });
       }
-    } catch (err) {
+    } catch {
       addToast({ type: "error", title: "Lỗi kết nối server" });
     } finally {
       setIsCreating(false);

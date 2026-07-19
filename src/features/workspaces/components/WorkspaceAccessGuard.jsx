@@ -1,7 +1,8 @@
+/* eslint-disable react-refresh/only-export-components */
 import RequestAccessDialog from "@/Components/RequestAccessDialog";
 import { useWorkspaceDetail } from "@/features/workspaces/api/useWorkspaceDetail";
 import { Loader2 } from "lucide-react";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext } from "react";
 import { useParams } from "react-router-dom";
 
 const WorkspaceContext = createContext(null);
@@ -17,8 +18,6 @@ export const useWorkspaceContext = () => {
 export function WorkspaceAccessGuard({ children }) {
   const { id } = useParams();
   const { data, isLoading, error } = useWorkspaceDetail(id);
-  const [showRequestDialog, setShowRequestDialog] = useState(true);
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen w-full">
@@ -59,7 +58,7 @@ export function WorkspaceAccessGuard({ children }) {
       <RequestAccessDialog
         entity={workspace}
         type="workspace"
-        open={showRequestDialog}
+        open
         onOpenChange={(open) => !open && window.history.back()}
         hasPendingRequest={has_pending_request}
         requested_at={requested_at}

@@ -1,4 +1,5 @@
 import { Building2, Users, Trello, Star } from "lucide-react";
+import { createElement } from "react";
 
 import {
   Card,
@@ -51,18 +52,18 @@ function WorkspaceStats({ workspaces }) {
   return (
     <div className="animate-slide-in-up">
       <section className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {stats.map(({ label, value, icon: Icon, bg, iconColor }) => (
-          <Card key={label}>
+        {stats.map((stat) => (
+          <Card key={stat.label}>
             <CardContent className="p-4">
               <section className="flex items-center gap-3">
                 <div
-                  className={`h-10 w-10 rounded-lg ${bg} flex items-center justify-center`}
+                  className={`h-10 w-10 rounded-lg ${stat.bg} flex items-center justify-center`}
                 >
-                  <Icon className={`h-5 w-5 ${iconColor}`} />
+                  {createElement(stat.icon, { className: `h-5 w-5 ${stat.iconColor}` })}
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">{label}</p>
-                  <p className="text-2xl font-bold">{value}</p>
+                  <p className="text-sm text-muted-foreground">{stat.label}</p>
+                  <p className="text-2xl font-bold">{stat.value}</p>
                 </div>
               </section>
             </CardContent>

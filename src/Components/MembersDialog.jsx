@@ -171,7 +171,7 @@ function MembersDialog({
                     >
                     <div className="relative flex-shrink-0">
                     <Avatar className="h-10 w-10 ring-2 ring-background">
-                        <AvatarImage src={member.user.avatar.url} alt={member.user.full_name} />
+                        <AvatarImage src={member.user.avatar?.url || ""} alt={member.user.full_name} />
                         <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground font-semibold text-sm">
                           {member.user.full_name.charAt(0).toUpperCase()}
                         </AvatarFallback>

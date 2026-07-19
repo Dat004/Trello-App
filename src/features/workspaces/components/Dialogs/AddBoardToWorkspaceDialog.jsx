@@ -47,8 +47,8 @@ function AddBoardToWorkspaceDialog({ trigger, workspaceId }) {
   const { mutateAsync: addBoardsToWorkspace, isPending: isAdding } = useMutation({
     mutationFn: (data) => workspaceApi.addBoardsToWorkspace(workspaceId, data),
     onSuccess: () => {
-         queryClient.invalidateQueries(WORKSPACE_BOARD_KEYS.list(workspaceId));
-         queryClient.invalidateQueries(BOARD_KEYS.all);
+         queryClient.invalidateQueries({ queryKey: WORKSPACE_BOARD_KEYS.list(workspaceId) });
+         queryClient.invalidateQueries({ queryKey: BOARD_KEYS.all });
     }
   });
   

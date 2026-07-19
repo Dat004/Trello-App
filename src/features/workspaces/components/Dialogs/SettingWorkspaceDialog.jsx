@@ -45,7 +45,7 @@ function SettingWorkspaceDialog({ workspace, trigger }) {
 
   // React Query Hooks
   const { mutate: updateWorkspace, isLoading: isUpdating } = useUpdateWorkspace();
-  const { mutate: deleteWorkspace, isLoading: isDeleting } = useDeleteWorkspace();
+  const { mutate: deleteWorkspace } = useDeleteWorkspace();
   const members = workspace.members || [];
   const { mutate: updateMemberRole } = useUpdateMemberRole(workspace._id);
   const { mutate: kickMember } = useKickMember(workspace._id);

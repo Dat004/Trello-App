@@ -87,7 +87,11 @@ function UploadForm({ boardId, cardId, onUploadSuccess, onCancel }) {
 
     try {
       // 1. Upload lên Cloudinary
-      const result = await uploadService.upload(selectedFile, UPLOAD_INTENT.CARD_ATTACHMENTS);
+      const result = await uploadService.upload(
+        selectedFile,
+        UPLOAD_INTENT.CARD_ATTACHMENTS,
+        cardId
+      );
       
       if (result.error) {
         addToast({

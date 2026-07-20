@@ -1,8 +1,13 @@
 import { uploadApi } from "@/api/upload";
 
 export const uploadService = {
-  async upload(file, intent) {
-    const signRes = await uploadApi.getSignature({ intent });
+  async upload(file, intent, contextId) {
+    const payload = { intent };
+    if (contextId) {
+      payload.contextId = contextId;
+    }
+
+    const signRes = await uploadApi.getSignature(payload);
 
     const {
       cloudName,
@@ -18,7 +23,7 @@ export const uploadService = {
     formData.append("api_key", apiKey);
     formData.append("timestamp", timestamp);
     formData.append("signature", signature);
-    
+
     if (params.folder) formData.append("folder", params.folder);
     if (params.eager) formData.append("eager", params.eager);
 
@@ -31,4 +36,3 @@ export const uploadService = {
     return res.data;
   },
 };
-

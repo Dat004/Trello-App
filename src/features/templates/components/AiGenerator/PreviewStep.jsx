@@ -1,3 +1,4 @@
+import { motion as Motion } from "framer-motion";
 import { Bot, ChevronRight, ListTodo, RefreshCw, Tag } from "lucide-react";
 import { itemScale, staggerContainer } from "./variants";
 import { Badge, Button } from "@/Components/UI";
@@ -6,7 +7,7 @@ import { cn } from "@/lib/utils";
 function PreviewStep({ template, onRegenerate, onUse, isRegenerating }) {
   return (
     <div className="space-y-4">
-      <motion.div 
+      <Motion.div 
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         className="group relative overflow-hidden rounded-2xl border border-purple-200 dark:border-purple-800 bg-gradient-to-br from-white to-purple-50/30 dark:from-background dark:to-purple-950/10 shadow-sm"
@@ -27,7 +28,7 @@ function PreviewStep({ template, onRegenerate, onUse, isRegenerating }) {
         </div>
 
         <div className="h-1 w-full bg-muted overflow-hidden">
-          <motion.div 
+          <Motion.div 
             initial={{ x: "-100%" }}
             animate={{ x: "0%" }}
             transition={{ duration: 1, ease: "easeOut" }}
@@ -35,14 +36,14 @@ function PreviewStep({ template, onRegenerate, onUse, isRegenerating }) {
           />
         </div>
 
-        <motion.div 
+        <Motion.div 
           variants={staggerContainer}
           initial="hidden"
           animate="show"
           className="p-5 grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[40vh] overflow-y-auto custom-scrollbar bg-slate-50/50 dark:bg-slate-950/20"
         >
           {template.lists?.map((list, listIdx) => (
-            <motion.div 
+            <Motion.div 
               key={list._id || listIdx}
               variants={itemScale}
               className="bg-background rounded-xl border border-border/60 p-4 shadow-sm hover:border-purple-300 dark:hover:border-purple-700 transition-colors"
@@ -91,12 +92,12 @@ function PreviewStep({ template, onRegenerate, onUse, isRegenerating }) {
                   </div>
                 ))}
               </div>
-            </motion.div>
+            </Motion.div>
           ))}
-        </motion.div>
-      </motion.div>
+        </Motion.div>
+      </Motion.div>
 
-      <motion.div 
+      <Motion.div 
         initial={{ y: 10, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.3 }}
@@ -119,7 +120,7 @@ function PreviewStep({ template, onRegenerate, onUse, isRegenerating }) {
           Tiếp tục: Thiết lập Board
           <ChevronRight className="h-5 w-5" />
         </Button>
-      </motion.div>
+      </Motion.div>
     </div>
   );
 }

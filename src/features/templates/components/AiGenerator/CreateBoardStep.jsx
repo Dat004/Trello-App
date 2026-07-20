@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { motion as Motion } from "framer-motion";
 import { ArrowLeft, Bot, ChevronRight, Layout, Loader2 } from "lucide-react";
 
 import { useWorkspacesList } from "@/features/workspaces/api/useWorkspacesList";
@@ -59,7 +60,7 @@ function CreateBoardStep({ template, onBack, onCreated }) {
   };
 
   return (
-    <motion.form 
+    <Motion.form 
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       onSubmit={handleCreate} 
@@ -144,7 +145,7 @@ function CreateBoardStep({ template, onBack, onCreated }) {
           )}
         </Button>
       </div>
-    </motion.form>
+    </Motion.form>
   );
 }
 

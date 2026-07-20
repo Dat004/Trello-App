@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion as Motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
 
 function AILoader() {
@@ -22,7 +22,7 @@ function AILoader() {
   return (
     <div className="flex flex-col items-center justify-center py-12 space-y-6">
       <div className="relative">
-        <motion.div
+        <Motion.div
           animate={{
             scale: [1, 1.2, 1],
             rotate: [0, 360],
@@ -35,18 +35,18 @@ function AILoader() {
           }}
           className="w-20 h-20 bg-gradient-to-tr from-purple-500 via-pink-500 to-orange-400 blur-xl opacity-30 absolute -inset-2"
         />
-        <motion.div
+        <Motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
           className="relative w-16 h-16 bg-background rounded-2xl border-2 border-purple-500/20 flex items-center justify-center shadow-2xl"
         >
           <Sparkles className="w-8 h-8 text-purple-600 animate-pulse" />
-        </motion.div>
+        </Motion.div>
       </div>
       
       <div className="text-center space-y-2">
         <AnimatePresence mode="wait">
-          <motion.p
+          <Motion.p
             key={textIndex}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -54,11 +54,11 @@ function AILoader() {
             className="text-sm font-medium text-purple-700 dark:text-purple-300"
           >
             {loadingTexts[textIndex]}
-          </motion.p>
+          </Motion.p>
         </AnimatePresence>
         <div className="flex justify-center gap-1">
           {[0, 1, 2].map((i) => (
-            <motion.div
+            <Motion.div
               key={i}
               animate={{ opacity: [0.3, 1, 0.3] }}
               transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}

@@ -1,9 +1,10 @@
+import { motion as Motion } from "framer-motion";
 import { Button, Label, TextArea } from "@/Components/UI";
 import { Bot, Sparkles, Wand2 } from "lucide-react";
 
 function PromptStep({ prompt, setPrompt, isLoading, onGenerate, onCancel }) {
   return (
-    <motion.form 
+    <Motion.form 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       onSubmit={onGenerate} 
@@ -48,7 +49,7 @@ function PromptStep({ prompt, setPrompt, isLoading, onGenerate, onCancel }) {
           Bắt đầu thiết kế với AI
         </Button>
       </div>
-    </motion.form>
+    </Motion.form>
   );
 }
 

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion as Motion } from "framer-motion";
 import {
   Bot,
   MousePointer2,
@@ -99,7 +99,7 @@ function AiTemplateGenerator() {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <motion.div
+        <Motion.div
           whileHover={{ y: -4, transition: { duration: 0.2 } }}
           whileTap={{ scale: 0.98 }}
         >
@@ -133,7 +133,7 @@ function AiTemplateGenerator() {
               </Button>
             </CardContent>
           </Card>
-        </motion.div>
+        </Motion.div>
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-[700px] border-none shadow-2xl p-0 overflow-hidden bg-background/95 backdrop-blur-xl rounded-[2rem]">
@@ -161,7 +161,7 @@ function AiTemplateGenerator() {
           <div className="relative overflow-hidden min-h-[400px]">
             <AnimatePresence mode="wait" custom={direction}>
               {isLoading ? (
-                <motion.div
+                <Motion.div
                   key="loader"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -169,10 +169,10 @@ function AiTemplateGenerator() {
                   className="absolute inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center rounded-2xl"
                 >
                   <AILoader />
-                </motion.div>
+                </Motion.div>
               ) : null}
 
-              <motion.div
+              <Motion.div
                 key={step}
                 custom={direction}
                 variants={slideVariants}
@@ -207,7 +207,7 @@ function AiTemplateGenerator() {
                     onCreated={handleBoardCreated}
                   />
                 )}
-              </motion.div>
+              </Motion.div>
             </AnimatePresence>
           </div>
         </div>

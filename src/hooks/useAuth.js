@@ -4,7 +4,13 @@ import { useNavigate } from "react-router-dom";
 import { authApi } from "@/api/auth";
 import { userApi } from "@/api/user";
 import { UserToast } from "@/context/ToastContext";
-import { useAuthStore, useUIStore } from "@/store";
+import { queryClient } from "@/lib/react-query";
+import { useAuthStore, useFavoritesStore, useUIStore } from "@/store";
+
+const clearSessionCaches = () => {
+  useFavoritesStore.getState().clearFavorites();
+  queryClient.clear();
+};
 
 export const useAuthInit = () => {
   const setUser = useAuthStore((s) => s.setUser);
@@ -31,6 +37,7 @@ export const useAuthInit = () => {
       } finally {
         if (useAuthStore.getState().loading) {
           clearUser();
+          clearSessionCaches();
         }
       }
     };
@@ -48,6 +55,7 @@ export const useAuth = () => {
   const duration = 3000;
 
   const handleSuccess = (user, message, description) => {
+    clearSessionCaches();
     setUser(user);
 
     addToast({
@@ -112,6 +120,8 @@ export const useAuth = () => {
         return;
       }
       clearUser();
+      clearSessionCaches();
+      navigate("/login");
     } catch (error) {
       handleError(error.response?.data?.message || "Đăng xuất thất bại");
     }

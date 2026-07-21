@@ -104,7 +104,9 @@ Playwright coverage:
 - `e2e/smoke.spec.js` — guest UI (login/register headings, 404, protected redirect) with a mocked unauthenticated session
 - `e2e/auth.spec.js` — real login/logout/register against the backend using seeded demo accounts
 
-Authenticated E2E needs MongoDB running, the backend dependencies installed, and demo users seeded (the Playwright `globalSetup` runs `npm run seed:demo` in `../BE` automatically unless `E2E_SKIP_SEED=1`).
+Frontend CI runs **smoke only** (`npm run e2e:smoke`) because Actions checks out this repo alone (no sibling `../BE`). Full `npm run e2e` / `e2e:auth` needs a local layout with `FE` and `BE` side by side, MongoDB, and demo seed.
+
+Authenticated E2E needs MongoDB running, the backend dependencies installed, and demo users seeded (the Playwright `globalSetup` runs `npm run seed:demo` in `../BE` automatically unless `E2E_SKIP_SEED=1`). When `../BE` is missing, seed and auth specs are skipped automatically.
 
 Chromium needs to be installed before running Playwright for the first time:
 

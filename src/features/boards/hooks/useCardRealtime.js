@@ -33,6 +33,49 @@ export const useCardRealtime = (cardId) => {
             }
         };
 
+        const handleCommentUpdated = (updatedComment) => {
+            // Patch the cache directly so other tabs reflect the edit immediately,
+            // even if a background refetch is skipped.
+            queryClient.setQueryData(CARD_KEYS.comments(cardId), (old) => {
+                if (!old?.pages) return old;
+                return {
+                    ...old,
+                    pages: old.pages.map((page) => ({
+                        ...page,
+                        data: {
+                            ...page.data,
+                            comments: (page.data?.comments || []).map((c) =>
+                                c._id === updatedComment._id
+                                    ? { ...c, ...updatedComment }
+                                    : c
+                            ),
+                        },
+                    })),
+                };
+            });
+
+            if (updatedComment.parent_comment) {
+                queryClient.setQueryData(
+                    CARD_KEYS.replies(updatedComment.parent_comment),
+                    (old) => {
+                        if (!Array.isArray(old)) return old;
+                        return old.map((c) =>
+                            c._id === updatedComment._id
+                                ? { ...c, ...updatedComment }
+                                : c
+                        );
+                    }
+                );
+            }
+
+            queryClient.invalidateQueries({ queryKey: CARD_KEYS.comments(cardId) });
+            if (updatedComment.parent_comment) {
+                queryClient.invalidateQueries({
+                    queryKey: CARD_KEYS.replies(updatedComment.parent_comment),
+                });
+            }
+        };
+
         const handleCommentDeleted = (data) => {
             queryClient.invalidateQueries({ queryKey: CARD_KEYS.comments(cardId) });
             if (data.parentId) {
@@ -90,6 +133,7 @@ export const useCardRealtime = (cardId) => {
 
         // --- Listeners ---
         socket.on(SOCKET_EVENTS.COMMENT_ADDED, handleCommentAdded);
+        socket.on(SOCKET_EVENTS.COMMENT_UPDATED, handleCommentUpdated);
         socket.on(SOCKET_EVENTS.COMMENT_DELETED, handleCommentDeleted);
         socket.on(SOCKET_EVENTS.CARD_PRESENCE_UPDATE, handlePresenceUpdate);
         socket.on(SOCKET_EVENTS.CARD_TYPING_UPDATE, handleTypingUpdate);
@@ -101,6 +145,7 @@ export const useCardRealtime = (cardId) => {
         return () => {
             console.log(`[CardRealtime] Leaving room for card: ${cardId}`);
             socket.off(SOCKET_EVENTS.COMMENT_ADDED, handleCommentAdded);
+            socket.off(SOCKET_EVENTS.COMMENT_UPDATED, handleCommentUpdated);
             socket.off(SOCKET_EVENTS.COMMENT_DELETED, handleCommentDeleted);
             socket.off(SOCKET_EVENTS.CARD_PRESENCE_UPDATE, handlePresenceUpdate);
             socket.off(SOCKET_EVENTS.CARD_TYPING_UPDATE, handleTypingUpdate);

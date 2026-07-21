@@ -50,13 +50,18 @@ function CardComments({ card, boardId, board }) {
       : null;
 
     return comments.map((comment) => {
+      const authorId = (comment.author?._id || comment.author)?.toString();
       const { canDelete } = resolvePermissions({
         userId: user._id.toString(),
         workspace,
         board,
         entity: { ownerId: comment.author?._id },
       });
-      return { ...comment, canDelete };
+      return {
+        ...comment,
+        canDelete,
+        canEdit: authorId === user._id.toString(),
+      };
     });
   }, [comments, board, user, workspaces]);
 
@@ -129,6 +134,30 @@ function CardComments({ card, boardId, board }) {
       await deleteCommentAsync({ commentId });
   };
 
+  const {
+    mutateAsync: updateCommentAsync,
+    isPending: isUpdatingComment,
+    variables: updateVars,
+  } = useMutation({
+    mutationFn: ({ commentId, data }) =>
+      commentsApi.updateComment(boardId, card._id, commentId, data),
+    onSuccess: (_res, variables) => {
+      queryClient.invalidateQueries({ queryKey: CARD_KEYS.comments(card._id) });
+      if (variables.parentCommentId) {
+        queryClient.invalidateQueries({
+          queryKey: CARD_KEYS.replies(variables.parentCommentId),
+        });
+      }
+    },
+    onError: (error) => {
+      console.error("Error updating comment:", error);
+    },
+  });
+
+  const handleEditComment = async (commentId, data, parentCommentId) => {
+    await updateCommentAsync({ commentId, data, parentCommentId });
+  };
+
   return (
     <div className="grid gap-4">
       <div className="flex items-center justify-between">
@@ -160,12 +189,16 @@ function CardComments({ card, boardId, board }) {
                   key={comment._id}
                   comment={comment}
                   onReply={handleReply}
+                  onEdit={handleEditComment}
                   canDelete={comment.canDelete}
+                  canEdit={comment.canEdit}
                   onDelete={handleDeleteComment}
                   isDeleting={isDeletingComment && deleteVars?.commentId === comment._id}
+                  isEditing={isUpdatingComment && updateVars?.commentId === comment._id}
                   boardId={boardId}
                   cardId={card._id}
                   userId={user?._id}
+                  user={user}
                   isAdminOrOwner={isAdminOrOwner}
                 />
               ))}

@@ -24,4 +24,10 @@ export const commentsApi = {
             data: data || {},
         });
     },
+    async updateComment(boardId, cardId, commentId, data) {
+        return await axiosClient.patch(
+            `${boardsRoute}/${boardId}${cardsRoute}/${cardId}${commentsRoute}/${commentId}`,
+            data
+        );
+    },
 };

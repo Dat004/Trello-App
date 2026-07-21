@@ -82,6 +82,32 @@ export const useDeleteComment = () => {
     return { ...mutation, isLoading: mutation.isPending };
 };
 
+export const useUpdateComment = () => {
+    const queryClient = useQueryClient();
+    const { addToast } = UserToast();
+    const mutation = useMutation({
+        mutationFn: ({ boardId, cardId, commentId, data }) =>
+            commentsApi.updateComment(boardId, cardId, commentId, data),
+        onSuccess: (_data, variables) => {
+            queryClient.invalidateQueries({ queryKey: CARD_KEYS.comments(variables.cardId) });
+            if (variables.parentCommentId) {
+                queryClient.invalidateQueries({
+                    queryKey: CARD_KEYS.replies(variables.parentCommentId),
+                });
+            }
+            addToast({ type: "success", title: "Đã cập nhật bình luận" });
+        },
+        onError: (err) => {
+            addToast({
+                type: "error",
+                title: err.response?.data?.message || "Không thể cập nhật bình luận",
+            });
+        },
+    });
+
+    return { ...mutation, isLoading: mutation.isPending };
+};
+
 // --- ATTACHMENTS ---
 
 export const useCardAttachments = (boardId, cardId) => {

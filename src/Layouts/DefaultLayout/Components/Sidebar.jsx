@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import {
+  Archive,
   Briefcase,
   ChevronLeft,
   ChevronRight,
@@ -17,7 +18,7 @@ import { useFavoritesStore, useUIStore } from "@/store";
 import ThemeToggle from "@/Components/ThemeToggle";
 import { useFavorites } from "@/hooks";
 import { cn } from "@/lib/utils";
-import { boardDetailPath, boardListPath } from "@/config/paths";
+import { archivedBoardsPath, boardDetailPath, boardListPath } from "@/config/paths";
 import CreateWorkspaceDialog from "@/features/workspaces/components/Dialogs/CreateWorkspaceDialog";
 
 function Sidebar() {
@@ -107,6 +108,15 @@ function Sidebar() {
               >
                 <Trello className="h-4 w-4 shrink-0" />
                 {!collapsed && <span className="ml-3 truncate">Bảng</span>}
+              </Button>
+              <Button
+                variant={isActive(archivedBoardsPath) ? "secondary" : "ghost"}
+                className={cn("w-full justify-start", collapsed ? "px-2 justify-center" : "px-3")}
+                onClick={() => navigate(archivedBoardsPath)}
+                title="Đã lưu trữ"
+              >
+                <Archive className="h-4 w-4 shrink-0" />
+                {!collapsed && <span className="ml-3 truncate">Đã lưu trữ</span>}
               </Button>
             </nav>
 

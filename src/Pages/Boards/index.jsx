@@ -1,6 +1,7 @@
-import { Grid3x3, List, Search, Star, X } from "lucide-react";
+import { Archive, Grid3x3, List, Search, Star, X } from "lucide-react";
 import { useMemo, useState } from "react";
 
+import { archivedBoardsPath } from "@/config/paths";
 import BoardFormDialog from "@/features/boards/components/Dialogs/BoardFormDialog";
 import CreateNewBoard from "@/features/boards/components/List/CreateNewBoard";
 import BoardCard from "@/features/boards/components/List/BoardCard";
@@ -52,7 +53,7 @@ function Boards() {
             Quản lý và tìm kiếm tất cả bảng công việc của bạn
           </p>
         </section>
-        <section className="sm:ml-auto">
+        <section className="sm:ml-auto flex flex-wrap gap-2">
           <BoardFormDialog />
         </section>
       </div>
@@ -80,6 +81,17 @@ function Boards() {
             </div>
 
             <div className="flex items-center flex-nowrap gap-2">
+              <Button
+                isLink
+                to={archivedBoardsPath}
+                variant="outline"
+                size="sm"
+                className="gap-2 h-10"
+              >
+                <Archive className="h-4 w-4" />
+                <span className="hidden sm:inline">Đã lưu trữ</span>
+              </Button>
+
               <Button
                 variant={filterStarred ? "secondary" : "outline"}
                 size="sm"

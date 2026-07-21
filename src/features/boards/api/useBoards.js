@@ -18,6 +18,17 @@ export function useMyBoards() {
     });
 }
 
+export function useArchivedBoards() {
+    return useQuery({
+        queryKey: BOARD_KEYS.archived,
+        queryFn: async () => {
+            const res = await boardApi.getArchivedBoards();
+            return unwrapApiData(res, "Failed to fetch archived boards").boards || [];
+        },
+        staleTime: 1000 * 60 * 5,
+    });
+}
+
 export function useCreateBoard() {
     const queryClient = useQueryClient();
     const { addToast } = UserToast();
@@ -113,6 +124,7 @@ export function useArchiveBoard() {
             }
             removeFavoriteBoard(variables.id);
             queryClient.invalidateQueries({ queryKey: BOARD_KEYS.all });
+            queryClient.invalidateQueries({ queryKey: BOARD_KEYS.archived });
             queryClient.invalidateQueries({ queryKey: BOARD_KEYS.workspaceLists });
             queryClient.removeQueries({ queryKey: BOARD_KEYS.detail(variables.id) });
             addToast({ type: "success", title: "Đã lưu trữ bảng" });
@@ -121,6 +133,33 @@ export function useArchiveBoard() {
             addToast({
                 type: "error",
                 title: getApiErrorMessage(error, "Không thể lưu trữ bảng"),
+            });
+        },
+    });
+
+    return { ...mutation, isLoading: mutation.isPending };
+}
+
+export function useUnarchiveBoard() {
+    const queryClient = useQueryClient();
+    const { addToast } = UserToast();
+
+    const mutation = useMutation({
+        mutationFn: ({ id }) => boardApi.unarchive(id),
+        onSuccess: (res, variables) => {
+            if (!res.data?.success) {
+                throw new Error(res.data?.message || "Không thể khôi phục bảng");
+            }
+            queryClient.invalidateQueries({ queryKey: BOARD_KEYS.all });
+            queryClient.invalidateQueries({ queryKey: BOARD_KEYS.archived });
+            queryClient.invalidateQueries({ queryKey: BOARD_KEYS.workspaceLists });
+            queryClient.invalidateQueries({ queryKey: BOARD_KEYS.detail(variables.id) });
+            addToast({ type: "success", title: "Đã khôi phục bảng" });
+        },
+        onError: (error) => {
+            addToast({
+                type: "error",
+                title: getApiErrorMessage(error, "Không thể khôi phục bảng"),
             });
         },
     });

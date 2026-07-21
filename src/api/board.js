@@ -11,6 +11,9 @@ export const boardApi = {
   async getMyBoards() {
     return await axiosClient.get(boardsRoute);
   },
+  async getArchivedBoards() {
+    return await axiosClient.get(`${boardsRoute}/archived`);
+  },
   async getBoardsInWorkspace(workspaceId) {
     return await axiosClient.get(`${boardsRoute}${workspaceRoute}/${workspaceId}`);
   },
@@ -59,5 +62,16 @@ export const boardApi = {
   },
   async handleJoinRequest(boardId, requestId, data) {
     return await axiosClient.patch(`${boardsRoute}/${boardId}${joinRoute}/${requestId}`, data);
-  }
+  },
+
+  // LABELS
+  async createLabel(boardId, data) {
+    return await axiosClient.post(`${boardsRoute}/${boardId}/labels`, data);
+  },
+  async updateLabel(boardId, labelId, data) {
+    return await axiosClient.patch(`${boardsRoute}/${boardId}/labels/${labelId}`, data);
+  },
+  async deleteLabel(boardId, labelId) {
+    return await axiosClient.delete(`${boardsRoute}/${boardId}/labels/${labelId}`);
+  },
 };

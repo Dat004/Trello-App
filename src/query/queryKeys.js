@@ -3,6 +3,7 @@ const withId = (prefix, id) => [...prefix, id];
 export const queryKeys = {
   boards: {
     all: ["boards"],
+    archived: ["boards", "archived"],
     detail: (boardId) => ["board", boardId],
     workspaceLists: ["workspace-boards"],
     list: (workspaceId) => ["workspace-boards", workspaceId],

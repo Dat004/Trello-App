@@ -9,10 +9,14 @@ const paths = {
   members: "/members",
   board: "/board/:id",
   boards: "/boards",
+  archivedBoards: "/boards/archived",
   login: "/login",
+  forgotPassword: "/forgot-password",
+  resetPassword: "/reset-password/:token",
 };
 
 export const boardListPath = paths.boards;
+export const archivedBoardsPath = paths.archivedBoards;
 
 export const boardDetailPath = (boardId, cardId) => {
   const pathname = `/board/${boardId}`;

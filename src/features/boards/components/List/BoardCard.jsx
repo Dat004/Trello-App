@@ -10,7 +10,20 @@ import BoardActions from "./BoardActions";
 import { usePermissions } from "@/hooks";
 import { cn } from "@/lib/utils";
 
-function BoardCard({ index, board, view = "grid" }) {
+// Archived boards should not navigate to the board detail; wrapping them in a
+// Link also breaks the restore confirmation dialog (Radix trigger + anchor).
+function CardWrapper({ archived, boardId, className, children }) {
+  if (archived) {
+    return <div className={className}>{children}</div>;
+  }
+  return (
+    <Link to={boardDetailPath(boardId)} className={className}>
+      {children}
+    </Link>
+  );
+}
+
+function BoardCard({ index, board, view = "grid", archived = false }) {
   const { isBoardOwner, role, canDelete } = usePermissions({ board });
 
   const renderRoleBadge = () => {
@@ -36,8 +49,11 @@ function BoardCard({ index, board, view = "grid" }) {
   if (view === "grid") {
     return (
       <div {...animationProps}>
-        <Link to={boardDetailPath(board._id)} className="block h-full">
-          <Card className="group relative h-full cursor-pointer overflow-hidden border-none bg-card/60 backdrop-blur-sm transition-all duration-300 hover:shadow-2xl hover:shadow-primary/20 hover:-translate-y-2 ring-1 ring-border/50 hover:ring-primary/40">
+        <CardWrapper archived={archived} boardId={board._id} className="block h-full">
+          <Card className={cn(
+            "group relative h-full overflow-hidden border-none bg-card/60 backdrop-blur-sm transition-all duration-300 ring-1 ring-border/50",
+            !archived && "cursor-pointer hover:shadow-2xl hover:shadow-primary/20 hover:-translate-y-2 hover:ring-primary/40"
+          )}>
             {/* Gradient Header Overlay */}
             <div
               className={cn(
@@ -61,7 +77,7 @@ function BoardCard({ index, board, view = "grid" }) {
                   </section>
                 </CardTitle>
                 <div className="bg-background/80 backdrop-blur-md rounded-full shadow-sm translate-y-0">
-                  <BoardActions board={board} canDelete={canDelete} />
+                  <BoardActions board={board} canDelete={canDelete} archived={archived} />
                 </div>
               </div>
             </CardHeader>
@@ -83,7 +99,7 @@ function BoardCard({ index, board, view = "grid" }) {
               </div>
             </CardContent>
           </Card>
-        </Link>
+        </CardWrapper>
       </div>
     );
   }
@@ -91,10 +107,11 @@ function BoardCard({ index, board, view = "grid" }) {
   // --- VIEW: LIST ---
   return (
     <div {...animationProps}>
-      <Link to={boardDetailPath(board._id)}>
+      <CardWrapper archived={archived} boardId={board._id}>
         <div
           className={cn(
-            "bg-card border border-border rounded-lg p-3 cursor-pointer group flex items-center gap-4 transition-all hover:border-primary/50 hover:shadow-sm"
+            "bg-card border border-border rounded-lg p-3 group flex items-center gap-4 transition-all",
+            !archived && "cursor-pointer hover:border-primary/50 hover:shadow-sm"
           )}
         >
           <div
@@ -139,11 +156,11 @@ function BoardCard({ index, board, view = "grid" }) {
               </div>
 
               {/* Action Buttons */}
-              <BoardActions board={board} canDelete={canDelete} />
+              <BoardActions board={board} canDelete={canDelete} archived={archived} />
             </div>
           </div>
         </div>
-      </Link>
+      </CardWrapper>
     </div>
   );
 }

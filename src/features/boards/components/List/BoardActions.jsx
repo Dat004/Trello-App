@@ -1,4 +1,4 @@
-import { Archive, Edit, Loader2, MoreHorizontal, Star, Trash2 } from "lucide-react";
+import { Archive, Edit, Loader2, MoreHorizontal, RotateCcw, Star, Trash2 } from "lucide-react";
 
 import DeleteDialog from "@/Components/DeleteDialog";
 import {
@@ -9,15 +9,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/Components/UI";
-import { useArchiveBoard, useDeleteBoard } from "@/features/boards/api/useBoards";
+import {
+  useArchiveBoard,
+  useDeleteBoard,
+  useUnarchiveBoard,
+} from "@/features/boards/api/useBoards";
 import { useFavorites } from "@/hooks";
 import { cn } from "@/lib/utils";
 import BoardFormDialog from "../Dialogs/BoardFormDialog";
 
-const BoardActions = ({ board, canDelete }) => {
+const BoardActions = ({ board, canDelete, archived = false }) => {
   const { toggleBoardStar, isTogglingBoard } = useFavorites();
   const { mutateAsync: deleteBoard } = useDeleteBoard();
   const { mutate: archiveBoard, isLoading: isArchiving } = useArchiveBoard();
+  const { mutateAsync: unarchiveBoard, isLoading: isUnarchiving } = useUnarchiveBoard();
 
   const handleToggleStar = (e) => {
     e.preventDefault();
@@ -29,6 +34,40 @@ const BoardActions = ({ board, canDelete }) => {
   const handleDelete = async () => {
       await deleteBoard({ id: board._id, workspaceId: board.workspace });
   };
+
+  if (archived) {
+    return (
+      <div className="flex items-center gap-1">
+        <DeleteDialog
+          title="Khôi phục bảng này?"
+          description={`Bảng "${board.title}" sẽ xuất hiện lại trong danh sách bảng đang hoạt động.`}
+          onConfirm={() => unarchiveBoard({ id: board._id })}
+          confirmLabel="Khôi phục"
+          confirmVariant="default"
+          loadingLabel="Đang khôi phục..."
+          trigger={
+            <Button
+              size="sm"
+              variant="secondary"
+              className="h-8 gap-1.5 px-2.5"
+              disabled={isUnarchiving}
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+              aria-label={`Khôi phục bảng ${board.title}`}
+            >
+              {isUnarchiving ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <RotateCcw className="h-3.5 w-3.5" />
+              )}
+              <span className="text-xs font-medium">Khôi phục</span>
+            </Button>
+          }
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center gap-1">

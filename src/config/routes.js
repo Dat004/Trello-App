@@ -6,6 +6,7 @@ const Home = lazy(() => import("@/Pages/Home"));
 const Workspaces = lazy(() => import("@/Pages/Workspaces"));
 const Workspace = lazy(() => import("@/Pages/Workspace"));
 const Boards = lazy(() => import("@/Pages/Boards"));
+const ArchivedBoards = lazy(() => import("@/Pages/ArchivedBoards"));
 const Board = lazy(() => import("@/Pages/Board"));
 const Templates = lazy(() => import("@/Pages/Templates"));
 const Members = lazy(() => import("@/Pages/Members"));
@@ -36,6 +37,14 @@ const routes = [
     name: "Bảng làm việc",
     path: paths.boards,
     page: Boards,
+    layout: DefaultLayout,
+    auth: "protected",
+  },
+  {
+    id: 12,
+    name: "Bảng đã lưu trữ",
+    path: paths.archivedBoards,
+    page: ArchivedBoards,
     layout: DefaultLayout,
     auth: "protected",
   },

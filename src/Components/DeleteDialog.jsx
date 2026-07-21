@@ -10,12 +10,16 @@ import {
   DialogTrigger,
   Button,
 } from "./UI";
+import { cn } from "@/lib/utils";
 
 function DeleteDialog({
   title = "Bạn có chắc chắn không?",
   description = "Hành động này không thể hoàn tác. Dữ liệu sẽ bị xóa vĩnh viễn.",
   onConfirm,
   trigger,
+  confirmLabel = "Xóa ngay",
+  confirmVariant = "destructive",
+  loadingLabel = "Đang xử lý...",
 }) {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -37,8 +41,14 @@ function DeleteDialog({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-destructive/10 rounded-full">
-              <AlertTriangle className="h-6 w-6 text-destructive" />
+            <div className={cn(
+              "p-2 rounded-full",
+              confirmVariant === "destructive" ? "bg-destructive/10" : "bg-primary/10"
+            )}>
+              <AlertTriangle className={cn(
+                "h-6 w-6",
+                confirmVariant === "destructive" ? "text-destructive" : "text-primary"
+              )} />
             </div>
             <DialogTitle>{title}</DialogTitle>
           </div>
@@ -56,7 +66,7 @@ function DeleteDialog({
           </Button>
           <Button 
             type="button" 
-            variant="destructive" 
+            variant={confirmVariant}
             onClick={handleConfirm}
             disabled={isLoading}
             className="min-w-[100px]"
@@ -64,10 +74,10 @@ function DeleteDialog({
             {isLoading ? (
                 <div className="flex items-center gap-2">
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>Xóa...</span>
+                    <span>{loadingLabel}</span>
                 </div>
             ) : (
-                "Xóa ngay"
+                confirmLabel
             )}
           </Button>
         </DialogFooter>

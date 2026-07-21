@@ -14,6 +14,8 @@ const Settings = lazy(() => import("@/Pages/Settings"));
 const Notifications = lazy(() => import("@/Pages/Notifications"));
 const Login = lazy(() => import("@/Pages/Login"));
 const Register = lazy(() => import("@/Pages/Register"));
+const ForgotPassword = lazy(() => import("@/Pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("@/Pages/ResetPassword"));
 
 const routes = [
   {
@@ -111,6 +113,22 @@ const routes = [
     page: Register,
     layout: null,
     auth: "guest",
+  },
+  {
+    id: 13,
+    name: "Quên mật khẩu",
+    path: paths.forgotPassword,
+    page: ForgotPassword,
+    layout: null,
+    auth: "guest",
+  },
+  {
+    id: 14,
+    name: "Đặt lại mật khẩu",
+    path: paths.resetPassword,
+    page: ResetPassword,
+    layout: null,
+    auth: "public",
   },
 ];
 

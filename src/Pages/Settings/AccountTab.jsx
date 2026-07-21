@@ -1,7 +1,8 @@
 import {
-  Lock,
+  LockKeyhole,
   Trash2,
 } from "lucide-react";
+import { useState } from "react";
 
 import {
   Button,
@@ -12,9 +13,30 @@ import {
   CardTitle,
   Card,
   Badge,
+  Input,
+  Label,
 } from "@/Components/UI";
+import { useAuth, useZodForm } from "@/hooks";
+import { changePasswordSchema } from "@/schemas/passwordSchemas";
+import { useAuthStore } from "@/store";
 
 function AccountTab() {
+  const [isChanging, setIsChanging] = useState(false);
+  const user = useAuthStore((state) => state.user);
+  const hasPasswordProvider = user?.providers?.includes("password");
+  const { changePassword } = useAuth();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useZodForm(changePasswordSchema);
+
+  const onSubmit = async (data) => {
+    setIsChanging(true);
+    await changePassword(data);
+    setIsChanging(false);
+  };
+
   return (
     <>
       <Card>
@@ -27,10 +49,82 @@ function AccountTab() {
         </section>
         <CardContent className="space-y-6">
           <div className="space-y-4">
-            <Button className="gap-2 h-9" disabled title="Tính năng chưa được hỗ trợ">
-              <Lock className="h-4 w-4" />
-              Đổi mật khẩu (sắp có)
-            </Button>
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              className="w-full space-y-4 rounded-lg border p-5"
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                  <LockKeyhole className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <h4 className="font-semibold">
+                    {hasPasswordProvider ? "Đổi mật khẩu" : "Thiết lập mật khẩu"}
+                  </h4>
+                  <p className="text-xs text-muted-foreground">
+                    Dùng ít nhất 8 ký tự, gồm chữ hoa, chữ thường và chữ số.
+                  </p>
+                </div>
+              </div>
+
+              {hasPasswordProvider && (
+                <div className="space-y-2">
+                  <Label htmlFor="currentPassword">Mật khẩu hiện tại</Label>
+                  <Input
+                    id="currentPassword"
+                    type="password"
+                    autoComplete="current-password"
+                    disabled={isChanging}
+                    {...register("currentPassword")}
+                  />
+                  {errors.currentPassword && (
+                    <p className="text-xs text-destructive">
+                      {errors.currentPassword.message}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label htmlFor="newPassword">Mật khẩu mới</Label>
+                <Input
+                  id="newPassword"
+                  type="password"
+                  autoComplete="new-password"
+                  disabled={isChanging}
+                  {...register("password")}
+                />
+                {errors.password && (
+                  <p className="text-xs text-destructive">
+                    {errors.password.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Xác nhận mật khẩu mới</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  autoComplete="new-password"
+                  disabled={isChanging}
+                  {...register("confirmPassword")}
+                />
+                {errors.confirmPassword && (
+                  <p className="text-xs text-destructive">
+                    {errors.confirmPassword.message}
+                  </p>
+                )}
+              </div>
+
+              <p className="text-xs text-muted-foreground">
+                Sau khi đổi mật khẩu, bạn sẽ cần đăng nhập lại trên mọi thiết bị.
+              </p>
+
+              <Button type="submit" disabled={isChanging}>
+                {isChanging ? "Đang cập nhật..." : "Cập nhật mật khẩu"}
+              </Button>
+            </form>
 
             <div className="flex items-center justify-between p-4 border rounded-lg">
               <div>

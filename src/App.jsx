@@ -50,7 +50,7 @@ function App() {
                                 <route.page />
                               )}
                             </ProtectedRoute>
-                          ) : (
+                          ) : route.auth === "guest" ? (
                             <PublicRoute>
                               {route.layout ? (
                                 <route.layout>
@@ -60,6 +60,12 @@ function App() {
                                 <route.page />
                               )}
                             </PublicRoute>
+                          ) : route.layout ? (
+                            <route.layout>
+                              <route.page />
+                            </route.layout>
+                          ) : (
+                            <route.page />
                           )
                         }
                       />

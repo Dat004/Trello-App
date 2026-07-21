@@ -90,9 +90,17 @@ function Auth() {
                 )}
               </section>
               <section>
-                <Label htmlFor="password" className="text-xs">
-                  Mật khẩu
-                </Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password" className="text-xs">
+                    Mật khẩu
+                  </Label>
+                  <Link
+                    to="/forgot-password"
+                    className="text-xs text-primary hover:underline"
+                  >
+                    Quên mật khẩu?
+                  </Link>
+                </div>
                 <Input
                   {...register("password")}
                   type="password"

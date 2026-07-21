@@ -65,9 +65,7 @@ export const useAuth = () => {
       duration,
     });
 
-    setTimeout(() => {
-      navigate("/");
-    }, duration);
+    navigate("/");
   };
 
   const handleError = (message) => {
@@ -88,7 +86,7 @@ export const useAuth = () => {
       handleSuccess(
           res.data.data.user,
           res.data.message,
-          "Chúng tôi sẽ tự động chuyển hướng bạn trong vài giây..."
+          "Chào mừng bạn trở lại."
         );
     } catch (error) {
       handleError(error.response?.data?.message || "Đăng nhập thất bại");
@@ -137,12 +135,77 @@ export const useAuth = () => {
       handleSuccess(
         res.data.data.user,
         res.data.message,
-        "Đăng nhập thành công qua Google. Đang chuyển hướng..."
+        "Đăng nhập thành công qua Google."
       );
     } catch (error) {
       handleError(error.response?.data?.message || "Đăng nhập Google thất bại");
     }
   };
 
-  return { login, register, logout, googleLogin };
+  const forgotPassword = async (data) => {
+    try {
+      const res = await authApi.forgotPassword(data);
+      addToast({
+        type: "success",
+        title: "Kiểm tra email của bạn",
+        description: res.data?.message,
+        duration: 5000,
+      });
+      return true;
+    } catch (error) {
+      handleError(error.response?.data?.message || "Không thể gửi yêu cầu");
+      return false;
+    }
+  };
+
+  const resetPassword = async (data) => {
+    try {
+      const res = await authApi.resetPassword(data);
+      addToast({
+        type: "success",
+        title: "Đặt lại mật khẩu thành công",
+        description: res.data?.message,
+        duration: 4000,
+      });
+      clearUser();
+      clearSessionCaches();
+      navigate("/login");
+      return true;
+    } catch (error) {
+      handleError(
+        error.response?.data?.message ||
+          "Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn",
+      );
+      return false;
+    }
+  };
+
+  const changePassword = async (data) => {
+    try {
+      const res = await authApi.changePassword(data);
+      clearUser();
+      clearSessionCaches();
+      addToast({
+        type: "success",
+        title: "Đổi mật khẩu thành công",
+        description: res.data?.message,
+        duration: 4000,
+      });
+      navigate("/login");
+      return true;
+    } catch (error) {
+      handleError(error.response?.data?.message || "Không thể đổi mật khẩu");
+      return false;
+    }
+  };
+
+  return {
+    login,
+    register,
+    logout,
+    googleLogin,
+    forgotPassword,
+    resetPassword,
+    changePassword,
+  };
 };

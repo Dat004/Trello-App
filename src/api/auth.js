@@ -18,4 +18,16 @@ export const authApi = {
   async logout() {
     return await axiosClient.post(logoutRoute);
   },
+  async forgotPassword(data) {
+    return await axiosClient.post("/auth/forgot-password", data);
+  },
+  async verifyResetToken(token) {
+    return await axiosClient.get(`/auth/reset-password/${token}/verify`);
+  },
+  async resetPassword(data) {
+    return await axiosClient.post("/auth/reset-password", data);
+  },
+  async changePassword(data) {
+    return await axiosClient.post("/auth/change-password", data);
+  },
 };

@@ -98,13 +98,32 @@ The application runs at `http://localhost:5173` by default.
 
 ## Testing
 
-The current unit tests cover the board reducer, API error handling, and persisted board filters. The Playwright smoke tests cover login, registration, the 404 page, and protected-route redirects.
+The current unit tests cover the board reducer, API error handling, and persisted board filters.
+
+Playwright coverage:
+- `e2e/smoke.spec.js` — guest UI (login/register headings, 404, protected redirect) with a mocked unauthenticated session
+- `e2e/auth.spec.js` — real login/logout/register against the backend using seeded demo accounts
+
+Authenticated E2E needs MongoDB running, the backend dependencies installed, and demo users seeded (the Playwright `globalSetup` runs `npm run seed:demo` in `../BE` automatically unless `E2E_SKIP_SEED=1`).
 
 Chromium needs to be installed before running Playwright for the first time:
 
 ```bash
 npx playwright install chromium
 npm run e2e
+```
+
+Useful scripts:
+
+```bash
+npm run e2e:smoke
+npm run e2e:auth
+```
+
+Demo credentials (from `BE` seed):
+
+```text
+owner@demo.local / Demo123!
 ```
 
 Before committing, I normally run:

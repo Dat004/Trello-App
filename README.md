@@ -103,6 +103,7 @@ The current unit tests cover the board reducer, API error handling, and persiste
 Playwright coverage:
 - `e2e/smoke.spec.js` — guest UI (login/register headings, 404, protected redirect) with a mocked unauthenticated session
 - `e2e/auth.spec.js` — real login/logout/register against the backend using seeded demo accounts
+- `e2e/role-matrix.spec.js` — two isolated owner/viewer sessions verifying read-only enforcement and realtime board updates
 
 Frontend CI runs **smoke only** (`npm run e2e:smoke`) because Actions checks out this repo alone (no sibling `../BE`). Full `npm run e2e` / `e2e:auth` needs a local layout with `FE` and `BE` side by side, MongoDB, and demo seed.
 
@@ -120,6 +121,7 @@ Useful scripts:
 ```bash
 npm run e2e:smoke
 npm run e2e:auth
+npm run e2e:roles
 ```
 
 Demo credentials (from `BE` seed):

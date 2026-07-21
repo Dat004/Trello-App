@@ -53,8 +53,10 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: process.env.CI ? "github" : "list",
   globalSetup: "./e2e/global-setup.js",
-  // Auth specs hit a real API; skip them in FE-only CI without ../BE.
-  testIgnore: hasBackend ? undefined : [/auth\.spec\.js$/],
+  // Auth/role specs hit a real API; skip them in FE-only CI without ../BE.
+  testIgnore: hasBackend
+    ? undefined
+    : [/(auth|role-matrix)\.spec\.js$/],
   timeout: 60_000,
   use: {
     baseURL: feUrl,

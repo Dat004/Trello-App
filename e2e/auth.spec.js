@@ -87,14 +87,13 @@ test.describe("authenticated auth flows", () => {
     await page.goto(`/reset-password/${"a".repeat(64)}`, {
       waitUntil: "domcontentloaded",
     });
-    await page.getByLabel("Mật khẩu mới", { exact: true }).fill("NewDemo456!");
-    await page.getByLabel("Xác nhận mật khẩu").fill("NewDemo456!");
-    await page.getByRole("button", { name: "Đặt lại mật khẩu" }).click();
 
     await expect(
-      page.getByText(
-        "Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn",
-      ),
+      page.getByText("Liên kết không hợp lệ", { exact: true }),
+    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByLabel("Mật khẩu mới", { exact: true })).toHaveCount(0);
+    await expect(
+      page.getByRole("link", { name: "Yêu cầu liên kết mới" }),
     ).toBeVisible();
     await expect(page).toHaveURL(/\/reset-password\//);
   });

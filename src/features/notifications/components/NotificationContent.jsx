@@ -1,17 +1,28 @@
 import { ArrowLeft, Bell, Check, Loader2 } from "lucide-react";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { useDeleteNotification, useMarkAllNotificationsRead, useMarkNotificationRead, useNotifications } from "@/features/notifications/api/useNotifications";
 import { NotificationCard, NotificationFilter } from "@/features/notifications/components";
 import { useRespondInvite } from "@/features/notifications/api/useRespondInvite";
 import { Button, Card, CardContent } from "@/Components/UI";
+import { cn } from "@/lib/utils";
 
 function NotificationContent() {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const focusId = searchParams.get("focus");
     const [filter, setFilter] = useState("all");
+    const [highlightId, setHighlightId] = useState(null);
+    const cardRefs = useRef({});
 
-    const { data: notifications = [], isLoading } = useNotifications();
+    const {
+        notifications,
+        isLoading,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+    } = useNotifications();
     const { mutate: markAsRead } = useMarkNotificationRead();
     const { mutate: markAllAsRead } = useMarkAllNotificationsRead();
     const { mutate: removeNotification } = useDeleteNotification();
@@ -20,6 +31,17 @@ function NotificationContent() {
     const unreadNotifications = notifications.filter((n) => !n.is_read);
     const readNotifications = notifications.filter((n) => n.is_read);
     const unreadCount = unreadNotifications.length;
+
+    useEffect(() => {
+        if (!focusId || notifications.length === 0) return;
+        const el = cardRefs.current[focusId];
+        if (!el) return;
+
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        setHighlightId(focusId);
+        const timer = setTimeout(() => setHighlightId(null), 2500);
+        return () => clearTimeout(timer);
+    }, [focusId, notifications.length]);
 
     const getFilteredNotifications = () => {
         switch (filter) {
@@ -115,15 +137,45 @@ function NotificationContent() {
                 ) : (
                     <div className="flex flex-col gap-3">
                         {filteredNotifications.map((notification) => (
-                            <NotificationCard
+                            <div
                                 key={notification._id}
-                                notification={notification}
-                                onMarkAsRead={markAsRead}
-                                onRemove={handleRemove}
-                                onRespond={handleRespondInvite}
-                                isLoading={isResponding && respondVariables?.notification_id === notification._id}
-                            />
+                                ref={(el) => { cardRefs.current[notification._id] = el; }}
+                                className={cn(
+                                    "rounded-xl transition-all duration-500",
+                                    highlightId === notification._id &&
+                                        "ring-2 ring-primary ring-offset-2 ring-offset-background"
+                                )}
+                            >
+                                <NotificationCard
+                                    notification={notification}
+                                    onMarkAsRead={markAsRead}
+                                    onRemove={handleRemove}
+                                    onRespond={handleRespondInvite}
+                                    isLoading={isResponding && respondVariables?.notification_id === notification._id}
+                                />
+                            </div>
                         ))}
+
+                        {hasNextPage && filter === "all" && (
+                            <div className="flex justify-center pt-2">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => fetchNextPage()}
+                                    disabled={isFetchingNextPage}
+                                    className="gap-2"
+                                >
+                                    {isFetchingNextPage ? (
+                                        <>
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                            Đang tải...
+                                        </>
+                                    ) : (
+                                        "Xem thêm thông báo"
+                                    )}
+                                </Button>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>

@@ -99,28 +99,11 @@ export function useGlobalRealtimeSync() {
                 duration: isReminder ? 8000 : 5000,
             });
 
-            // Cập nhật số lượng thông báo chưa đọc
             queryClient.setQueryData(NOTIFICATION_KEYS.unreadCount(), (old = 0) => {
                 return old + 1;
             });
 
-            // Cập nhật danh sách thông báo
-            queryClient.setQueryData(NOTIFICATION_KEYS.list(), (oldRes = []) => {
-                if (!Array.isArray(oldRes)) return oldRes;
-
-                const alreadyExists = oldRes.some(n => n._id === notification._id);
-
-                if (alreadyExists) {
-                    // Cập nhật thông báo và đưa lên đầu
-                    return [
-                        notification,
-                        ...oldRes.filter(n => n._id !== notification._id)
-                    ];
-                } else {
-                    // Thêm thông báo mới vào đầu danh sách
-                    return [notification, ...oldRes];
-                }
-            });
+            queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.list() });
         };
 
         // Listen for notifications

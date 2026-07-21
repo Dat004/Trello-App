@@ -3,7 +3,7 @@ import { UserToast } from "@/context/ToastContext";
 import { BOARD_KEYS } from "@/features/boards/api/useBoards";
 import { WORKSPACE_KEYS } from "@/features/workspaces/api/useWorkspaceDetail";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { NOTIFICATION_KEYS } from "./useNotifications";
+import { mapNotificationPages, NOTIFICATION_KEYS } from "./useNotifications";
 
 export function useRespondInvite() {
     const queryClient = useQueryClient();
@@ -18,11 +18,11 @@ export function useRespondInvite() {
 
             if (res?.data?.success || res?.status === 200) {
 
-                // Xóa notification khỏi cache (dù accept hay reject)
-                queryClient.setQueryData(NOTIFICATION_KEYS.list(), (old = []) => {
-                    if (!Array.isArray(old)) return old;
-                    return old.filter((n) => n._id !== variables.notification_id);
-                });
+                queryClient.setQueryData(NOTIFICATION_KEYS.list(), (old) =>
+                    mapNotificationPages(old, (items) =>
+                        items.filter((n) => n._id !== variables.notification_id)
+                    )
+                );
 
                 queryClient.setQueryData(NOTIFICATION_KEYS.unreadCount(), (old = 0) =>
                     Math.max(0, old - 1)

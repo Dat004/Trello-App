@@ -3,8 +3,10 @@ import { axiosClient } from "./axiosClient";
 const notificationsRoutes = '/notifications';
 
 export const notificationApi = {
-    getMyNotifications: async () => {
-        return await axiosClient.get(notificationsRoutes);
+    getMyNotifications: async ({ page = 1, limit = 20 } = {}) => {
+        return await axiosClient.get(notificationsRoutes, {
+            params: { page, limit },
+        });
     },
     getUnreadNotificationsCount: async () => {
         return await axiosClient.get(`${notificationsRoutes}/unread-count`);

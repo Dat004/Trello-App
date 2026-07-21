@@ -4,7 +4,10 @@ import { useSocket } from "@/hooks";
 import { useAuthStore } from "@/store";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { NOTIFICATION_KEYS } from "../api/useNotifications";
+import {
+    NOTIFICATION_KEYS,
+    prependNotificationPage,
+} from "../api/useNotifications";
 
 export const useNotificationRealtime = () => {
     const { socket, joinRoom, leaveRoom, isConnected } = useSocket();
@@ -24,11 +27,10 @@ export const useNotificationRealtime = () => {
                 type: "info",
             });
 
-            // Cập nhật số lượng thông báo chưa đọc
             queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.unreadCount() });
-
-            // Thêm thông báo vào danh sách
-            queryClient.setQueryData(NOTIFICATION_KEYS.list(), (old = []) => [notification, ...old]);
+            queryClient.setQueryData(NOTIFICATION_KEYS.list(), (old) =>
+                prependNotificationPage(old, notification)
+            );
         };
 
         socket.on(SOCKET_EVENTS.NOTIFICATION_NEW, handleNewNotification);

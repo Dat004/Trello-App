@@ -11,6 +11,7 @@ import {
   Sparkles,
   Star,
   Table,
+  Tag,
   UserPlus,
   Users
 } from "lucide-react";
@@ -22,6 +23,7 @@ import { Avatar, AvatarFallback, AvatarImage, Button } from "@/Components/UI";
 import BoardActivitiesDialog from "../Dialogs/BoardActivitiesDialog";
 import BoardThemeDialog from "../Dialogs/BoardThemeDialog";
 import BoardAIDialog from "../Dialogs/BoardAIDialog";
+import BoardLabelsDialog from "../Dialogs/BoardLabelsDialog";
 import { useBoardFilter } from "../../context/BoardFilterContext";
 import InviteMemberDialog from "@/Components/InviteMemberDialog";
 import BoardFilterDialog from "../Dialogs/BoardFilterDialog";
@@ -172,6 +174,20 @@ function BoardDetailHeader({ currentView, onViewChange, currentTheme, onThemeCha
                     {isFiltering && (
                       <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-primary rounded-full border-2 border-background" />
                     )}
+                  </Button>
+                }
+              />
+
+              <BoardLabelsDialog
+                trigger={
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground hover:bg-muted gap-1.5 hidden sm:flex h-8 rounded-lg"
+                    title="Nhãn board"
+                  >
+                    <Tag className="h-4 w-4" />
+                    <span className="hidden md:inline text-[11px] font-bold uppercase tracking-wider">Nhãn</span>
                   </Button>
                 }
               />

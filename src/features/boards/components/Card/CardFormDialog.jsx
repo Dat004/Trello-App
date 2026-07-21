@@ -1,8 +1,8 @@
-import { Loader2, Plus, X } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { BACKGROUND_COLORS } from "@/config/theme";
 import { useCreateCard, useUpdateCard } from "@/features/boards/api/useCards";
+import { useBoardContext } from "@/features/boards/context/BoardStateContext";
 import { toDateInputValue } from "@/helpers/formatTime";
 import { useZodForm } from "@/hooks";
 import { cardSchema } from "@/schemas/cardSchema";
@@ -40,6 +40,9 @@ function CardFormDialog({
   listId,
   boardId,
 }) {
+  const { boardData } = useBoardContext(false) || {};
+  const boardLabels = boardData?.currentBoard?.labels || [];
+
   const form = useZodForm(cardSchema, {
     defaultValues: {
       title: "",
@@ -56,21 +59,22 @@ function CardFormDialog({
     setValue,
     reset,
   } = form;
-  
+
   const titleValue = watch("title");
   const priority = watch("priority") ?? "medium";
 
   const [open, setOpen] = useState(false);
   const [labels, setLabels] = useState([]);
-  const [newLabelName, setNewLabelName] = useState("");
-  const [newLabelColor, setNewLabelColor] = useState(
-    BACKGROUND_COLORS[0].class
-  );
 
   const { mutateAsync: createCard, isLoading: isCreating } = useCreateCard();
   const { mutateAsync: updateCard, isLoading: isUpdating } = useUpdateCard();
 
   const isLoading = isCreating || isUpdating;
+
+  const selectedNames = new Set(labels.map((label) => label.name?.toLowerCase()));
+  const availableLabels = boardLabels.filter(
+    (label) => !selectedNames.has(label.name?.toLowerCase())
+  );
 
   useEffect(() => {
     if (isEdit && cardData && open) {
@@ -84,17 +88,18 @@ function CardFormDialog({
     }
   }, [cardData, open, isEdit, reset]);
 
-  const handleAddLabel = (e) => {
-    e?.preventDefault(); 
-    if (newLabelName.trim()) {
-      const newLabel = {
-        name: newLabelName.trim(),
-        color: newLabelColor,
-      };
-      setLabels((prev) => [...prev, newLabel]);
-      setNewLabelName("");
-      setNewLabelColor(BACKGROUND_COLORS[0].class);
-    }
+  const handleToggleBoardLabel = (boardLabel) => {
+    setLabels((prev) => {
+      const exists = prev.some(
+        (label) => label.name?.toLowerCase() === boardLabel.name?.toLowerCase()
+      );
+      if (exists) {
+        return prev.filter(
+          (label) => label.name?.toLowerCase() !== boardLabel.name?.toLowerCase()
+        );
+      }
+      return [...prev, { name: boardLabel.name, color: boardLabel.color }];
+    });
   };
 
   const handleRemoveLabel = (labelName) => {
@@ -105,8 +110,6 @@ function CardFormDialog({
     reset();
     setOpen(false);
     setLabels([]);
-    setNewLabelName("");
-    setNewLabelColor(BACKGROUND_COLORS[0].class);
   };
 
   const handleAddCard = async (data) => {
@@ -118,9 +121,9 @@ function CardFormDialog({
     };
 
     if (isEdit) {
-        await updateCard({ boardId, listId, id: cardData._id, data: payload });
+      await updateCard({ boardId, listId, id: cardData._id, data: payload });
     } else {
-        await createCard(payload);
+      await createCard(payload);
     }
     handleCancel();
   };
@@ -144,7 +147,6 @@ function CardFormDialog({
           onSubmit={handleSubmit(handleAddCard)}
           className="grid gap-4 py-4"
         >
-          {/* Title */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="title">Tiêu đề *</Label>
@@ -162,7 +164,6 @@ function CardFormDialog({
             />
           </div>
 
-          {/* Description */}
           <div className="space-y-2">
             <Label htmlFor="description">Mô tả</Label>
             <TextArea
@@ -175,7 +176,6 @@ function CardFormDialog({
             />
           </div>
 
-          {/* Due Date */}
           <div className="space-y-2">
             <Label htmlFor="due_date">Ngày hết hạn</Label>
             <div className="flex items-center gap-2">
@@ -199,7 +199,6 @@ function CardFormDialog({
             </div>
           </div>
 
-          {/* Priority */}
           <div className="space-y-2">
             <Label htmlFor="priority">Độ ưu tiên</Label>
             <Select
@@ -229,7 +228,6 @@ function CardFormDialog({
             )}
           </div>
 
-          {/* Labels */}
           <div className="space-y-2">
             <Label>Nhãn</Label>
 
@@ -238,7 +236,7 @@ function CardFormDialog({
                 {labels.map((label) => (
                   <Badge
                     style={{ lineHeight: 1.45 }}
-                    key={label._id}
+                    key={label._id || label.name}
                     className={cn(
                       "text-white cursor-pointer hover:opacity-80",
                       label.color
@@ -257,49 +255,40 @@ function CardFormDialog({
               </div>
             )}
 
-            <div className="flex gap-2 items-center">
-              <Input
-                value={newLabelName}
-                onChange={(e) => setNewLabelName(e.target.value)}
-                placeholder="Tên nhãn..."
-                disabled={isSubmitting || isLoading}
-                onKeyDown={(e) =>
-                  e.key === "Enter" && (e.preventDefault(), handleAddLabel(e))
-                }
-              />
-              <Select
-                value={newLabelColor}
-                onValueChange={setNewLabelColor}
-                disabled={isSubmitting || isLoading}
-              >
-                <SelectTrigger className="w-[120px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {BACKGROUND_COLORS.map((option) => (
-                    <SelectItem key={option.name} value={option.class}>
-                      <div className="flex items-center gap-2">
-                        <div
-                          className={`w-3 h-3 rounded-full flex-grow-0 flex-shrink-0 ${option.class}`}
-                        />
-                        {option.name}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button
-                type="button"
-                size="sm"
-                onClick={handleAddLabel}
-                disabled={!newLabelName.trim() || isSubmitting || isLoading}
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
+            {boardLabels.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {availableLabels.map((label) => (
+                  <button
+                    key={label._id}
+                    type="button"
+                    disabled={isSubmitting || isLoading}
+                    onClick={() => handleToggleBoardLabel(label)}
+                    className="opacity-70 hover:opacity-100 transition-opacity"
+                  >
+                    <Badge
+                      style={{ lineHeight: 1.45 }}
+                      className={cn(
+                        "text-white border border-dashed border-white/40",
+                        label.color
+                      )}
+                    >
+                      + {label.name}
+                    </Badge>
+                  </button>
+                ))}
+                {availableLabels.length === 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    Đã chọn tất cả nhãn của board
+                  </p>
+                )}
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                Chưa có nhãn trên board. Mở mục Nhãn trên header để tạo.
+              </p>
+            )}
           </div>
 
-          {/* Buttons */}
           <div className="flex justify-end gap-2 pt-4 border-t">
             <Button
               type="button"
@@ -319,8 +308,10 @@ function CardFormDialog({
                   <Loader2 className="h-4 w-4 animate-spin" />
                   <span>Đang lưu...</span>
                 </>
+              ) : isEdit ? (
+                "Lưu thay đổi"
               ) : (
-                isEdit ? "Lưu thay đổi" : "Thêm thẻ"
+                "Thêm thẻ"
               )}
             </Button>
           </div>

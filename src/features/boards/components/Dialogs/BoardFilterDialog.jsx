@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Filter, X, User, Clock, AlertCircle, CheckCircle2, Search } from "lucide-react";
+import { Filter, User, Clock, AlertCircle, CheckCircle2, Search, Tag } from "lucide-react";
 import {
   Badge,
   Button,
@@ -10,7 +10,6 @@ import {
   DialogTrigger,
   Checkbox,
   Input,
-  Label,
   ScrollArea,
   Separator,
 } from "@/Components/UI";
@@ -23,7 +22,8 @@ function BoardFilterDialog({ trigger }) {
   const { 
     filters, 
     clearFilters, 
-    toggleMemberFilter, 
+    toggleMemberFilter,
+    toggleLabelFilter,
     setPriorityFilter, 
     toggleOverdueFilter, 
     setCompletedFilter,
@@ -32,6 +32,7 @@ function BoardFilterDialog({ trigger }) {
   
   const { boardData } = useBoardContext();
   const members = boardData?.boardMembers || [];
+  const labels = boardData?.currentBoard?.labels || [];
 
   const filteredMembers = members.filter(member => 
     member.user.full_name?.toLowerCase().includes(memberSearch.toLowerCase())
@@ -116,6 +117,49 @@ function BoardFilterDialog({ trigger }) {
                 ) : (
                   <div className="py-6 text-center text-xs text-muted-foreground italic">
                     Không tìm thấy thành viên nào
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Labels Filter */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-bold flex items-center gap-2 text-foreground">
+                  <Tag className="h-4 w-4 text-purple-500" />
+                  Nhãn
+                </h4>
+                <Badge variant="secondary" className="text-[10px] px-2 py-0 h-5">
+                  {filters.labelNames?.length || 0} đã chọn
+                </Badge>
+              </div>
+
+              <div className="grid grid-cols-1 gap-1 max-h-[160px] overflow-y-auto pr-2 custom-scrollbar">
+                {labels.length > 0 ? (
+                  labels.map((label) => (
+                    <div
+                      key={label._id}
+                      className="flex items-center space-x-3 p-2 rounded-xl hover:bg-muted/50 transition-colors group cursor-pointer select-none"
+                      onClick={() => toggleLabelFilter(label.name)}
+                    >
+                      <Checkbox
+                        id={`label-${label._id}`}
+                        checked={filters.labelNames?.includes(label.name)}
+                        className="rounded-md border-muted-foreground/30 data-[state=checked]:bg-primary pointer-events-none"
+                      />
+                      <Badge
+                        className={cn("text-white", label.color)}
+                        style={{ lineHeight: 1.45 }}
+                      >
+                        {label.name}
+                      </Badge>
+                    </div>
+                  ))
+                ) : (
+                  <div className="py-6 text-center text-xs text-muted-foreground italic">
+                    Chưa có nhãn trên board
                   </div>
                 )}
               </div>

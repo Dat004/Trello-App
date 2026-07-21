@@ -56,8 +56,16 @@ export const SOCKET_EVENTS = {
     CARD_MEMBER_ASSIGNED: 'card-member-assigned',
     CARD_MEMBER_REMOVED: 'card-member-removed',
 
+    // Label events
+    BOARD_LABEL_CREATED: 'board-label-created',
+    BOARD_LABEL_UPDATED: 'board-label-updated',
+    BOARD_LABEL_DELETED: 'board-label-deleted',
+    CARD_LABEL_ASSIGNED: 'card-label-assigned',
+    CARD_LABEL_REMOVED: 'card-label-removed',
+
     // Comment events
     COMMENT_ADDED: 'comment-added',
+    COMMENT_UPDATED: 'comment-updated',
     COMMENT_DELETED: 'comment-deleted',
 
     // Global / Notification events

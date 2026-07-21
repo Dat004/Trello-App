@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 const BoardFilterContext = createContext(null);
 const DEFAULT_FILTERS = {
   memberIds: [],
+  labelNames: [],
   isOverdue: false,
   priority: null,
   isCompleted: null
@@ -18,6 +19,9 @@ export const BoardFilterProvider = ({ children, storageKey }) => {
       if (!candidate || !Array.isArray(candidate.memberIds)) return DEFAULT_FILTERS;
       return {
         memberIds: candidate.memberIds.filter((id) => typeof id === "string"),
+        labelNames: Array.isArray(candidate.labelNames)
+          ? candidate.labelNames.filter((name) => typeof name === "string")
+          : [],
         isOverdue: candidate.isOverdue === true,
         priority: ["high", "medium", "low"].includes(candidate.priority) ? candidate.priority : null,
         isCompleted: typeof candidate.isCompleted === "boolean" ? candidate.isCompleted : null
@@ -50,6 +54,15 @@ export const BoardFilterProvider = ({ children, storageKey }) => {
     }));
   };
 
+  const toggleLabelFilter = (labelName) => {
+    setFilters(prev => ({
+      ...prev,
+      labelNames: prev.labelNames.includes(labelName)
+        ? prev.labelNames.filter(name => name !== labelName)
+        : [...prev.labelNames, labelName]
+    }));
+  };
+
   const setPriorityFilter = (priority) => {
     setFilters(prev => ({ ...prev, priority: prev.priority === priority ? null : priority }));
   };
@@ -63,7 +76,8 @@ export const BoardFilterProvider = ({ children, storageKey }) => {
   };
 
   const isFiltering = useMemo(() => {
-    return filters.memberIds.length > 0 || 
+    return filters.memberIds.length > 0 ||
+           filters.labelNames.length > 0 ||
            filters.isOverdue || 
            filters.priority !== null || 
            filters.isCompleted !== null;
@@ -74,6 +88,7 @@ export const BoardFilterProvider = ({ children, storageKey }) => {
     setFilters,
     clearFilters,
     toggleMemberFilter,
+    toggleLabelFilter,
     setPriorityFilter,
     toggleOverdueFilter,
     setCompletedFilter,

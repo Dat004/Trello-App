@@ -53,6 +53,7 @@ describe("BoardFilterProvider", () => {
     expect(screen.getByTestId("filters")).toHaveTextContent(
       JSON.stringify({
         memberIds: ["user-1"],
+        labelNames: [],
         isOverdue: false,
         priority: null,
         isCompleted: true,
@@ -72,6 +73,7 @@ describe("BoardFilterProvider", () => {
     expect(screen.getByTestId("filters")).toHaveTextContent(
       JSON.stringify({
         memberIds: ["user-1"],
+        labelNames: [],
         isOverdue: true,
         priority: "high",
         isCompleted: null,
@@ -98,6 +100,7 @@ describe("BoardFilterProvider", () => {
         selectedView: "calendar",
         filters: {
           memberIds: [],
+          labelNames: [],
           isOverdue: false,
           priority: "high",
           isCompleted: null,

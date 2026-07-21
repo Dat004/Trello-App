@@ -73,6 +73,19 @@ export const useBoardRealtime = (boardId, actions) => {
         const handleCardMemberAssigned = (data) => safeCall('assignCardMember', data.cardId, data.member);
         const handleCardMemberRemoved = (data) => safeCall('removeCardMember', data.cardId, data.userId);
 
+        const handleBoardLabelCreated = (data) => safeCall('addBoardLabel', data.label);
+        const handleBoardLabelUpdated = (data) =>
+            safeCall('updateBoardLabel', data.label._id, data.label, {
+                oldName: data.oldName,
+                oldColor: data.oldColor,
+            });
+        const handleBoardLabelDeleted = (data) =>
+            safeCall('removeBoardLabel', data.labelId, data.labelName);
+        const handleCardLabelAssigned = (data) =>
+            safeCall('assignCardLabel', data.cardId, data.label);
+        const handleCardLabelRemoved = (data) =>
+            safeCall('removeCardLabel', data.cardId, data.labelId);
+
         const handleMemberJoined = (member) => {
             safeCall('addBoardMember', member);
             addToast({
@@ -114,6 +127,12 @@ export const useBoardRealtime = (boardId, actions) => {
 
         socket.on(SOCKET_EVENTS.CARD_MEMBER_ASSIGNED, handleCardMemberAssigned);
         socket.on(SOCKET_EVENTS.CARD_MEMBER_REMOVED, handleCardMemberRemoved);
+
+        socket.on(SOCKET_EVENTS.BOARD_LABEL_CREATED, handleBoardLabelCreated);
+        socket.on(SOCKET_EVENTS.BOARD_LABEL_UPDATED, handleBoardLabelUpdated);
+        socket.on(SOCKET_EVENTS.BOARD_LABEL_DELETED, handleBoardLabelDeleted);
+        socket.on(SOCKET_EVENTS.CARD_LABEL_ASSIGNED, handleCardLabelAssigned);
+        socket.on(SOCKET_EVENTS.CARD_LABEL_REMOVED, handleCardLabelRemoved);
 
         socket.on(SOCKET_EVENTS.MEMBER_JOINED, handleMemberJoined);
         socket.on(SOCKET_EVENTS.MEMBER_REMOVED, handleMemberRemoved);
@@ -164,6 +183,12 @@ export const useBoardRealtime = (boardId, actions) => {
 
             socket.off(SOCKET_EVENTS.CARD_MEMBER_ASSIGNED, handleCardMemberAssigned);
             socket.off(SOCKET_EVENTS.CARD_MEMBER_REMOVED, handleCardMemberRemoved);
+
+            socket.off(SOCKET_EVENTS.BOARD_LABEL_CREATED, handleBoardLabelCreated);
+            socket.off(SOCKET_EVENTS.BOARD_LABEL_UPDATED, handleBoardLabelUpdated);
+            socket.off(SOCKET_EVENTS.BOARD_LABEL_DELETED, handleBoardLabelDeleted);
+            socket.off(SOCKET_EVENTS.CARD_LABEL_ASSIGNED, handleCardLabelAssigned);
+            socket.off(SOCKET_EVENTS.CARD_LABEL_REMOVED, handleCardLabelRemoved);
 
             socket.off(SOCKET_EVENTS.MEMBER_JOINED, handleMemberJoined);
             socket.off(SOCKET_EVENTS.MEMBER_REMOVED, handleMemberRemoved);

@@ -242,6 +242,82 @@ export function boardStateReducer(state, { type, payload }) {
         ),
       }));
     }
+    case "addBoardLabel": {
+      const label = payload;
+      const labels = state.currentBoard?.labels || [];
+      if (labels.some((item) => item._id === label._id)) return state;
+      const nextLabels = [...labels, label];
+      return {
+        ...state,
+        currentBoard: { ...state.currentBoard, labels: nextLabels },
+      };
+    }
+    case "updateBoardLabel": {
+      const { labelId, label, oldName } = payload;
+      const labels = (state.currentBoard?.labels || []).map((item) =>
+        item._id === labelId ? { ...item, ...label } : item,
+      );
+      const matchName = oldName || label?.name;
+      const cards = Object.fromEntries(
+        Object.entries(state.cards).map(([cardId, card]) => [
+          cardId,
+          {
+            ...card,
+            labels: (card.labels || []).map((cardLabel) =>
+              cardLabel.name === matchName
+                ? { ...cardLabel, name: label.name, color: label.color }
+                : cardLabel,
+            ),
+          },
+        ]),
+      );
+      return {
+        ...state,
+        cards,
+        currentBoard: { ...state.currentBoard, labels },
+      };
+    }
+    case "removeBoardLabel": {
+      const { labelId, labelName } = payload;
+      const labels = (state.currentBoard?.labels || []).filter(
+        (item) => item._id !== labelId,
+      );
+      const cards = Object.fromEntries(
+        Object.entries(state.cards).map(([cardId, card]) => [
+          cardId,
+          {
+            ...card,
+            labels: (card.labels || []).filter(
+              (cardLabel) => cardLabel.name !== labelName,
+            ),
+          },
+        ]),
+      );
+      return {
+        ...state,
+        cards,
+        currentBoard: { ...state.currentBoard, labels },
+      };
+    }
+    case "assignCardLabel": {
+      const { cardId, label } = payload;
+      return updateCardInState(state, cardId, (card) => {
+        if (card.labels?.some((item) => item._id === label._id || item.name === label.name)) {
+          return card;
+        }
+        return {
+          ...card,
+          labels: [...(card.labels || []), label],
+        };
+      });
+    }
+    case "removeCardLabel": {
+      const { cardId, labelId } = payload;
+      return updateCardInState(state, cardId, (card) => ({
+        ...card,
+        labels: (card.labels || []).filter((item) => item._id !== labelId),
+      }));
+    }
     case "updateUser":
       return updateUser(state, payload);
     case "setActiveUsers":

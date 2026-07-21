@@ -20,6 +20,15 @@ export const useFilteredCards = (cardsArray) => {
         if (!hasMember) return false;
       }
 
+      // Lọc theo nhãn (OR: thẻ có ít nhất một nhãn được chọn)
+      if (filters.labelNames?.length > 0) {
+        const cardLabelNames = (card.labels || []).map((label) => label.name);
+        const hasLabel = filters.labelNames.some((name) =>
+          cardLabelNames.includes(name)
+        );
+        if (!hasLabel) return false;
+      }
+
       // Lọc theo độ ưu tiên
       if (filters.priority && card.priority !== filters.priority) {
         return false;

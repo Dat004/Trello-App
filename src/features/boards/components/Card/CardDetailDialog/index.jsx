@@ -22,6 +22,7 @@ import CardChecklist from "./CardChecklist";
 import CardComments from "./CardComments";
 import CardDescription from "./CardDescription";
 import CardHeader from "./CardHeader";
+import CardLabels from "./CardLabels";
 import CardMembers from "./CardMembers";
 import CardMetadata from "./CardMetadata";
 
@@ -77,6 +78,8 @@ function CardDetailDialog({ card, listId, boardId, trigger, open: externalOpen, 
           />
           
           <CardMembers card={card} boardId={boardId} listId={listId} activeUsers={activeUsers} />
+
+          <CardLabels card={card} boardId={boardId} listId={listId} />
           
           <CardDescription card={card} locks={fieldLocks} />
           

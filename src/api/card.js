@@ -47,4 +47,17 @@ export const cardApi = {
   async unassignMemberFromCard(boardId, listId, cardId, userId) {
     return await axiosClient.delete(`${boardsRoute}/${boardId}${listsRoute}/${listId}${cardsRoute}/${cardId}${membersRoute}/${userId}`);
   },
+
+  // Labels
+  async assignLabelToCard(boardId, listId, cardId, data) {
+    return await axiosClient.post(
+      `${boardsRoute}/${boardId}${listsRoute}/${listId}${cardsRoute}/${cardId}/labels`,
+      data
+    );
+  },
+  async removeLabelFromCard(boardId, listId, cardId, labelId) {
+    return await axiosClient.delete(
+      `${boardsRoute}/${boardId}${listsRoute}/${listId}${cardsRoute}/${cardId}/labels/${labelId}`
+    );
+  },
 };

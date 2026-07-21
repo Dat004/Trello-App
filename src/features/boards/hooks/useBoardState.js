@@ -98,6 +98,13 @@ export const useBoardState = (initialBoardDetail) => {
     deleteAttachment: action("deleteAttachment", "cardId", "attachmentId"),
     assignCardMember: action("assignCardMember", "cardId", "user"),
     removeCardMember: action("removeCardMember", "cardId", "userId"),
+    addBoardLabel: action("addBoardLabel"),
+    updateBoardLabel: (labelId, label, meta) =>
+      send("updateBoardLabel", { labelId, label, ...meta }),
+    removeBoardLabel: (labelId, labelName) =>
+      send("removeBoardLabel", { labelId, labelName }),
+    assignCardLabel: action("assignCardLabel", "cardId", "label"),
+    removeCardLabel: action("removeCardLabel", "cardId", "labelId"),
     updateUser: action("updateUser", "userId", "updates"),
     updateBoard,
     setActiveUsers: action("setActiveUsers"),

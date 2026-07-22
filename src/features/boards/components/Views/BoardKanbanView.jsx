@@ -32,6 +32,7 @@ function BoardKanbanView() {
 
   const {
     sensors,
+    accessibility,
     activeId,
     activeType,
     activeData,
@@ -48,6 +49,7 @@ function BoardKanbanView() {
     <div className="h-full px-4 py-6 inline-block min-w-full">
       <DndContext
         sensors={sensors}
+        accessibility={accessibility}
         collisionDetection={customCollisionDetectionStrategy}
         onDragStart={!readOnly ? handleDragStart : undefined}
         onDragOver={!readOnly ? handleDragOver : undefined}

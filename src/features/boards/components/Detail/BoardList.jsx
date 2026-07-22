@@ -40,7 +40,7 @@ function BoardList({ listId, boardId, isOverlay = false }) {
     setNodeRef: setCardContainerRef,
   } = useDroppable({
     id: `card-container:${listId}`,
-    data: { type: "card-container", listId },
+    data: { type: "card-container", listId, title: list?.title },
     disabled: readOnly || isOverlay,
   });
 
@@ -105,6 +105,7 @@ function BoardList({ listId, boardId, isOverlay = false }) {
       <SortableItem
         id={listId}
         type="list"
+        data={{ listId, title: list.title }}
         renderComponent={({ setNodeRef, style, attributes, listeners, isDragging }) => (
           <section
             ref={setNodeRef}
@@ -127,6 +128,8 @@ function BoardList({ listId, boardId, isOverlay = false }) {
                       <button
                         {...attributes}
                         {...listeners}
+                        type="button"
+                        aria-label={`Di chuyển danh sách ${list.title}`}
                         className={cn(
                           "p-1 hover:bg-muted rounded transition-colors active:cursor-grabbing",
                           readOnly ? "hidden" : "cursor-grab"
@@ -178,6 +181,7 @@ function BoardList({ listId, boardId, isOverlay = false }) {
                               size="sm"
                               className="h-6 w-6 p-0"
                               disabled={isLoading}
+                              aria-label={`Tùy chọn danh sách ${list.title}`}
                             >
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>

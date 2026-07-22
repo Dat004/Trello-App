@@ -24,6 +24,7 @@ function Header() {
 
   const { user } = useAuthStore();
   const toggleMobileSidebar = useUIStore((state) => state.toggleMobileSidebar);
+  const isMobileSidebarOpen = useUIStore((state) => state.isMobileSidebarOpen);
   const { logout } = useAuth();
 
   return (
@@ -37,7 +38,9 @@ function Header() {
             size="icon"
             className="md:hidden"
             onClick={toggleMobileSidebar}
-            aria-label="Mở menu điều hướng"
+            aria-label={isMobileSidebarOpen ? "Đóng menu điều hướng" : "Mở menu điều hướng"}
+            aria-expanded={isMobileSidebarOpen}
+            aria-controls="app-mobile-sidebar"
           >
             <Menu className="h-5 w-5" />
           </Button>

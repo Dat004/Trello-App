@@ -1,7 +1,8 @@
 import {
     closestCorners,
     KeyboardSensor,
-    PointerSensor,
+    MouseSensor,
+    TouchSensor,
     useSensor,
     useSensors
 } from "@dnd-kit/core";
@@ -15,6 +16,10 @@ import { UserToast } from "@/context/ToastContext";
 import { BOARD_KEYS } from "../api/useBoards";
 import { useBoardActions, useBoardSelector } from "../context/BoardStateContext";
 import { selectListOrder, selectLists } from "../state/boardSelectors";
+import {
+    boardDndAnnouncements,
+    boardDndScreenReaderInstructions,
+} from "../utils/boardDndAccessibility";
 
 function useBoardDnD(boardId) {
     const lists = useBoardSelector(selectLists);
@@ -29,16 +34,29 @@ function useBoardDnD(boardId) {
     const sourceListIdRef = useRef(null);
     const lastOverListIdRef = useRef(null);
 
+    // Mouse: small distance avoids accidental drags. Touch: delay so scroll still works.
     const sensors = useSensors(
-        useSensor(PointerSensor, {
+        useSensor(MouseSensor, {
             activationConstraint: {
-                distance: 5,
+                distance: 6,
+            },
+        }),
+        useSensor(TouchSensor, {
+            activationConstraint: {
+                delay: 220,
+                tolerance: 8,
             },
         }),
         useSensor(KeyboardSensor, {
             coordinateGetter: sortableKeyboardCoordinates,
         }),
     );
+
+    const accessibility = {
+        announcements: boardDndAnnouncements,
+        screenReaderInstructions: boardDndScreenReaderInstructions,
+        restoreFocus: true,
+    };
 
     const findListIdByCardId = useCallback((id) => {
         if (lists[id]) return id;
@@ -208,6 +226,7 @@ function useBoardDnD(boardId) {
 
     return {
         sensors,
+        accessibility,
         activeId,
         activeType,
         activeData,

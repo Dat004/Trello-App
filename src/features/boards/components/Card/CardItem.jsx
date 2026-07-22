@@ -69,7 +69,7 @@ function CardItem({ cardId, listId, boardId, isOverlay = false, card, currentBoa
       id={cardId}
       type="card"
       disabled={isOverlay}
-      data={{ listId }}
+      data={{ listId, title: card.title }}
       renderComponent={({ setNodeRef, style, attributes, listeners, isDragging }) => (
         <div
           style={style}
@@ -98,10 +98,12 @@ function CardItem({ cardId, listId, boardId, isOverlay = false, card, currentBoa
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex items-start gap-2 flex-1 min-w-0">
                     <button 
+                      type="button"
                       {...attributes}
                       {...listeners}
                       className={cn(
-                        "opacity-0 group-hover:opacity-100 transition-opacity mt-1 p-0.5 hover:bg-muted rounded",
+                        // Always visible on touch; hover-reveal only when a fine pointer exists
+                        "opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:group-focus-within:opacity-100 transition-opacity mt-1 p-1.5 min-h-8 min-w-8 hover:bg-muted rounded touch-manipulation",
                         readOnly ? "hidden" : "cursor-grab active:cursor-grabbing"
                       )}
                       onClick={(e) => e.stopPropagation()}

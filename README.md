@@ -123,10 +123,43 @@ The current unit tests cover the board reducer, board selectors, API error helpe
 
 Playwright coverage:
 - `e2e/smoke.spec.js` — guest UI (login/register headings, 404, protected redirect) with a mocked unauthenticated session
+- `e2e/a11y.spec.js` — axe-core on guest login/register (WCAG 2 A/AA tags)
 - `e2e/auth.spec.js` — real login/logout/register against the backend using seeded demo accounts
 - `e2e/role-matrix.spec.js` — two isolated owner/viewer sessions verifying read-only enforcement and realtime board updates
 
 Frontend CI runs **smoke only** (`npm run e2e:smoke`) because Actions checks out this repo alone (no sibling `../BE`). Full `npm run e2e` / `e2e:auth` needs a local layout with `FE` and `BE` side by side, MongoDB, and demo seed.
+
+### Accessibility checklist (manual + automated)
+
+Automated:
+```bash
+npm run e2e:a11y
+```
+
+Manual screen-reader / keyboard (board):
+- [ ] Tab to list/card drag handles; Space/Enter starts keyboard DnD; arrows move; Escape cancels; focus returns to the handle
+- [ ] Live region announces start / over / drop / cancel in Vietnamese
+- [ ] Notifications bell exposes unread count in accessible name
+- [ ] Mobile sidebar opens/closes via hamburger; Escape closes; backdrop click closes
+- [ ] Icon-only toolbar actions (theme, filter, labels, activity, members) have accessible names
+
+### Large-board perf (measure before virtualizing)
+
+Seed a fixture board (after `npm run seed:demo` in `BE`):
+
+```bash
+cd ../BE
+npm run seed:large-board
+# optional: LARGE_BOARD_LISTS=8 LARGE_BOARD_CARDS_PER_LIST=60 npm run seed:large-board
+```
+
+Budgets (Chrome Performance / React Profiler on `/board/<id>`):
+- Board paint after navigate: aim &lt; 2s on mid laptop with ~300 cards
+- Horizontal list scroll and vertical card scroll: no sustained &lt; 30 FPS jank while idle scrolling
+- Card open (dialog): aim &lt; 200ms to interactive after click
+- DnD (mouse): activation + first move feels &lt; 100ms
+
+**Do not add list/card virtualization until a budget fails on this fixture.** Prefer memoization / selector slicing first.
 
 Authenticated E2E needs MongoDB running, the backend dependencies installed, and demo users seeded (the Playwright `globalSetup` runs `npm run seed:demo` in `../BE` automatically unless `E2E_SKIP_SEED=1`). When `../BE` is missing, seed and auth specs are skipped automatically.
 
@@ -141,6 +174,7 @@ Useful scripts:
 
 ```bash
 npm run e2e:smoke
+npm run e2e:a11y
 npm run e2e:auth
 npm run e2e:roles
 ```

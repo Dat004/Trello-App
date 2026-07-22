@@ -164,10 +164,11 @@ function BoardDetailHeader({ currentView, onViewChange, currentTheme, onThemeCha
                     variant="ghost"
                     size="sm"
                     className={cn(
-                      "text-muted-foreground hover:bg-muted gap-1.5 hidden sm:flex relative h-8 rounded-lg transition-all",
+                      "text-muted-foreground hover:bg-muted gap-1.5 flex relative h-8 rounded-lg transition-all",
                       isFiltering && "text-primary bg-primary/10"
                     )}
                     title="Bộ lọc"
+                    aria-label="Bộ lọc thẻ"
                   >
                     <Filter className="h-4 w-4" />
                     <span className="hidden md:inline text-[11px] font-bold uppercase tracking-wider">Bộ lọc</span>
@@ -183,8 +184,9 @@ function BoardDetailHeader({ currentView, onViewChange, currentTheme, onThemeCha
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-muted-foreground hover:bg-muted gap-1.5 hidden sm:flex h-8 rounded-lg"
+                    className="text-muted-foreground hover:bg-muted gap-1.5 flex h-8 rounded-lg"
                     title="Nhãn board"
+                    aria-label="Quản lý nhãn"
                   >
                     <Tag className="h-4 w-4" />
                     <span className="hidden md:inline text-[11px] font-bold uppercase tracking-wider">Nhãn</span>
@@ -261,6 +263,7 @@ function BoardDetailHeader({ currentView, onViewChange, currentTheme, onThemeCha
                       size="sm"
                       className="text-muted-foreground hover:bg-muted h-8 px-2 rounded-lg relative"
                       title="Xem thành viên"
+                      aria-label={`Thành viên board, ${currentBoard.members?.length || 0} người`}
                     >
                       <Users className="h-4 w-4 mr-1.5" />
                       <span className="text-xs font-bold">{currentBoard.members?.length || 0}</span>
@@ -299,6 +302,7 @@ function BoardDetailHeader({ currentView, onViewChange, currentTheme, onThemeCha
                       size="sm"
                       className="h-8 px-3 gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm rounded-lg"
                       title="Mời thành viên"
+                      aria-label="Mời thành viên"
                     >
                       <UserPlus className="h-3.5 w-3.5" />
                       <span className="hidden md:inline text-[11px] font-bold uppercase">Mời</span>

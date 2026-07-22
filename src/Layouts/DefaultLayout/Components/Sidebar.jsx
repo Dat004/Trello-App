@@ -36,6 +36,17 @@ function Sidebar() {
     closeMobileSidebar();
   }, [location.pathname, closeMobileSidebar]);
 
+  useEffect(() => {
+    if (!isMobileSidebarOpen) return undefined;
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") {
+        closeMobileSidebar();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isMobileSidebarOpen, closeMobileSidebar]);
+
   // Data Hooks
   const { data: workspaces = [], isLoading: isLoadingWorkspaces } = useWorkspacesList();
   const favoriteBoards = useFavoritesStore((s) => s.favoriteBoards);
@@ -56,6 +67,7 @@ function Sidebar() {
       />
     )}
     <aside
+      id="app-mobile-sidebar"
       className={cn(
         "fixed inset-y-0 left-0 z-50 flex h-screen flex-col overflow-hidden border-r bg-background transition-all duration-300 md:sticky md:top-0 md:z-auto md:translate-x-0",
         isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full",

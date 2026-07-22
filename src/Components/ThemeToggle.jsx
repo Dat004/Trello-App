@@ -27,6 +27,7 @@ function ThemeToggle({ collapsed = false }) {
           variant="ghost"
           className={`w-full justify-start ${collapsed ? "justify-center px-2" : "px-3"}`}
           title="Giao diện"
+          aria-label="Chọn giao diện"
         >
           {theme === "light" && <Sun className="h-4 w-4 shrink-0" />}
           {theme === "dark" && <Moon className="h-4 w-4 shrink-0" />}

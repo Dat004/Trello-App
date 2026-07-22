@@ -98,6 +98,7 @@ function ToastProvider({ children }) {
         {toasts.map((toast) => (
           <div
             key={toast.id}
+            role="status"
             className={`max-w-sm w-full border rounded-lg shadow-lg p-4
               ${getBackgroundColor(toast.type)}
               ${

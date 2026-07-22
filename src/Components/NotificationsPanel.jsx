@@ -48,10 +48,10 @@ function NotificationsPanel() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="sm" className="relative h-9 w-9 p-0 rounded-full hover:bg-muted transition-colors">
+        <Button variant="ghost" size="sm" className="relative h-9 w-9 p-0 rounded-full hover:bg-muted transition-colors" aria-label={unreadCount > 0 ? `Thông báo, ${unreadCount} chưa đọc` : "Thông báo"}>
           <Bell className="h-5 w-5 text-muted-foreground" />
           {unreadCount > 0 && (
-            <Badge className="absolute -top-1 -right-1 h-4 min-w-4 px-1 items-center justify-center rounded-full text-[9px]">
+            <Badge className="absolute -top-1 -right-1 h-4 min-w-4 px-1 items-center justify-center rounded-full text-[9px]" aria-hidden="true">
               {unreadCount > 9 ? "9+" : unreadCount}
             </Badge>
           )}

@@ -1,6 +1,7 @@
 import { attachmentsApi } from "@/api/attachments";
 import { commentsApi } from "@/api/comments";
 import { UserToast } from "@/context/ToastContext";
+import { useBoardActions } from "@/features/boards/context/BoardStateContext";
 import { CARD_KEYS } from "@/query/queryKeys";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -131,9 +132,14 @@ export const useCardAttachments = (boardId, cardId) => {
 export const useAddAttachment = () => {
     const queryClient = useQueryClient();
     const { addToast } = UserToast();
+    const boardActions = useBoardActions(false);
     const mutation = useMutation({
         mutationFn: ({ boardId, cardId, data }) => attachmentsApi.addAttachment(boardId, cardId, data),
-        onSuccess: (data, variables) => {
+        onSuccess: (res, variables) => {
+            const attachment = res?.data?.data?.attachment;
+            if (attachment && boardActions?.addAttachment) {
+                boardActions.addAttachment(variables.cardId, attachment);
+            }
             queryClient.invalidateQueries({ queryKey: CARD_KEYS.attachments(variables.cardId) });
             addToast({ type: "success", title: "Thêm tệp đính kèm thành công" });
         },
@@ -148,9 +154,13 @@ export const useAddAttachment = () => {
 export const useDeleteAttachment = () => {
     const queryClient = useQueryClient();
     const { addToast } = UserToast();
+    const boardActions = useBoardActions(false);
     const mutation = useMutation({
         mutationFn: ({ boardId, cardId, attachmentId }) => attachmentsApi.deleteAttachment(boardId, cardId, attachmentId),
-        onSuccess: (data, variables) => {
+        onSuccess: (_data, variables) => {
+            if (boardActions?.deleteAttachment) {
+                boardActions.deleteAttachment(variables.cardId, variables.attachmentId);
+            }
             queryClient.invalidateQueries({ queryKey: CARD_KEYS.attachments(variables.cardId) });
             addToast({ type: "success", title: "Xóa tệp đính kèm thành công" });
         },

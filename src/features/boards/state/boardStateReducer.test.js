@@ -158,4 +158,20 @@ describe("boardStateReducer", () => {
     expect(next.cards["card-1"].memberIds).toEqual(["user-1", "user-2"]);
     expect(next.users["user-2"].full_name).toBe("Grace");
   });
+
+  it("preserves activeUsers across reset from a Query refetch", () => {
+    const base = normalizeBoard(boardFixture);
+    const withPresence = {
+      ...base,
+      activeUsers: [{ _id: "user-9", full_name: "Viewer" }],
+    };
+    const reset = boardStateReducer(withPresence, {
+      type: "reset",
+      payload: normalizeBoard(boardFixture),
+    });
+
+    expect(reset.activeUsers).toEqual([
+      { _id: "user-9", full_name: "Viewer" },
+    ]);
+  });
 });

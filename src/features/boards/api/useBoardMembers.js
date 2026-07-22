@@ -3,7 +3,7 @@ import { inviteApi } from "@/api/invite";
 import { UserToast } from "@/context/ToastContext";
 import { BOARD_KEYS, queryKeys } from "@/query/queryKeys";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useBoardContext } from "../context/BoardStateContext";
+import { useBoardActions } from "../context/BoardStateContext";
 
 export const BOARD_MEMBERS_KEYS = {
     list: queryKeys.boards.members,
@@ -40,7 +40,7 @@ export function useBoardJoinRequests(boardId) {
 export function useUpdateBoardMemberRole() {
     const queryClient = useQueryClient();
     const { addToast } = UserToast();
-    const boardContext = useBoardContext(false); // ✅ Safe for non-board pages
+    const boardContext = useBoardActions(false); // ✅ Safe for non-board pages
     const updateBoardMember = boardContext?.updateBoardMember;
 
     const mutation = useMutation({
@@ -86,7 +86,7 @@ export function useUpdateBoardMemberRole() {
 export function useKickBoardMember() {
     const queryClient = useQueryClient();
     const { addToast } = UserToast();
-    const boardContext = useBoardContext(false); // ✅ Safe for non-board pages
+    const boardContext = useBoardActions(false); // ✅ Safe for non-board pages
     const removeBoardMember = boardContext?.removeBoardMember;
 
     const mutation = useMutation({

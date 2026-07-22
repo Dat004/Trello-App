@@ -1,11 +1,11 @@
 import { boardApi } from "@/api/board";
 import { UserToast } from "@/context/ToastContext";
 import { useMutation } from "@tanstack/react-query";
-import { useBoardContext } from "../context/BoardStateContext";
+import { useBoardActions } from "../context/BoardStateContext";
 
 export function useCreateBoardLabel() {
   const { addToast } = UserToast();
-  const { addBoardLabel } = useBoardContext();
+  const { addBoardLabel } = useBoardActions();
 
   const mutation = useMutation({
     mutationFn: ({ boardId, data }) => boardApi.createLabel(boardId, data),
@@ -34,7 +34,7 @@ export function useCreateBoardLabel() {
 
 export function useUpdateBoardLabel() {
   const { addToast } = UserToast();
-  const { updateBoardLabel } = useBoardContext();
+  const { updateBoardLabel } = useBoardActions();
 
   const mutation = useMutation({
     mutationFn: ({ boardId, labelId, data }) =>
@@ -69,7 +69,7 @@ export function useUpdateBoardLabel() {
 
 export function useDeleteBoardLabel() {
   const { addToast } = UserToast();
-  const { removeBoardLabel } = useBoardContext();
+  const { removeBoardLabel } = useBoardActions();
 
   const mutation = useMutation({
     mutationFn: ({ boardId, labelId }) =>

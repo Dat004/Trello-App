@@ -3,8 +3,9 @@ import { AnimatePresence, motion as Motion } from "framer-motion";
 import { useSearchParams } from "react-router-dom";
 
 import { BoardFilterProvider } from "../../context/BoardFilterContext";
-import { useBoardContext } from "../../context/BoardStateContext";
+import { useBoardActions, useBoardSelector } from "../../context/BoardStateContext";
 import { useBoardRealtime } from "../../hooks/useBoardRealtime";
+import { selectCurrentBoard } from "../../state/boardSelectors";
 import CardDetailDialog from "../Card/CardDetailDialog";
 import BoardAnalyticsView from "../Views/BoardAnalyticsView";
 import BoardCalendarView from "../Views/BoardCalendarView";
@@ -19,29 +20,42 @@ function BoardContent() {
   const userId = useAuthStore((state) => state.user?._id);
   const [searchParams, setSearchParams] = useSearchParams();
   const [currentView, setCurrentView] = useState("kanban");
-  
-  const getResolvedTheme = (t) => t === "system" 
-    ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
-    : t;
+
+  const getResolvedTheme = (t) =>
+    t === "system"
+      ? window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light"
+      : t;
 
   const [boardTheme, setBoardTheme] = useState(() => {
     const resolved = getResolvedTheme(globalTheme);
-    return resolved === "dark" ? "bg-slate-950 text-slate-100" : "bg-slate-50 text-slate-900";
+    return resolved === "dark"
+      ? "bg-slate-950 text-slate-100"
+      : "bg-slate-50 text-slate-900";
   });
 
   useEffect(() => {
     const resolved = getResolvedTheme(globalTheme);
-    setBoardTheme(resolved === "dark" ? "bg-slate-950 text-slate-100" : "bg-slate-50 text-slate-900");
+    setBoardTheme(
+      resolved === "dark"
+        ? "bg-slate-950 text-slate-100"
+        : "bg-slate-50 text-slate-900",
+    );
   }, [globalTheme]);
 
-  // Local Board State (from Context)
-  const { boardData, ...actions } = useBoardContext();
-  const { currentBoard } = boardData;
+  const currentBoard = useBoardSelector(selectCurrentBoard);
+  const actions = useBoardActions();
+  const selectedCardId = searchParams.get("card");
+  // Inline selector keeps hook deps stable when there is no focused card.
+  const selectedCard = useBoardSelector((state) =>
+    selectedCardId ? state.cards[selectedCardId] : null,
+  );
+
   const storageKey = currentBoard
     ? `trello_board_preferences:${userId || "anonymous"}:${currentBoard._id}`
     : null;
 
-  // Realtime Sync
   useBoardRealtime(currentBoard?._id, actions);
 
   useEffect(() => {
@@ -69,9 +83,6 @@ function BoardContent() {
     }
   };
 
-  const selectedCardId = searchParams.get("card");
-  const selectedCard = selectedCardId ? boardData.cards[selectedCardId] : null;
-
   const handleCardDialogChange = (open) => {
     if (open) return;
     const next = new URLSearchParams(searchParams);
@@ -98,10 +109,15 @@ function BoardContent() {
 
   return (
     <BoardFilterProvider storageKey={storageKey}>
-      <section className={cn("flex flex-col h-screen transition-all duration-500", boardTheme)}>
+      <section
+        className={cn(
+          "flex flex-col h-screen transition-all duration-500",
+          boardTheme,
+        )}
+      >
         <section className="bg-background/40 backdrop-blur-md border-b border-border/50 shadow-sm shrink-0">
-          <BoardDetailHeader 
-            currentView={currentView} 
+          <BoardDetailHeader
+            currentView={currentView}
             onViewChange={handleViewChange}
             currentTheme={boardTheme}
             onThemeChange={setBoardTheme}

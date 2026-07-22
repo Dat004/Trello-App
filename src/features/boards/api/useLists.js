@@ -2,11 +2,11 @@ import { listApi } from "@/api/list";
 import { UserToast } from "@/context/ToastContext";
 import { getApiErrorMessage } from "@/utils/apiError";
 import { useMutation } from "@tanstack/react-query";
-import { useBoardContext } from "../context/BoardStateContext";
+import { useBoardActions } from "../context/BoardStateContext";
 
 export function useCreateList() {
     const { addToast } = UserToast();
-    const { addList } = useBoardContext();
+    const { addList } = useBoardActions();
 
     const mutation = useMutation({
         mutationFn: ({ boardId, data }) => listApi.create(boardId, data),
@@ -33,7 +33,7 @@ export function useCreateList() {
 
 export function useUpdateList() {
     const { addToast } = UserToast();
-    const { updateList } = useBoardContext();
+    const { updateList } = useBoardActions();
 
     const mutation = useMutation({
         mutationFn: ({ boardId, listId, data }) => listApi.update(boardId, listId, data),
@@ -58,7 +58,7 @@ export function useUpdateList() {
 
 export function useDeleteList() {
     const { addToast } = UserToast();
-    const { removeList } = useBoardContext();
+    const { removeList } = useBoardActions();
 
     const mutation = useMutation({
         mutationFn: ({ boardId, listId }) => listApi.delete(boardId, listId),

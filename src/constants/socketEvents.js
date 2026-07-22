@@ -47,6 +47,10 @@ export const SOCKET_EVENTS = {
     CARD_DELETED: 'card-deleted',
     CARD_MOVED: 'card-moved',
 
+    // Attachment events
+    ATTACHMENT_CREATED: 'attachment-created',
+    ATTACHMENT_DELETED: 'attachment-deleted',
+
     // Checklist events
     CHECKLIST_ITEM_ADDED: 'checklist-item-added',
     CHECKLIST_ITEM_TOGGLED: 'checklist-item-toggled',

@@ -1,11 +1,11 @@
 import { cardApi } from "@/api/card";
 import { UserToast } from "@/context/ToastContext";
 import { useMutation } from "@tanstack/react-query";
-import { useBoardContext } from "../context/BoardStateContext";
+import { useBoardActions } from "../context/BoardStateContext";
 
 export function useAssignCardLabel() {
   const { addToast } = UserToast();
-  const { assignCardLabel } = useBoardContext();
+  const { assignCardLabel } = useBoardActions();
 
   const mutation = useMutation({
     mutationFn: ({ boardId, listId, cardId, data }) =>
@@ -35,7 +35,7 @@ export function useAssignCardLabel() {
 
 export function useRemoveCardLabel() {
   const { addToast } = UserToast();
-  const { removeCardLabel } = useBoardContext();
+  const { removeCardLabel } = useBoardActions();
 
   const mutation = useMutation({
     mutationFn: ({ boardId, listId, cardId, labelId }) =>

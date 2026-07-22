@@ -10,11 +10,12 @@ export const createEmptyBoardState = () => ({
 });
 
 const updateCardInState = (state, cardId, update) => {
-  const card = state.cards[cardId];
+  const id = String(cardId);
+  const card = state.cards[id];
   if (!card) return state;
   return {
     ...state,
-    cards: { ...state.cards, [cardId]: update(card) },
+    cards: { ...state.cards, [id]: update(card) },
   };
 };
 
@@ -27,7 +28,13 @@ const updateCardInState = (state, cardId, update) => {
 export function boardStateReducer(state, { type, payload }) {
   switch (type) {
     case "reset":
-      return payload;
+      // Preserve presence across React Query refetches — normalizeBoard omits activeUsers.
+      return {
+        ...payload,
+        activeUsers: state.activeUsers?.length
+          ? state.activeUsers
+          : payload.activeUsers || [],
+      };
     case "updateBoard":
       return {
         ...state,
@@ -141,6 +148,8 @@ export function boardStateReducer(state, { type, payload }) {
     }
     case "updateCardPosition":
       return updateCardPosition(state, payload);
+    case "setCardOrder":
+      return setCardOrder(state, payload);
     case "addBoardMember": {
       const member = payload;
       if (state.boardMembers?.some((item) => item.user._id === member.user._id)) {
@@ -214,21 +223,38 @@ export function boardStateReducer(state, { type, payload }) {
     }
     case "addAttachment": {
       const { cardId, attachment } = payload;
-      return updateCardInState(state, cardId, (card) => ({
-        ...card,
-        attachments: [...(card.attachments || []), attachment],
-        attachment_count: (card.attachment_count || 0) + 1,
-      }));
+      return updateCardInState(state, cardId, (card) => {
+        const attachmentId = String(attachment?._id || "");
+        const already = (card.attachments || []).some(
+          (item) => String(item._id) === attachmentId,
+        );
+        if (already) return card;
+        return {
+          ...card,
+          attachments: [...(card.attachments || []), attachment],
+          attachment_count: (card.attachment_count || 0) + 1,
+        };
+      });
     }
     case "deleteAttachment": {
       const { cardId, attachmentId } = payload;
-      return updateCardInState(state, cardId, (card) => ({
-        ...card,
-        attachments: (card.attachments || []).filter(
-          (attachment) => attachment._id !== attachmentId,
-        ),
-        attachment_count: Math.max(0, (card.attachment_count || 0) - 1),
-      }));
+      const attachmentKey = String(attachmentId);
+      return updateCardInState(state, cardId, (card) => {
+        const nextAttachments = (card.attachments || []).filter(
+          (attachment) => String(attachment._id) !== attachmentKey,
+        );
+        // Prefer explicit count; fall back so card faces update even when
+        // the board payload never hydrated an attachments array.
+        const prevCount =
+          typeof card.attachment_count === "number"
+            ? card.attachment_count
+            : (card.attachments || []).length;
+        return {
+          ...card,
+          attachments: nextAttachments,
+          attachment_count: Math.max(0, prevCount - 1),
+        };
+      });
     }
     case "assignCardMember":
       return assignCardMember(state, payload);
@@ -382,40 +408,87 @@ function moveCard(state, { activeId, overId, activeListId, overListId }) {
 }
 
 function updateCardPosition(state, { cardId, targetListId, pos }) {
-  const currentCard = state.cards[cardId];
+  const id = String(cardId);
+  const targetId = String(targetListId);
+  const currentCard = state.cards[id];
   if (!currentCard) return state;
-  const sourceListId = currentCard.listId || currentCard.list;
+  const sourceListId = String(currentCard.listId || currentCard.list || "");
   const cards = {
     ...state.cards,
-    [cardId]: {
+    [id]: {
       ...currentCard,
-      listId: targetListId,
-      list: targetListId,
+      listId: targetId,
+      list: targetId,
       pos,
     },
   };
   const lists = { ...state.lists };
 
-  if (lists[sourceListId] && sourceListId !== targetListId) {
+  if (lists[sourceListId] && sourceListId !== targetId) {
     lists[sourceListId] = {
       ...lists[sourceListId],
       cardOrderIds: lists[sourceListId].cardOrderIds.filter(
-        (id) => id !== cardId,
+        (cardOrderId) => String(cardOrderId) !== id,
       ),
     };
   }
 
-  if (lists[targetListId]) {
-    const targetList = lists[targetListId];
-    const cardOrderIds = targetList.cardOrderIds.filter((id) => id !== cardId);
-    cardOrderIds.push(cardId);
+  if (lists[targetId]) {
+    const targetList = lists[targetId];
+    const cardOrderIds = targetList.cardOrderIds.filter(
+      (cardOrderId) => String(cardOrderId) !== id,
+    );
+    cardOrderIds.push(id);
     cardOrderIds.sort(
       (a, b) => (cards[a]?.pos || 0) - (cards[b]?.pos || 0),
     );
-    lists[targetListId] = { ...targetList, cardOrderIds };
+    lists[targetId] = { ...targetList, cardOrderIds };
   }
 
   return { ...state, cards, lists };
+}
+
+function setCardOrder(state, { listId, cardOrderIds, cardId, sourceListId }) {
+  const targetListId = String(listId);
+  const movedCardId = cardId ? String(cardId) : null;
+  const fromListId = sourceListId ? String(sourceListId) : null;
+  if (!state.lists[targetListId]) return state;
+
+  let lists = { ...state.lists };
+  let cards = state.cards;
+
+  if (movedCardId && fromListId && fromListId !== targetListId && lists[fromListId]) {
+    lists = {
+      ...lists,
+      [fromListId]: {
+        ...lists[fromListId],
+        cardOrderIds: lists[fromListId].cardOrderIds.filter(
+          (id) => String(id) !== movedCardId,
+        ),
+      },
+    };
+  }
+
+  lists = {
+    ...lists,
+    [targetListId]: {
+      ...lists[targetListId],
+      cardOrderIds: cardOrderIds.map(String),
+    },
+  };
+
+  if (movedCardId && cards[movedCardId]) {
+    cards = {
+      ...cards,
+      [movedCardId]: {
+        ...cards[movedCardId],
+        listId: targetListId,
+        list: targetListId,
+      },
+    };
+  }
+
+  return { ...state, lists, cards };
 }
 
 function assignCardMember(state, { cardId, user }) {

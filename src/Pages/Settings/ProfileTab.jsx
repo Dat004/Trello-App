@@ -1,5 +1,5 @@
-import { useState, useRef } from "react";
-import { Camera } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Camera, Loader2 } from "lucide-react";
 
 import { uploadService } from "@/services/uploadService";
 import { useApiMutation, useZodForm } from "@/hooks";
@@ -33,10 +33,12 @@ function ProfileTab() {
   const { user } = useAuthStore();
 
   const avatarFileRef = useRef(null);
+  const previewUrlRef = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [pendingFile, setPendingFile] = useState(null);
   const [pendingAvatar, setPendingAvatar] = useState({
     url: user.avatar?.url || "",
-    public_id: user.avatar.public_id,
+    public_id: user.avatar?.public_id || "",
   });
 
   const form = useZodForm(infoSchema, {
@@ -54,62 +56,118 @@ function ProfileTab() {
 
   const { mutate: updateInfo, isLoading: isUpdating } = useApiMutation(
     (data) => userApi.updateInfo(data),
-    (responseData) => setUser(responseData.user)
+    (responseData) => {
+      setUser(responseData.user);
+      setPendingFile(null);
+      if (previewUrlRef.current) {
+        URL.revokeObjectURL(previewUrlRef.current);
+        previewUrlRef.current = null;
+      }
+      setPendingAvatar({
+        url: responseData.user.avatar?.url || "",
+        public_id: responseData.user.avatar?.public_id || "",
+      });
+    }
   );
 
-  const updateInfoUser = (data) => {
-    const userData = {
-      ...data,
-      avatar: { ...pendingAvatar },
+  useEffect(() => {
+    return () => {
+      if (previewUrlRef.current) {
+        URL.revokeObjectURL(previewUrlRef.current);
+      }
     };
-    
-    updateInfo(userData);
+  }, []);
+
+  const clearLocalPreview = () => {
+    if (previewUrlRef.current) {
+      URL.revokeObjectURL(previewUrlRef.current);
+      previewUrlRef.current = null;
+    }
   };
 
-  const handleUploadNewAvatar = async (e) => {
-    if (isUploading) return; // Tránh spam upload file khi đang xử lý upload file trước đó
-    setIsUploading(true);
+  const handleSelectAvatar = (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
 
-    const file = e.target.files[0];
     const error = validateFileByIntent(file, UPLOAD_INTENT.AVATAR);
     if (error) {
       addToast({
         type: "error",
         title: error,
       });
-
-      // Set false để tránh bị treo UI khi không chọn file
-      setIsUploading(false);
-
       return;
     }
 
-    const toastId = addToast({
-      type: "loading",
-      title: "Đang tải ảnh lên...",
+    clearLocalPreview();
+    const previewUrl = URL.createObjectURL(file);
+    previewUrlRef.current = previewUrl;
+    setPendingFile(file);
+    setPendingAvatar({
+      url: previewUrl,
+      public_id: pendingAvatar.public_id,
     });
-    const result = await uploadService.upload(file, UPLOAD_INTENT.AVATAR);
-
-    addToast({
-      type: result.error ? "error" : "success",
-      title: result.error
-        ? "Upload hình ảnh thất bại"
-        : "Upload hình ảnh thành công",
-    });
-    removeToast(toastId);
-    setIsUploading(false);
-    if (result.error) {
-      return;
-    }
-
-    const { public_id, eager } = result;
-    if (public_id && eager) {
-      setPendingAvatar({
-        url: eager[0]?.secure_url,
-        public_id,
-      });
-    }
   };
+
+  const updateInfoUser = async (data) => {
+    if (isUpdating || isUploading) return;
+
+    let avatarPayload = {
+      url: user.avatar?.url || "",
+      public_id: user.avatar?.public_id || "",
+    };
+
+    if (pendingFile) {
+      setIsUploading(true);
+      const toastId = addToast({
+        type: "loading",
+        title: "Đang tải ảnh lên...",
+      });
+
+      try {
+        const result = await uploadService.upload(pendingFile, UPLOAD_INTENT.AVATAR);
+        if (result?.error || !result?.public_id) {
+          addToast({
+            type: "error",
+            title: "Upload hình ảnh thất bại",
+          });
+          return;
+        }
+
+        avatarPayload = {
+          url: result.eager?.[0]?.secure_url || result.secure_url,
+          public_id: result.public_id,
+        };
+        addToast({
+          type: "success",
+          title: "Upload hình ảnh thành công",
+        });
+      } catch {
+        addToast({
+          type: "error",
+          title: "Upload hình ảnh thất bại",
+        });
+        return;
+      } finally {
+        removeToast(toastId);
+        setIsUploading(false);
+      }
+    } else if (pendingAvatar.public_id) {
+      avatarPayload = {
+        url: pendingAvatar.url?.startsWith("blob:")
+          ? user.avatar?.url || ""
+          : pendingAvatar.url,
+        public_id: pendingAvatar.public_id,
+      };
+    }
+
+    updateInfo({
+      ...data,
+      avatar: avatarPayload,
+    });
+  };
+
+  const isBusy = isUpdating || isUploading;
 
   return (
     <Card>
@@ -134,20 +192,21 @@ function ProfileTab() {
                 size="sm"
                 type="button"
                 onClick={() => avatarFileRef.current.click()}
+                disabled={isBusy}
                 className="gap-2 leading-1.5 text-xs h-8"
               >
                 <Camera className="h-4 w-4" />
                 Thay đổi ảnh
               </Button>
               <p className="text-xs sm:text-sm text-muted-foreground">
-                JPG, PNG tối đa 2MB
+                JPG, PNG tối đa 2MB. Ảnh chỉ được tải lên khi bạn lưu thay đổi.
               </p>
               <section>
                 <Input
                   type="file"
                   ref={avatarFileRef}
-                  onChange={handleUploadNewAvatar}
-                  disabled={isUpdating || isUploading}
+                  onChange={handleSelectAvatar}
+                  disabled={isBusy}
                   accept={getAcceptByIntent(UPLOAD_INTENT.AVATAR)}
                   className="hidden opacity-0 invisible select-none pointer-events-none"
                 />
@@ -168,7 +227,7 @@ function ProfileTab() {
                   </span>
                 )}
               </section>
-              <Input id="full_name" {...register("full_name")} />
+              <Input id="full_name" disabled={isBusy} {...register("full_name")} />
             </div>
             <div className="space-y-2">
               <section className="flex items-center">
@@ -194,6 +253,7 @@ function ProfileTab() {
             </section>
             <TextArea
               id="bio"
+              disabled={isBusy}
               {...register("bio")}
               placeholder="Viết vài dòng về bản thân..."
               rows={3}
@@ -208,9 +268,16 @@ function ProfileTab() {
           <Button
             type="submit"
             className="leading-1.5 h-9"
-            disabled={isUpdating || isUploading}
+            disabled={isBusy}
           >
-            Lưu thay đổi
+            {isBusy ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {isUploading ? "Đang tải ảnh..." : "Đang lưu..."}
+              </>
+            ) : (
+              "Lưu thay đổi"
+            )}
           </Button>
         </form>
       </CardContent>

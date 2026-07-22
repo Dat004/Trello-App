@@ -6,6 +6,7 @@ import { Button, Input, Label, Separator } from "@/Components/UI";
 import { UserToast } from "@/context/ToastContext";
 import loginSchema from "@/schemas/loginSchema";
 import { useAuth, useZodForm } from "@/hooks";
+import { cn } from "@/lib/utils";
 
 function Auth() {
   const [isLogging, setIsLogging] = useState(false);
@@ -28,22 +29,15 @@ function Auth() {
     setIsLogging(false);
   };
 
-  const loginCancel = () => {
-    addToast({
-      type: "info",
-      title: "Đã hủy đăng nhập",
-      description: "Bạn đã đóng hoặc bỏ qua đăng nhập bằng Google.",
-      duration: 3000,
-    });
-    setIsLogging(false);
-  };
-
   const handleLoginAccount = async (data) => {
+    if (isLogging) return;
     setIsLogging(true);
 
-    await login(data);
-
-    setIsLogging(false);
+    try {
+      await login(data);
+    } finally {
+      setIsLogging(false);
+    }
   };
 
   return (
@@ -78,43 +72,49 @@ function Auth() {
               onSubmit={handleSubmit(handleLoginAccount)}
               className="space-y-2"
             >
-              <section>
-                <Label htmlFor="email" className="text-xs">
-                  Email
-                </Label>
-                <Input {...register("email")} type="email" id="email" />
-                {errors.email?.message && (
-                  <span className="text-xs text-destructive">
-                    {errors.email.message}
-                  </span>
-                )}
-              </section>
-              <section>
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password" className="text-xs">
-                    Mật khẩu
+              <fieldset disabled={isLogging} className="space-y-2 border-0 p-0 m-0 min-w-0">
+                <section>
+                  <Label htmlFor="email" className="text-xs">
+                    Email
                   </Label>
-                  <Link
-                    to="/forgot-password"
-                    className="text-xs text-primary hover:underline"
-                  >
-                    Quên mật khẩu?
-                  </Link>
-                </div>
-                <Input
-                  {...register("password")}
-                  type="password"
-                  id="password"
-                />
-                {errors.password?.message && (
-                  <span className="text-xs text-destructive">
-                    {errors.password.message}
-                  </span>
-                )}
-              </section>
-              <Button disabled={isLogging} className="w-full mt-4" type="submit">
-                {isLogging ? "Đang đăng nhập..." : "Đăng nhập"}
-              </Button>
+                  <Input {...register("email")} type="email" id="email" />
+                  {errors.email?.message && (
+                    <span className="text-xs text-destructive">
+                      {errors.email.message}
+                    </span>
+                  )}
+                </section>
+                <section>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password" className="text-xs">
+                      Mật khẩu
+                    </Label>
+                    <Link
+                      to="/forgot-password"
+                      className={cn(
+                        "text-xs text-primary hover:underline",
+                        isLogging && "pointer-events-none opacity-60"
+                      )}
+                      tabIndex={isLogging ? -1 : undefined}
+                    >
+                      Quên mật khẩu?
+                    </Link>
+                  </div>
+                  <Input
+                    {...register("password")}
+                    type="password"
+                    id="password"
+                  />
+                  {errors.password?.message && (
+                    <span className="text-xs text-destructive">
+                      {errors.password.message}
+                    </span>
+                  )}
+                </section>
+                <Button disabled={isLogging} className="w-full mt-4" type="submit">
+                  {isLogging ? "Đang đăng nhập..." : "Đăng nhập"}
+                </Button>
+              </fieldset>
             </form>
 
             <section className="relative">
@@ -125,17 +125,30 @@ function Auth() {
             </section>
 
             <section className="space-y-4">
+              {isLogging && (
+                <p className="text-center text-xs text-muted-foreground" role="status">
+                  Vui lòng đợi — đang xác thực, không thao tác lại.
+                </p>
+              )}
               <GoogleLoginBtn
+                disabled={isLogging}
+                onPendingChange={setIsLogging}
                 onSuccess={() => setIsLogging(false)}
                 onError={loginError}
-                onCancel={loginCancel}
               />
             </section>
 
             <div className="text-center">
               <span className="text-xs">
                 Bạn chưa có tài khoản?
-                <Link to="/register" className="ml-1 text-primary underline">
+                <Link
+                  to="/register"
+                  className={cn(
+                    "ml-1 text-primary underline",
+                    isLogging && "pointer-events-none opacity-60"
+                  )}
+                  tabIndex={isLogging ? -1 : undefined}
+                >
                   Tạo tài khoản
                 </Link>
               </span>

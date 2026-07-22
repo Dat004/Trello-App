@@ -134,10 +134,12 @@ export const useAuth = () => {
         "Đăng nhập Google thất bại",
       );
       handleSuccess(user, res.data.message, "Đăng nhập thành công qua Google.");
+      return true;
     } catch (error) {
       handleError(
         error.response?.data?.message || error.message || "Đăng nhập Google thất bại",
       );
+      return false;
     }
   };
 

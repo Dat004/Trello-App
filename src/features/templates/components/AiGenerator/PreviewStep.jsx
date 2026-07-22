@@ -50,7 +50,7 @@ function PreviewStep({ template, onRegenerate, onUse, isRegenerating }) {
             >
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-6 bg-purple-500 rounded-full" />
+                  <div className={cn("w-1.5 h-6 rounded-full", list.color || "bg-purple-500")} />
                   <h4 className="font-bold text-sm text-foreground">{list.name}</h4>
                 </div>
                 <Badge variant="secondary" className="bg-muted text-[10px] font-normal">

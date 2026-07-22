@@ -41,13 +41,16 @@ export const useBoardActions = (required = true) => {
  */
 export const useBoardSelector = (selector, required = true) => {
   const boardData = useContext(BoardDataContext);
-  if (!boardData && required) {
-    throw new Error("useBoardSelector must be used within BoardStateProvider");
-  }
-  return useMemo(
+  const selected = useMemo(
     () => (boardData ? selector(boardData) : undefined),
     [boardData, selector],
   );
+
+  if (!boardData && required) {
+    throw new Error("useBoardSelector must be used within BoardStateProvider");
+  }
+
+  return selected;
 };
 
 /**
@@ -58,9 +61,14 @@ export const useBoardSelector = (selector, required = true) => {
 export const useBoardContext = (required = true) => {
   const boardData = useContext(BoardDataContext);
   const actions = useContext(BoardActionsContext);
-  if ((!boardData || !actions) && required) {
+  const value = useMemo(() => {
+    if (!boardData || !actions) return null;
+    return { boardData, ...actions };
+  }, [boardData, actions]);
+
+  if (!value && required) {
     throw new Error("useBoardContext must be used within BoardStateProvider");
   }
-  if (!boardData || !actions) return null;
-  return useMemo(() => ({ boardData, ...actions }), [boardData, actions]);
+
+  return value;
 };

@@ -5,7 +5,9 @@ import { authApi } from "@/api/auth";
 import { userApi } from "@/api/user";
 import { UserToast } from "@/context/ToastContext";
 import { queryClient } from "@/lib/react-query";
+import { authUserDataContract } from "@/schemas/apiContracts";
 import { useAuthStore, useFavoritesStore, useUIStore } from "@/store";
+import { parseApiData } from "@/utils/apiError";
 
 const clearSessionCaches = () => {
   useFavoritesStore.getState().clearFavorites();
@@ -20,18 +22,18 @@ export const useAuthInit = () => {
     const initAuth = async () => {
       try {
         const res = await userApi.me();
+        const { user } = parseApiData(
+          res,
+          authUserDataContract,
+          "Không thể tải phiên đăng nhập",
+        );
+        setUser(user);
 
-        if (res.data.success) {
-          const user = res.data.data.user;
-          setUser(user);
-
-          const userTheme = user?.settings?.appearance?.theme;
-          if (userTheme) {
-            useUIStore.getState().setTheme(userTheme);
-          }
-
-          return;
+        const userTheme = user?.settings?.appearance?.theme;
+        if (userTheme) {
+          useUIStore.getState().setTheme(userTheme);
         }
+        return;
       } catch {
         // An expired/missing session is an unauthenticated state.
       } finally {
@@ -79,34 +81,32 @@ export const useAuth = () => {
   const login = async (data) => {
     try {
       const res = await authApi.login(data);
-      if (!res.data?.success) {
-        handleError(res.data?.message || "Đăng nhập thất bại");
-        return;
-      }
-      handleSuccess(
-          res.data.data.user,
-          res.data.message,
-          "Chào mừng bạn trở lại."
-        );
+      const { user } = parseApiData(
+        res,
+        authUserDataContract,
+        "Đăng nhập thất bại",
+      );
+      handleSuccess(user, res.data.message, "Chào mừng bạn trở lại.");
     } catch (error) {
-      handleError(error.response?.data?.message || "Đăng nhập thất bại");
+      handleError(error.response?.data?.message || error.message || "Đăng nhập thất bại");
     }
   };
 
   const register = async (data) => {
     try {
       const res = await authApi.register(data);
-      if (!res.data?.success) {
-        handleError(res.data?.message || "Đăng ký thất bại");
-        return;
-      }
+      const { user } = parseApiData(
+        res,
+        authUserDataContract,
+        "Đăng ký thất bại",
+      );
       handleSuccess(
-        res.data.data.user,
+        user,
         res.data.message,
-        "Tự động đăng nhập. Chúng tôi sẽ tự động chuyển hướng bạn trong vài giây..."
+        "Tự động đăng nhập. Chúng tôi sẽ tự động chuyển hướng bạn trong vài giây...",
       );
     } catch (error) {
-      handleError(error.response?.data?.message || "Đăng ký thất bại");
+      handleError(error.response?.data?.message || error.message || "Đăng ký thất bại");
     }
   };
 
@@ -128,17 +128,16 @@ export const useAuth = () => {
   const googleLogin = async (idToken) => {
     try {
       const res = await authApi.googleLogin({ idToken });
-      if (!res.data?.success) {
-        handleError(res.data?.message || "Đăng nhập Google thất bại");
-        return;
-      }
-      handleSuccess(
-        res.data.data.user,
-        res.data.message,
-        "Đăng nhập thành công qua Google."
+      const { user } = parseApiData(
+        res,
+        authUserDataContract,
+        "Đăng nhập Google thất bại",
       );
+      handleSuccess(user, res.data.message, "Đăng nhập thành công qua Google.");
     } catch (error) {
-      handleError(error.response?.data?.message || "Đăng nhập Google thất bại");
+      handleError(
+        error.response?.data?.message || error.message || "Đăng nhập Google thất bại",
+      );
     }
   };
 

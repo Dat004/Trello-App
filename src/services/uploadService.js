@@ -1,4 +1,6 @@
 import { uploadApi } from "@/api/upload";
+import { uploadSignatureContract } from "@/schemas/apiContracts";
+import { parseApiData } from "@/utils/apiError";
 
 export const uploadService = {
   async upload(file, intent, contextId) {
@@ -8,7 +10,6 @@ export const uploadService = {
     }
 
     const signRes = await uploadApi.getSignature(payload);
-
     const {
       cloudName,
       resource_type,
@@ -16,16 +17,20 @@ export const uploadService = {
       timestamp,
       apiKey,
       params,
-    } = signRes.data.data;
+    } = parseApiData(
+      signRes,
+      uploadSignatureContract,
+      "Chữ ký upload không hợp lệ",
+    );
 
     const formData = new FormData();
     formData.append("file", file);
     formData.append("api_key", apiKey);
-    formData.append("timestamp", timestamp);
+    formData.append("timestamp", String(timestamp));
     formData.append("signature", signature);
 
-    if (params.folder) formData.append("folder", params.folder);
-    if (params.eager) formData.append("eager", params.eager);
+    if (params?.folder) formData.append("folder", params.folder);
+    if (params?.eager) formData.append("eager", params.eager);
 
     const res = await uploadApi.uploadToCloudinary({
       data: formData,

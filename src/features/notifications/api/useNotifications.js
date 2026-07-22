@@ -3,6 +3,8 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tansta
 
 import { notificationApi } from "@/api/notifications";
 import { NOTIFICATION_KEYS } from "@/query/queryKeys";
+import { notificationsPageContract } from "@/schemas/apiContracts";
+import { parseApiData } from "@/utils/apiError";
 
 export { NOTIFICATION_KEYS };
 
@@ -56,15 +58,11 @@ export const useNotifications = () => {
         page: pageParam,
         limit: PAGE_SIZE,
       });
-      return {
-        notifications: res.data?.data?.notifications || [],
-        pagination: res.data?.data?.pagination || {
-          page: pageParam,
-          limit: PAGE_SIZE,
-          total: 0,
-          totalPages: 0,
-        },
-      };
+      return parseApiData(
+        res,
+        notificationsPageContract,
+        "Không thể tải thông báo",
+      );
     },
     initialPageParam: 1,
     getNextPageParam: (lastPage) => {

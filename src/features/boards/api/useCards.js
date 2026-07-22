@@ -1,28 +1,34 @@
 import { cardApi } from "@/api/card";
 import { UserToast } from "@/context/ToastContext";
 import { CARD_KEYS } from "@/query/queryKeys";
-import { getApiErrorMessage } from "@/utils/apiError";
+import { cardMutationDataContract } from "@/schemas/apiContracts";
+import { getApiErrorMessage, parseApiData } from "@/utils/apiError";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useBoardContext } from "../context/BoardStateContext";
+import { useBoardActions } from "../context/BoardStateContext";
 
 export { CARD_KEYS };
 
 export function useCreateCard() {
     const { addToast } = UserToast();
-    const { addCard } = useBoardContext();
+    const { addCard } = useBoardActions();
 
     const mutation = useMutation({
         mutationFn: ({ boardId, listId, ...data }) => cardApi.create(boardId, listId, data),
 
         onSuccess: (res) => {
-            if (res.data?.success) {
-                // ✅ Optimistically update context with server data
-                const newCard = res.data.data.card;
-                addCard(newCard);
-
+            try {
+                const { card } = parseApiData(
+                    res,
+                    cardMutationDataContract,
+                    res.data?.message || "Lỗi tạo thẻ",
+                );
+                addCard(card);
                 addToast({ type: "success", title: "Tạo thẻ thành công!" });
-            } else {
-                addToast({ type: "error", title: res.data?.message || "Lỗi tạo thẻ" });
+            } catch (error) {
+                addToast({
+                    type: "error",
+                    title: getApiErrorMessage(error, "Lỗi tạo thẻ"),
+                });
             }
         },
 
@@ -37,21 +43,25 @@ export function useCreateCard() {
 export function useUpdateCard() {
     const queryClient = useQueryClient();
     const { addToast } = UserToast();
-    const { updateCard } = useBoardContext();
+    const { updateCard } = useBoardActions();
 
     const mutation = useMutation({
         mutationFn: ({ boardId, listId, id, data }) => cardApi.update(boardId, listId, id, data),
 
         onSuccess: (res, variables) => {
-            if (res.data?.success) {
-                // ✅ Update context with server data
-                const updatedCard = res.data.data.card;
-                updateCard(variables.id, updatedCard);
-
-                // Update card detail query if it exists
-                queryClient.setQueryData(CARD_KEYS.detail(variables.id), updatedCard);
-            } else {
-                addToast({ type: "error", title: res.data?.message || "Lỗi cập nhật thẻ" });
+            try {
+                const { card } = parseApiData(
+                    res,
+                    cardMutationDataContract,
+                    res.data?.message || "Lỗi cập nhật thẻ",
+                );
+                updateCard(variables.id, card);
+                queryClient.setQueryData(CARD_KEYS.detail(variables.id), card);
+            } catch (error) {
+                addToast({
+                    type: "error",
+                    title: getApiErrorMessage(error, "Lỗi cập nhật thẻ"),
+                });
             }
         },
 
@@ -66,7 +76,7 @@ export function useUpdateCard() {
 export function useUpdateCardComplete() {
     const queryClient = useQueryClient();
     const { addToast } = UserToast();
-    const { updateCard } = useBoardContext();
+    const { updateCard } = useBoardActions();
 
     const mutation = useMutation({
         mutationFn: ({ boardId, listId, id, data }) => cardApi.updateComplete(boardId, listId, id, data),
@@ -95,7 +105,7 @@ export function useUpdateCardComplete() {
 
 export function useDeleteCard() {
     const { addToast } = UserToast();
-    const { removeCard } = useBoardContext();
+    const { removeCard } = useBoardActions();
 
     const mutation = useMutation({
         mutationFn: ({ boardId, listId, id }) => cardApi.delete(boardId, listId, id),
@@ -124,7 +134,7 @@ export function useDeleteCard() {
 export function useAddChecklistItem() {
     const queryClient = useQueryClient();
     const { addToast } = UserToast();
-    const { addChecklistItem } = useBoardContext();
+    const { addChecklistItem } = useBoardActions();
 
     const mutation = useMutation({
         mutationFn: ({ boardId, listId, cardId, data }) => cardApi.addChecklist(boardId, listId, cardId, data),
@@ -178,7 +188,7 @@ export function useAddChecklistItem() {
 export function useToggleChecklistItem() {
     const queryClient = useQueryClient();
     const { addToast } = UserToast();
-    const { toggleChecklistItem } = useBoardContext();
+    const { toggleChecklistItem } = useBoardActions();
 
     const mutation = useMutation({
         mutationFn: ({ boardId, listId, cardId, data }) => cardApi.toggleChecklistItem(boardId, listId, cardId, data),
@@ -232,7 +242,7 @@ export function useToggleChecklistItem() {
 export function useDeleteChecklistItem() {
     const queryClient = useQueryClient();
     const { addToast } = UserToast();
-    const { deleteChecklistItem } = useBoardContext();
+    const { deleteChecklistItem } = useBoardActions();
 
     const mutation = useMutation({
         mutationFn: ({ boardId, listId, cardId, data }) => cardApi.deleteChecklist(boardId, listId, cardId, data),

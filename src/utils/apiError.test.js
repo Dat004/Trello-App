@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { getApiErrorMessage, unwrapApiData } from "./apiError";
+import { getApiErrorMessage, parseApiData, unwrapApiData } from "./apiError";
 
 describe("getApiErrorMessage", () => {
   it.each([
@@ -41,5 +41,30 @@ describe("unwrapApiData", () => {
     expect(() => unwrapApiData(undefined, "Malformed response")).toThrow(
       "Malformed response",
     );
+  });
+});
+
+describe("parseApiData", () => {
+  const schema = {
+    safeParse: (value) =>
+      value?.ok
+        ? { success: true, data: value }
+        : { success: false, error: new Error("bad") },
+  };
+
+  it("returns schema data for a successful envelope", () => {
+    expect(
+      parseApiData({ data: { success: true, data: { ok: true, n: 1 } } }, schema),
+    ).toEqual({ ok: true, n: 1 });
+  });
+
+  it("throws when the schema rejects the payload", () => {
+    expect(() =>
+      parseApiData(
+        { data: { success: true, data: { ok: false } } },
+        schema,
+        "Invalid payload",
+      ),
+    ).toThrow("Invalid payload");
   });
 });

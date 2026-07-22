@@ -44,3 +44,28 @@ export function unwrapApiData(response, fallback = "Yêu cầu không thành cô
   }
   return response.data.data;
 }
+
+/**
+ * Unwraps a successful envelope then validates `data` with a Zod schema.
+ * @template T
+ * @param {{ data?: { success?: boolean, message?: string, data?: unknown } }} response
+ * @param {{ safeParse: (value: unknown) => { success: true, data: T } | { success: false, error: unknown } }} schema
+ * @param {string} fallback
+ * @returns {T}
+ */
+export function parseApiData(
+  response,
+  schema,
+  fallback = "Phản hồi không hợp lệ",
+) {
+  const data = unwrapApiData(response, fallback);
+  const parsed = schema.safeParse(data);
+  if (!parsed.success) {
+    throw new Error(
+      fallback === response?.data?.message
+        ? "Phản hồi không hợp lệ"
+        : fallback,
+    );
+  }
+  return parsed.data;
+}

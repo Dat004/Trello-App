@@ -51,8 +51,6 @@ function SettingWorkspaceDialog({ workspace, trigger }) {
   const { mutate: kickMember } = useKickMember(workspace._id);
   const { mutate: inviteMember } = useInviteWorkspaceMember();
 
-  console.log(isUpdating)
-
   const handleInviteMembers = ({ emails, role, message, onSuccess, onSettled }) => {
     inviteMember(
       {

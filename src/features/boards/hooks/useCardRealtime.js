@@ -21,7 +21,6 @@ export const useCardRealtime = (cardId) => {
     useEffect(() => {
         if (!cardId || !isConnected || !socket) return;
 
-        console.log(`[CardRealtime] Joining room for card: ${cardId}`);
         joinRoom(ROOM_TYPES.CARD, cardId);
 
         // --- Event Handlers ---
@@ -143,7 +142,6 @@ export const useCardRealtime = (cardId) => {
 
         // Cleanup
         return () => {
-            console.log(`[CardRealtime] Leaving room for card: ${cardId}`);
             socket.off(SOCKET_EVENTS.COMMENT_ADDED, handleCommentAdded);
             socket.off(SOCKET_EVENTS.COMMENT_UPDATED, handleCommentUpdated);
             socket.off(SOCKET_EVENTS.COMMENT_DELETED, handleCommentDeleted);

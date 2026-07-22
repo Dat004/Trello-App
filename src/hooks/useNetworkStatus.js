@@ -1,29 +1,15 @@
 import { useEffect, useState } from 'react';
 
 /**
- * Hook để detect network status (online/offline)
- * 
- * Handles:
- * - WiFi/Ethernet disconnect
- * - Airplane mode
- * - Router down
- * - ISP issues
- * 
+ * Detect browser online/offline status.
  * @returns {{ isOnline: boolean }}
  */
 export function useNetworkStatus() {
     const [isOnline, setIsOnline] = useState(navigator.onLine);
 
     useEffect(() => {
-        const handleOnline = () => {
-            console.log('[Network] Online');
-            setIsOnline(true);
-        };
-
-        const handleOffline = () => {
-            console.log('[Network] Offline');
-            setIsOnline(false);
-        };
+        const handleOnline = () => setIsOnline(true);
+        const handleOffline = () => setIsOnline(false);
 
         window.addEventListener('online', handleOnline);
         window.addEventListener('offline', handleOffline);

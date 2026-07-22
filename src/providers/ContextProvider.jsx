@@ -19,29 +19,28 @@ function SocketProvider({ children }) {
 
     // Event handlers
     socketInstance.on("connect", () => {
-      console.log("Connected:", socketInstance.id);
-
       setSocketId(socketInstance.id);
-      setAxiosSocketId(socketInstance.id); // Sync với axios
+      setAxiosSocketId(socketInstance.id);
       setIsConnected(true);
     });
 
-    socketInstance.on("disconnect", (reason) => {
-      console.log("Disconnected:", reason);
-
+    socketInstance.on("disconnect", () => {
       setIsConnected(false);
-      setAxiosSocketId(null); // Clear axios socketId
+      setAxiosSocketId(null);
     });
 
     socketInstance.on("connect_error", (error) => {
-      console.error("Connection error:", error);
+      // Expected on guest pages (no auth cookie yet). Keep retrying quietly;
+      // useGlobalRealtimeSync forces connect() after login.
+      if (error?.message && error.message !== "Unauthorized") {
+        console.error("Connection error:", error);
+      }
+      setIsConnected(false);
     });
 
     setSocket(socketInstance);
 
-    // Cleanup khi unmount
     return () => {
-      console.log("Cleaning up connection");
       socketInstance.disconnect();
     };
   }, []);

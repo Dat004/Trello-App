@@ -11,6 +11,11 @@ import { useAuthStore } from "@/store";
 import { useNetworkStatus } from "./useNetworkStatus";
 import useSocket from "./useSocket";
 
+/**
+ * App-level realtime: reconnect refetch, notification toasts, user room join.
+ * Board/card entity patches live in useBoardRealtime / useCardRealtime.
+ * See README "State ownership & realtime" for reconciliation rules.
+ */
 export function useGlobalRealtimeSync() {
     const wasDisconnectedRef = useRef(false);
     const lastRefetchTimeRef = useRef(0);
@@ -21,20 +26,46 @@ export function useGlobalRealtimeSync() {
 
     const queryClient = useQueryClient();
     const user = useAuthStore((state) => state.user);
+    const prevUserIdRef = useRef(undefined);
 
-    // // Fetch workspaces to know which rooms to join
-    // const { data: workspaces = [] } = useWorkspacesList();
+    // Socket auth uses the httpOnly cookie at handshake. Reconnect only when
+    // needed — avoid disconnect/connect flaps that spam board presence toasts.
+    useEffect(() => {
+        if (!socket) return;
 
-    // Reconnect & Refetch Logic
+        const userId = user?._id ? String(user._id) : null;
+        const prevUserId = prevUserIdRef.current;
+        prevUserIdRef.current = userId;
+
+        // Initial mount before auth init resolves.
+        if (prevUserId === undefined && userId === null) return;
+
+        // Logout
+        if (prevUserId && !userId) {
+            if (socket.connected) socket.disconnect();
+            return;
+        }
+
+        // Account switch
+        if (prevUserId && userId && prevUserId !== userId) {
+            wasDisconnectedRef.current = false;
+            if (socket.connected) socket.disconnect();
+            socket.connect();
+            return;
+        }
+
+        // Login / auth hydration: connect only if the socket is down.
+        if (userId && !socket.connected) {
+            socket.connect();
+        }
+    }, [socket, user?._id]);
+
     useEffect(() => {
         if (!socket) return;
         const REFETCH_COOLDOWN = 5000;
 
         const handleConnect = async () => {
-            console.log("[Global] Socket connected");
-
             if (wasDisconnectedRef.current) {
-                console.log("[Global] Reconnected after disconnect");
                 const now = Date.now();
 
                 if (now - lastRefetchTimeRef.current < REFETCH_COOLDOWN) {
@@ -45,7 +76,6 @@ export function useGlobalRealtimeSync() {
 
                 lastRefetchTimeRef.current = now;
 
-                // Refresh only server data that can be changed by realtime events.
                 await Promise.all(
                     REALTIME_QUERY_PREFIXES.map((queryKey) =>
                         queryClient.invalidateQueries({ queryKey })
@@ -58,7 +88,6 @@ export function useGlobalRealtimeSync() {
         };
 
         const handleDisconnect = (reason) => {
-            console.warn("[Global] Socket disconnected:", reason);
             wasDisconnectedRef.current = true;
             if (reason !== 'io client disconnect') {
                 addToast({ title: "Mất kết nối real-time", type: 'warning', duration: 3000 });
@@ -81,14 +110,10 @@ export function useGlobalRealtimeSync() {
         };
     }, [socket, addToast, queryClient]);
 
-    // Event Handling (Stable Listeners)
     useEffect(() => {
         if (!socket) return;
 
-        // ==================== NOTIFICATION HANDLERS ====================
         const handleNewNotification = (notification) => {
-            console.log("[GlobalSync] New notification received:", notification);
-
             const isReminder = notification.type === 'due_date_reminder';
             addToast({
                 title: isReminder ? "Nhắc nhở hạn chót" : "Thông báo mới",
@@ -106,7 +131,6 @@ export function useGlobalRealtimeSync() {
             queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.list() });
         };
 
-        // Listen for notifications
         socket.on(SOCKET_EVENTS.NOTIFICATION_NEW, handleNewNotification);
 
         return () => {
@@ -114,13 +138,9 @@ export function useGlobalRealtimeSync() {
         };
     }, [socket, addToast, queryClient]);
 
-    // // Room Subscription Management
-    // const workspaceIdsString = workspaces.map(w => w._id).sort().join(',');
-
     useEffect(() => {
         if (!user || !isConnected || !socket) return;
 
-        // Join User Room
         joinRoom(ROOM_TYPES.USER, user._id);
         socket.emit(SOCKET_EVENTS.REGISTER_USER, {
             _id: user._id,
@@ -129,22 +149,16 @@ export function useGlobalRealtimeSync() {
             username: user.username
         });
 
-        // // Join Workspace Rooms
-        // const ids = workspaceIdsString ? workspaceIdsString.split(',') : [];
-        // ids.forEach(wsId => joinRoom(ROOM_TYPES.WORKSPACE, wsId));
-
         return () => {
             leaveRoom(ROOM_TYPES.USER, user._id);
-            // ids.forEach(wsId => leaveRoom(ROOM_TYPES.WORKSPACE, wsId));
         };
     }, [user, isConnected, socket, joinRoom, leaveRoom]);
 
-    // Network Status Toast
     useEffect(() => {
         if (!isOnline) {
             addToast({ title: "Không có kết nối mạng", type: 'error', duration: 0 });
-        } else {
-            if (socket && !socket.connected) socket.connect();
+        } else if (socket && !socket.connected) {
+            socket.connect();
         }
     }, [isOnline, socket, addToast]);
 

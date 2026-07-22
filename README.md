@@ -50,7 +50,28 @@ src/
 └── utils/        # Helpers and formatters
 ```
 
-TanStack Query handles server data. Zustand stores small application-wide state such as authentication and UI preferences. Board data is normalized into `lists`, `cards`, and `users` maps because this makes drag-and-drop and realtime updates easier to manage.
+TanStack Query owns server snapshots (boards, notifications, card comments). Zustand holds small app-wide state (auth session, UI theme/preferences, favorites). Zod validates form inputs under `src/schemas/` and high-risk API response envelopes via `src/schemas/apiContracts.js` + `parseApiData`.
+
+### Board state ownership
+
+Inside an open board, React Query still owns the detail query. `BoardStateProvider` keeps a **normalized working copy** (`lists` / `cards` / `users` maps) in an external store so DnD and socket patches can update locally without rewriting the Query cache on every keystroke.
+
+Prefer:
+- `useBoardSelector(selector)` — subscribe to a slice (re-render only when the selected value changes by `Object.is`)
+- `useBoardActions()` — stable mutation helpers (no re-render when maps change)
+- `useBoardContext()` — full data + actions (legacy / when you need both)
+
+Pure selectors live in `features/boards/state/boardSelectors.js` and are unit-tested without rendering the app.
+
+### Realtime reconciliation
+
+| Layer | Hook | Identity / reconcile rule |
+|-------|------|---------------------------|
+| App | `useGlobalRealtimeSync` | On reconnect, invalidate `REALTIME_QUERY_PREFIXES` (cooldown 5s); `NOTIFICATION_NEW` bumps unread + invalidates list |
+| Board | `useBoardRealtime` | Socket event → named board action (`addCard`, `updateCardPosition`, …). Entity identity is `_id` (optionally `_id:updatedAt`). Presence (`activeUsers`) is preserved across Query-driven `reset` |
+| Card | `useCardRealtime` | Comment add/update patches Query cache then invalidates; presence/typing/locks are local to the dialog |
+
+Optimistic DnD applies local `moveCard` / `moveList`; a failed API call invalidates the board detail query so the working copy resets from the server.
 
 ## Local setup
 
@@ -98,7 +119,7 @@ The application runs at `http://localhost:5173` by default.
 
 ## Testing
 
-The current unit tests cover the board reducer, API error handling, and persisted board filters.
+The current unit tests cover the board reducer, board selectors, API error helpers, response contracts, and persisted board filters.
 
 Playwright coverage:
 - `e2e/smoke.spec.js` — guest UI (login/register headings, 404, protected redirect) with a mocked unauthenticated session

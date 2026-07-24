@@ -1,6 +1,7 @@
 import axios from "axios";
 
 import ENV_CONFIG from "@/config/env";
+import { isLikelyColdStartError, wakeBackend } from "./wakeApi";
 
 const getBaseUrl = () => {
   if (import.meta.env.PROD) {
@@ -19,7 +20,10 @@ export const setSocketId = (socketId) => {
 
 const axiosClient = axios.create({
   baseURL: getBaseUrl(),
-  withCredentials: true, // Gửi kèm cookie trong các yêu cầu
+  withCredentials: true,
+  // Render free cold start often needs 30–60s; default axios has no timeout
+  // but browsers / proxies may cut earlier — keep a generous client budget.
+  timeout: import.meta.env.PROD ? 60000 : 30000,
 });
 
 const axiosCloudinaryClient = axios.create({
@@ -27,21 +31,33 @@ const axiosCloudinaryClient = axios.create({
   timeout: 30000,
 });
 
-// Request interceptor: Tự động inject x-socket-id vào mọi request
 axiosClient.interceptors.request.use(
   (config) => {
     if (currentSocketId) {
-      config.headers['x-socket-id'] = currentSocketId;
+      config.headers["x-socket-id"] = currentSocketId;
     }
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// Response interceptor
 axiosClient.interceptors.response.use(
   (res) => res,
-  (err) => Promise.reject(err)
+  async (error) => {
+    const config = error.config;
+    if (!config || config.__coldRetry) {
+      return Promise.reject(error);
+    }
+
+    if (!isLikelyColdStartError(error)) {
+      return Promise.reject(error);
+    }
+
+    config.__coldRetry = true;
+    // Wake sleeping instance, then retry the original request once.
+    await wakeBackend({ attempts: 3, timeoutMs: 45000 });
+    return axiosClient.request(config);
+  }
 );
 
 export { axiosClient, axiosCloudinaryClient };

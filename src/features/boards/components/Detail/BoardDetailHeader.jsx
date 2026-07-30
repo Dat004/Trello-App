@@ -13,7 +13,7 @@ import {
   Table,
   Tag,
   UserPlus,
-  Users
+  Users,
 } from "lucide-react";
 import { motion as Motion } from "framer-motion";
 
@@ -34,287 +34,321 @@ import { useFavorites } from "@/hooks";
 import { cn } from "@/lib/utils";
 
 function BoardDetailHeader({ currentView, onViewChange, currentTheme, onThemeChange }) {
-    const navigate = useNavigate();
-    const { isFiltering } = useBoardFilter();
-    
-    // Use Context
-    const { readOnly } = useBoardAccess();
-    const { boardData } = useBoardContext();
-    const { currentBoard, boardMembers, joinRequests } = boardData;
+  const navigate = useNavigate();
+  const { isFiltering } = useBoardFilter();
 
-    const favoriteBoards = useFavoritesStore((state) => state.favoriteBoards);
-    const { toggleBoardStar, isTogglingBoard } = useFavorites();
+  const { readOnly } = useBoardAccess();
+  const { boardData } = useBoardContext();
+  const { currentBoard, boardMembers, joinRequests } = boardData;
 
-    const { mutate: handleJoinRequest, isLoading: isHandlingJoinRequest } = useHandleBoardJoinRequest();
-    const { mutate: inviteMember, isLoading: isInviting } = useInviteBoardMember();
-  
-    const handleInviteMembers = ({ emails, role, message, onSuccess, onSettled }) => {
-      inviteMember(
-        {
-            boardId: currentBoard._id,
-            emails,
-            role,
-            message,
+  const favoriteBoards = useFavoritesStore((state) => state.favoriteBoards);
+  const { toggleBoardStar, isTogglingBoard } = useFavorites();
+
+  const { mutate: handleJoinRequest, isLoading: isHandlingJoinRequest } = useHandleBoardJoinRequest();
+  const { mutate: inviteMember, isLoading: isInviting } = useInviteBoardMember();
+
+  const handleInviteMembers = ({ emails, role, message, onSuccess, onSettled }) => {
+    inviteMember(
+      {
+        boardId: currentBoard._id,
+        emails,
+        role,
+        message,
+      },
+      {
+        onSuccess: () => {
+          if (onSuccess) onSuccess();
         },
-        {
-            onSuccess: () => {if (onSuccess) onSuccess()},
-            onSettled: () => {if (onSettled) onSettled()}
-        }
-      );
-    };
-  
-    const handleAcceptRequest = (requestId) => {
-        handleJoinRequest({
-            boardId: currentBoard._id,
-            requestId,
-            status: "accepted"
-        });
-    }
-  
-    const handleRejectRequest = (requestId) => {
-        handleJoinRequest({
-            boardId: currentBoard._id,
-            requestId,
-            status: "declined"
-        });
-    }
+        onSettled: () => {
+          if (onSettled) onSettled();
+        },
+      }
+    );
+  };
 
-    const views = [
-      { id: 'kanban', label: 'Bảng', icon: Kanban },
-      { id: 'table', label: 'Bảng biểu', icon: Table },
-      { id: 'calendar', label: 'Lịch', icon: Calendar },
-      { id: 'analytics', label: 'Phân tích', icon: ChartNoAxesCombined },
-    ];
+  const handleAcceptRequest = (requestId) => {
+    handleJoinRequest({
+      boardId: currentBoard._id,
+      requestId,
+      status: "accepted",
+    });
+  };
 
-    if (!currentBoard) return null;
+  const handleRejectRequest = (requestId) => {
+    handleJoinRequest({
+      boardId: currentBoard._id,
+      requestId,
+      status: "declined",
+    });
+  };
 
-    return (
-        <section className="container relative mx-auto px-4 pb-14 pt-3 lg:py-3">
-          <section className="flex flex-wrap items-center justify-between gap-2">
-            <section className="flex min-w-0 items-center gap-3 lg:gap-6">
-              <div className="flex items-center gap-3">
+  const views = [
+    { id: "kanban", label: "Bảng", icon: Kanban },
+    { id: "table", label: "Bảng biểu", icon: Table },
+    { id: "calendar", label: "Lịch", icon: Calendar },
+    { id: "analytics", label: "Phân tích", icon: ChartNoAxesCombined },
+  ];
+
+  const isStarred = favoriteBoards.some((board) => board._id === currentBoard?._id);
+
+  if (!currentBoard) return null;
+
+  const toolBtn =
+    "h-8 shrink-0 gap-1.5 px-2 text-muted-foreground hover:bg-muted/80 hover:text-foreground rounded-md lg:px-2.5";
+  const toolLabel = "hidden text-xs font-medium lg:inline";
+
+  return (
+    <header className="border-b border-border/40 bg-background/80 backdrop-blur-md">
+      <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-3 px-3 py-3 sm:px-4 lg:px-6">
+        {/* Top: title left · members/invite right */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex min-w-0 flex-1 items-center gap-1.5 sm:gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate(-1)}
+              className="h-8 w-8 shrink-0 text-muted-foreground hover:bg-muted"
+              aria-label="Quay lại"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+
+            <h1
+              className="min-w-0 truncate text-base font-semibold tracking-tight text-foreground sm:text-lg"
+              title={currentBoard.title}
+            >
+              {currentBoard.title}
+            </h1>
+
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={() => toggleBoardStar(currentBoard)}
+              className="h-8 w-8 shrink-0 text-muted-foreground hover:bg-muted"
+              aria-label="Đánh dấu bảng yêu thích"
+              aria-pressed={isStarred}
+            >
+              {isTogglingBoard ? (
+                <Loader2 className="h-4 w-4 animate-spin text-primary" />
+              ) : (
+                <Star
+                  className={cn(
+                    "h-4 w-4",
+                    isStarred ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"
+                  )}
+                />
+              )}
+            </Button>
+          </div>
+
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+            <div className="hidden items-center -space-x-2 sm:flex">
+              {boardData.activeUsers?.slice(0, 3).map((active) => (
+                <Avatar
+                  key={active._id}
+                  className="h-7 w-7 border-2 border-background shadow-sm"
+                  title={`${active.full_name} đang online`}
+                >
+                  <AvatarImage src={active.avatar?.url} alt={active.full_name} />
+                  <AvatarFallback className="bg-emerald-100 text-[10px] text-emerald-700">
+                    {active.full_name?.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+              ))}
+              {boardData.activeUsers?.length > 3 && (
+                <div className="z-10 flex h-7 w-7 items-center justify-center rounded-full border-2 border-background bg-muted text-[10px] font-semibold text-muted-foreground shadow-sm">
+                  +{boardData.activeUsers.length - 3}
+                </div>
+              )}
+            </div>
+
+            <MembersDialog
+              type="board"
+              entity={currentBoard}
+              members={boardMembers}
+              pendingMembers={!readOnly ? joinRequests : []}
+              activeUsers={boardData.activeUsers}
+              onAcceptRequest={!readOnly ? handleAcceptRequest : undefined}
+              onRejectRequest={!readOnly ? handleRejectRequest : undefined}
+              isLoading={isHandlingJoinRequest}
+              trigger={
                 <Button
                   variant="ghost"
-                  size="icon"
-                  onClick={() => navigate(-1)}
-                  className="text-muted-foreground hover:bg-muted h-8 w-8"
-                  aria-label="Quay lại"
+                  size="sm"
+                  className="relative h-8 gap-1.5 rounded-md px-2 text-muted-foreground hover:bg-muted"
+                  title="Xem thành viên"
+                  aria-label={`Thành viên board, ${currentBoard.members?.length || 0} người`}
                 >
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
-                <section>
-                  <h1 className="max-w-36 truncate text-base font-bold text-foreground sm:max-w-none sm:text-xl">
-                    {currentBoard.title}
-                  </h1>
-                </section>
-              </div>
-
-              {/* View Switcher */}
-              <div className="absolute bottom-0 left-0 right-0 flex translate-y-full items-center gap-1 overflow-x-auto border-b border-border/50 bg-background/95 p-2 backdrop-blur lg:static lg:translate-y-0 lg:rounded-xl lg:border">
-                {views.map((view) => {
-                  const isActive = currentView === view.id;
-                  return (
-                    <button
-                      key={view.id}
-                      onClick={() => onViewChange(view.id)}
-                      aria-pressed={isActive}
-                      className={cn(
-                        "relative flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold transition-all duration-300 lg:px-4",
-                        isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
-                      )}
-                    >
-                      {isActive && (
-                        <Motion.div
-                          layoutId="activeView"
-                          className="absolute inset-0 bg-background rounded-lg shadow-sm border border-border/50"
-                          transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                        />
-                      )}
-                      <view.icon className={cn("h-3.5 w-3.5 relative z-10 transition-transform duration-300", isActive && "scale-110")} />
-                      <span className="relative z-10">{view.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </section>
-
-            <section className="flex min-w-0 items-center gap-1 overflow-x-auto sm:gap-2">
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => toggleBoardStar(currentBoard)}
-                className="text-muted-foreground cursor-pointer hover:bg-muted"
-                aria-label="Đánh dấu bảng yêu thích"
-              >
-                {isTogglingBoard ? (
-                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                ) : (
-                  <Star
-                  className={cn("h-5 w-5", 
-                    favoriteBoards.some((board) => board._id === currentBoard._id)
-                      ? "fill-yellow-400 text-yellow-400"
-                      : "text-muted-foreground")}
-                  />
-                )}
-              </Button>
-
-              <BoardFilterDialog
-                trigger={
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className={cn(
-                      "text-muted-foreground hover:bg-muted gap-1.5 flex relative h-8 rounded-lg transition-all",
-                      isFiltering && "text-primary bg-primary/10"
-                    )}
-                    title="Bộ lọc"
-                    aria-label="Bộ lọc thẻ"
-                  >
-                    <Filter className="h-4 w-4" />
-                    <span className="hidden md:inline text-[11px] font-bold uppercase tracking-wider">Bộ lọc</span>
-                    {isFiltering && (
-                      <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-primary rounded-full border-2 border-background" />
-                    )}
-                  </Button>
-                }
-              />
-
-              <BoardLabelsDialog
-                trigger={
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-muted-foreground hover:bg-muted gap-1.5 flex h-8 rounded-lg"
-                    title="Nhãn board"
-                    aria-label="Quản lý nhãn"
-                  >
-                    <Tag className="h-4 w-4" />
-                    <span className="hidden md:inline text-[11px] font-bold uppercase tracking-wider">Nhãn</span>
-                  </Button>
-                }
-              />
-
-              <div className="w-[1px] h-4 bg-border mx-1" />
-
-              {/* AI & Theme Tools */}
-              <div className="flex items-center gap-1">
-                <BoardAIDialog
-                  boardId={currentBoard._id}
-                  trigger={
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 text-primary hover:bg-primary/10 gap-2 px-3 rounded-lg border border-primary/20 bg-primary/5 transition-all hover:scale-105 active:scale-95"
-                      title="AI Trợ lý"
-                    >
-                      <Sparkles className="h-3.5 w-3.5 fill-primary/20" />
-                      <span className="hidden md:inline text-[11px] font-bold uppercase tracking-wider text-primary">AI Magic</span>
-                    </Button>
-                  }
-                />
-
-                <BoardThemeDialog
-                  currentTheme={currentTheme}
-                  onThemeChange={onThemeChange}
-                  trigger={
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 w-8 p-0 text-muted-foreground hover:bg-muted rounded-lg transition-colors"
-                      title="Thay đổi chủ đề"
-                      aria-label="Thay đổi chủ đề"
-                    >
-                      <Palette className="h-4 w-4" />
-                    </Button>
-                  }
-                />
-              </div>
-
-               <BoardActivitiesDialog
-                boardId={currentBoard._id}
-                trigger={
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-muted-foreground hover:bg-muted h-8 w-8 p-0"
-                    title="Hoạt động"
-                    aria-label="Xem hoạt động"
-                  >
-                    <Activity className="h-4 w-4" />
-                  </Button>
-                }
-              />
-
-              <div className="w-[1px] h-4 bg-border mx-1" />
-              
-              <div className="flex items-center gap-2">
-                <MembersDialog
-                  type="board"
-                  entity={currentBoard}
-                  members={boardMembers}
-                  pendingMembers={!readOnly ? joinRequests : []}
-                  activeUsers={boardData.activeUsers}
-                  onAcceptRequest={!readOnly ? handleAcceptRequest : undefined}
-                  onRejectRequest={!readOnly ? handleRejectRequest : undefined}
-                  isLoading={isHandlingJoinRequest}
-                  trigger={
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-muted-foreground hover:bg-muted h-8 px-2 rounded-lg relative"
-                      title="Xem thành viên"
-                      aria-label={`Thành viên board, ${currentBoard.members?.length || 0} người`}
-                    >
-                      <Users className="h-4 w-4 mr-1.5" />
-                      <span className="text-xs font-bold">{currentBoard.members?.length || 0}</span>
-                      {!readOnly && joinRequests?.length > 0 && (
-                        <span className="absolute -top-1 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-white shadow-sm ring-2 ring-background">
-                          {joinRequests.length}
-                        </span>
-                      )}
-                    </Button>
-                  }
-                />
-
-                <div className="flex items-center -space-x-2 mr-1">
-                  {boardData.activeUsers?.slice(0, 3).map((active) => (
-                    <Avatar key={active._id} className="h-7 w-7 border-2 border-background shadow-sm" title={`${active.full_name} đang online`}>
-                      <AvatarImage src={active.avatar?.url} alt={active.full_name} />
-                      <AvatarFallback className="text-[10px] bg-green-100 text-green-700">
-                        {active.full_name?.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                  ))}
-                  {boardData.activeUsers?.length > 3 && (
-                    <div className="h-7 w-7 rounded-full bg-muted border-2 border-background flex items-center justify-center text-[10px] font-bold text-muted-foreground z-10 shadow-sm">
-                      +{boardData.activeUsers.length - 3}
-                    </div>
+                  <Users className="h-4 w-4" />
+                  <span className="text-xs font-medium tabular-nums">
+                    {currentBoard.members?.length || 0}
+                  </span>
+                  {!readOnly && joinRequests?.length > 0 && (
+                    <span className="absolute -right-0.5 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-white ring-2 ring-background">
+                      {joinRequests.length}
+                    </span>
                   )}
-                </div>
+                </Button>
+              }
+            />
 
-                {!readOnly && (
-                <InviteMemberDialog
-                  type="board"
-                  onInvite={handleInviteMembers}
-                  isLoading={isInviting}
-                  trigger={
-                    <Button
-                      size="sm"
-                      className="h-8 px-3 gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm rounded-lg"
-                      title="Mời thành viên"
-                      aria-label="Mời thành viên"
-                    >
-                      <UserPlus className="h-3.5 w-3.5" />
-                      <span className="hidden md:inline text-[11px] font-bold uppercase">Mời</span>
-                    </Button>
-                  }
-                />
-                )}
-              </div>
-            </section>
-          </section>
-        </section>
-    )
+            {!readOnly && (
+              <InviteMemberDialog
+                type="board"
+                onInvite={handleInviteMembers}
+                isLoading={isInviting}
+                trigger={
+                  <Button
+                    size="sm"
+                    className="h-8 gap-1.5 rounded-md px-2.5 sm:px-3"
+                    title="Mời thành viên"
+                    aria-label="Mời thành viên"
+                  >
+                    <UserPlus className="h-3.5 w-3.5" />
+                    <span className="hidden text-xs font-medium sm:inline">Mời</span>
+                  </Button>
+                }
+              />
+            )}
+          </div>
+        </div>
+
+        {/* Bottom: views · tools (labels from lg up to fill wide screens) */}
+        <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between lg:gap-4">
+          <nav
+            className="flex w-full items-center gap-0.5 overflow-x-auto rounded-lg bg-muted/40 p-1 lg:w-auto"
+            aria-label="Chế độ xem board"
+          >
+            {views.map((view) => {
+              const isActive = currentView === view.id;
+              return (
+                <button
+                  key={view.id}
+                  type="button"
+                  onClick={() => onViewChange(view.id)}
+                  aria-pressed={isActive}
+                  className={cn(
+                    "relative flex shrink-0 items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors sm:px-3",
+                    isActive
+                      ? "text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  {isActive && (
+                    <Motion.div
+                      layoutId="activeView"
+                      className="absolute inset-0 rounded-md border border-border/60 bg-background shadow-sm"
+                      transition={{ type: "spring", bounce: 0.2, duration: 0.45 }}
+                    />
+                  )}
+                  <view.icon
+                    className={cn(
+                      "relative z-10 h-3.5 w-3.5",
+                      isActive && "text-primary"
+                    )}
+                  />
+                  <span className="relative z-10 whitespace-nowrap">{view.label}</span>
+                </button>
+              );
+            })}
+          </nav>
+
+          <div className="flex items-center gap-1 overflow-x-auto lg:gap-1.5 lg:justify-end">
+            <BoardFilterDialog
+              trigger={
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={cn(
+                    toolBtn,
+                    "relative",
+                    isFiltering && "bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary"
+                  )}
+                  title="Bộ lọc"
+                  aria-label="Bộ lọc thẻ"
+                >
+                  <Filter className="h-4 w-4" />
+                  <span className={toolLabel}>Bộ lọc</span>
+                  {isFiltering && (
+                    <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-primary lg:right-2" />
+                  )}
+                </Button>
+              }
+            />
+
+            <BoardLabelsDialog
+              trigger={
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={toolBtn}
+                  title="Nhãn board"
+                  aria-label="Quản lý nhãn"
+                >
+                  <Tag className="h-4 w-4" />
+                  <span className={toolLabel}>Nhãn</span>
+                </Button>
+              }
+            />
+
+            <div className="mx-0.5 hidden h-4 w-px bg-border lg:block" aria-hidden="true" />
+
+            <BoardAIDialog
+              boardId={currentBoard._id}
+              trigger={
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={cn(
+                    toolBtn,
+                    "border border-transparent text-primary hover:border-primary/20 hover:bg-primary/10 hover:text-primary lg:border-primary/15 lg:bg-primary/5"
+                  )}
+                  title="AI Trợ lý"
+                  aria-label="AI Trợ lý"
+                >
+                  <Sparkles className="h-4 w-4" />
+                  <span className={toolLabel}>AI</span>
+                </Button>
+              }
+            />
+
+            <BoardThemeDialog
+              currentTheme={currentTheme}
+              onThemeChange={onThemeChange}
+              trigger={
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={toolBtn}
+                  title="Thay đổi chủ đề"
+                  aria-label="Thay đổi chủ đề"
+                >
+                  <Palette className="h-4 w-4" />
+                  <span className={toolLabel}>Chủ đề</span>
+                </Button>
+              }
+            />
+
+            <BoardActivitiesDialog
+              boardId={currentBoard._id}
+              trigger={
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={toolBtn}
+                  title="Hoạt động"
+                  aria-label="Xem hoạt động"
+                >
+                  <Activity className="h-4 w-4" />
+                  <span className={toolLabel}>Hoạt động</span>
+                </Button>
+              }
+            />
+          </div>
+        </div>
+      </div>
+    </header>
+  );
 }
 
 export default BoardDetailHeader;

@@ -115,7 +115,7 @@ function BoardContent() {
           boardTheme,
         )}
       >
-        <section className="bg-background/40 backdrop-blur-md border-b border-border/50 shadow-sm shrink-0">
+        <section className="shrink-0">
           <BoardDetailHeader
             currentView={currentView}
             onViewChange={handleViewChange}

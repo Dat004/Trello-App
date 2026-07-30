@@ -1,11 +1,11 @@
-import { Bell, Calendar, MessageSquare, Settings, Trello, User, UserPlus } from "lucide-react";
+import { Bell, Calendar, LayoutGrid, MessageSquare, Settings, User, UserPlus } from "lucide-react";
 
 export const getNotificationIcon = (type) => {
   switch (type) {
     case "mention": return User;
     case "assignment":
     case "card_member_assigned":
-      return Trello;
+      return LayoutGrid;
     case "comment":
     case "comment_created":
       return MessageSquare;

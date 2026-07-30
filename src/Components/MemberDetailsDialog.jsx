@@ -6,7 +6,7 @@ import {
   Eye,
   Calendar,
   Activity,
-  Trello,
+  LayoutGrid,
   Building2,
   Mail,
   Clock,
@@ -166,7 +166,7 @@ function MemberDetailsDialog({ member, trigger }) {
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
                     <div className="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                      <Trello className="h-5 w-5 text-blue-600" />
+                      <LayoutGrid className="h-5 w-5 text-blue-600" />
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">
@@ -233,7 +233,7 @@ function MemberDetailsDialog({ member, trigger }) {
                       className="flex items-center justify-between p-2 border rounded"
                     >
                       <div className="flex items-center gap-2">
-                        <Trello className="h-4 w-4 text-muted-foreground" />
+                        <LayoutGrid className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm font-medium">
                           {board.name}
                         </span>

@@ -1,4 +1,4 @@
-import { Building2, Users, Trello, Star } from "lucide-react";
+import { Building2, Users, LayoutGrid, Star } from "lucide-react";
 import { createElement } from "react";
 
 import {
@@ -29,7 +29,7 @@ function WorkspaceStats({ workspaces }) {
     {
       label: "Tổng bảng",
       value: totalBoards,
-      icon: Trello,
+      icon: LayoutGrid,
       bg: "bg-green-100",
       iconColor: "text-green-600",
     },

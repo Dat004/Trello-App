@@ -4,6 +4,7 @@ import { LogOut, Menu, Plus, Search, User } from "lucide-react";
 import BoardFormDialog from "@/features/boards/components/Dialogs/BoardFormDialog";
 import NotificationsPanel from "@/Components/NotificationsPanel";
 import GlobalSearch from "@/Components/GlobalSearch";
+import BrandLogo from "@/Components/BrandLogo";
 import { headerMenuData } from "@/config/data";
 import { useAuthStore, useUIStore } from "@/store";
 import { useAuth } from "@/hooks";
@@ -44,17 +45,8 @@ function Header() {
           >
             <Menu className="h-5 w-5" />
           </Button>
-          <Link to="/">
-            <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-lg">
-                  T
-                </span>
-              </div>
-              <h1 className="hidden text-xl font-bold text-foreground lg:block">
-                Trello Clone
-              </h1>
-            </div>
+          <Link className="block md:hidden" to="/">
+            <BrandLogo variant="header" />
           </Link>
 
           <nav className="hidden md:flex items-center gap-4">

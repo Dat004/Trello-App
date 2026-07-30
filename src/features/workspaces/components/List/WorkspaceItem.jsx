@@ -5,7 +5,7 @@ import {
   Settings,
   Star,
   Trash2,
-  Trello,
+  LayoutGrid,
   Users
 } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -166,7 +166,7 @@ function WorkspaceItem({ workspace }) {
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1">
-                <Trello className="h-4 w-4 text-muted-foreground" />
+                <LayoutGrid className="h-4 w-4 text-muted-foreground" />
                 <span>
                   {workspace.board_count === 0
                     ? "Chưa có bảng"

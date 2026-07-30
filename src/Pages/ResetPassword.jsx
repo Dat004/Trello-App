@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { authApi } from "@/api/auth";
+import BrandLogo from "@/Components/BrandLogo";
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label } from "@/Components/UI";
 import paths from "@/config/paths";
 import { useAuth, useZodForm } from "@/hooks";
@@ -87,6 +88,7 @@ function ResetPassword() {
     <main className="min-h-screen login-bg flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
+          <BrandLogo variant="auth" className="mx-auto mb-2 h-24 sm:h-28" />
           <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
             <LockKeyhole className="h-6 w-6 text-primary" />
           </div>

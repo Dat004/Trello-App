@@ -6,14 +6,15 @@ import {
   ChevronLeft,
   ChevronRight,
   Home,
+  LayoutGrid,
   Plus,
   Settings,
   Star,
-  Trello
 } from "lucide-react";
 
 import { useWorkspacesList } from "@/features/workspaces/api/useWorkspacesList";
 import { Button, ScrollArea, Separator } from "@/Components/UI";
+import BrandLogo from "@/Components/BrandLogo";
 import { useFavoritesStore, useUIStore } from "@/store";
 import ThemeToggle from "@/Components/ThemeToggle";
 import { useFavorites } from "@/hooks";
@@ -74,26 +75,44 @@ function Sidebar() {
         collapsed ? "w-64 md:w-16" : "w-64"
       )}
     >
-        <header className="flex items-center h-14 px-3 border-b shrink-0">
-         {!collapsed && (
-            <span className="font-semibold text-foreground whitespace-nowrap ml-2">
-              MyTrello
-            </span>
-         )}
-          <Button
-            onClick={toggleSidebar}
-            className={cn("h-8 w-8 p-0 ml-auto")}
-            variant="ghost"
-            aria-label={collapsed ? "Mở rộng thanh bên" : "Thu gọn thanh bên"}
-          >
-            {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-          </Button>
+        <header
+          className={cn(
+            "flex items-center h-14 px-3 border-b shrink-0 gap-2",
+            collapsed && "justify-center"
+          )}
+        >
+          <BrandLogo
+            variant={collapsed ? "sidebar" : "auth"}
+            className={cn(!collapsed && "!h-12")}
+            asLink
+          />
+          {!collapsed && (
+            <Button
+              onClick={toggleSidebar}
+              className="ml-auto h-8 w-8 p-0"
+              variant="ghost"
+              aria-label="Thu gọn thanh bên"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+          )}
         </header>
 
         <ScrollArea className="flex-1 max-w-full overflow-hidden" >
           <div className="p-3 space-y-4">
             {/* Main Navigation */}
             <nav className="space-y-1">
+              {collapsed && (
+                <Button
+                  variant="ghost"
+                  className="hidden w-full justify-center px-2 md:inline-flex"
+                  onClick={toggleSidebar}
+                  title="Mở rộng thanh bên"
+                  aria-label="Mở rộng thanh bên"
+                >
+                  <ChevronRight className="h-4 w-4 shrink-0" />
+                </Button>
+              )}
               <Button
                 variant={isActive("/") ? "secondary" : "ghost"}
                 className={cn("w-full justify-start", collapsed ? "px-2 justify-center" : "px-3")}
@@ -118,7 +137,7 @@ function Sidebar() {
                 onClick={() => navigate(boardListPath)}
                 title="Bảng"
               >
-                <Trello className="h-4 w-4 shrink-0" />
+                <LayoutGrid className="h-4 w-4 shrink-0" />
                 {!collapsed && <span className="ml-3 truncate">Bảng</span>}
               </Button>
               <Button

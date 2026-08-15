@@ -21,6 +21,7 @@ import { useBoardAccess } from "../BoardAccessGuard";
 import CardFormDialog from "./CardFormDialog";
 import { usePermissions } from "@/hooks";
 import { cn } from "@/lib/utils";
+import { COVER_COLORS } from "../../constants/coverConstants";
 import {
   Avatar,
   AvatarFallback,
@@ -52,6 +53,7 @@ function CardItem({ cardId, listId, boardId, isOverlay = false, card, currentBoa
   const members = card._membersCache || card.members || [];
   const checklistProgress = getChecklistProgress(card);
   const dueDateInfo = formatDueDate(card.due_date);
+  const coverColorObj = card.cover?.color ? COVER_COLORS.find((c) => c.id === card.cover.color) : null;
 
   const handleDelete = () => {
     deleteCard({ boardId, listId, id: cardId });
@@ -91,10 +93,24 @@ function CardItem({ cardId, listId, boardId, isOverlay = false, card, currentBoa
                   }
                 }}
                 className={cn(
-                  "bg-card p-3 rounded-md shadow-sm border border-border hover:shadow-md transition-[transform,box-shadow] duration-200 cursor-pointer group",
+                  "bg-card p-3 rounded-md shadow-sm border border-border hover:shadow-md transition-[transform,box-shadow] duration-200 cursor-pointer group overflow-hidden",
                   isOverlay && "shadow-2xl ring-2 ring-primary/30 rotate-2 scale-[1.03]"
                 )}
               >
+                {/* Cover Banner */}
+                {card.cover && (card.cover.url || coverColorObj) && (
+                  <div className="-mx-3 -mt-3 mb-2 rounded-t-md overflow-hidden">
+                    {card.cover.url ? (
+                      <img
+                        src={card.cover.url}
+                        alt={card.title}
+                        className="h-28 w-full object-cover"
+                      />
+                    ) : coverColorObj ? (
+                      <div className={cn("h-7 w-full", coverColorObj.bgClass)} />
+                    ) : null}
+                  </div>
+                )}
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex items-start gap-2 flex-1 min-w-0">
                     <button 

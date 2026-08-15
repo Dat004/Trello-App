@@ -1,8 +1,10 @@
-import { AlertCircle, Calendar, Tag } from "lucide-react";
+import { AlertCircle, Calendar, Palette, Tag } from "lucide-react";
 
+import { COVER_COLORS } from "@/features/boards/constants/coverConstants";
 import { useUpdateCardComplete } from "@/features/boards/api/useCards";
-import { Input, Label, Switch } from "@/Components/UI";
+import { Button, Input, Label, Switch } from "@/Components/UI";
 import { formatDateOnly } from "@/helpers/formatTime";
+import CardCoverPicker from "./CardCoverPicker";
 import { useAuthStore } from "@/store";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +19,7 @@ function CardHeader({ card, locks, boardId, listId, currentBoard }) {
   const isBoardOwner = currentBoard?.owner === user?._id;
 
   const canMarkComplete = isAssigned || isBoardAdmin || isBoardOwner;
+  const coverColorObj = card.cover?.color ? COVER_COLORS.find((c) => c.id === card.cover.color) : null;
 
   const handleToggleComplete = async (checked) => {
     if (!canMarkComplete) return;
@@ -30,19 +33,60 @@ function CardHeader({ card, locks, boardId, listId, currentBoard }) {
   
   return (
     <div className="grid gap-4">
+      {/* Cover Banner in Dialog Header */}
+      {card.cover && (card.cover.url || coverColorObj) && (
+        <div className="-mx-6 -mt-6 mb-2 rounded-t-lg overflow-hidden relative group">
+          {card.cover.url ? (
+            <img
+              className="h-44 w-full object-cover"
+              src={card.cover.url}
+              alt={card.title}
+            />
+          ) : coverColorObj ? (
+            <div className={cn("h-16 w-full", coverColorObj.bgClass)} />
+          ) : null}
+
+          <div className="absolute right-3 bottom-3">
+            <CardCoverPicker
+              card={card}
+              boardId={boardId}
+              listId={listId}
+              trigger={
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="h-7 px-2.5 text-xs backdrop-blur-md shadow-sm border border-border/50 gap-1.5"
+                >
+                  <Palette className="h-3.5 w-3.5" />
+                  Đổi ảnh bìa
+                </Button>
+              }
+            />
+          </div>
+        </div>
+      )}
+
       {/* Title */}
       <div className="grid gap-2">
         <div className="flex items-center justify-between">
           <Label htmlFor="card-title" className="text-sm font-medium">
             Tiêu đề
           </Label>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
             {locks?.title && (
               <div className="flex items-center gap-1.5 text-[10px] text-orange-500 font-medium animate-pulse">
                 <span className="h-1.5 w-1.5 rounded-full bg-orange-500" />
                 {locks.title.full_name} đang sửa...
               </div>
             )}
+
+            <CardCoverPicker
+              card={card}
+              boardId={boardId}
+              listId={listId}
+            />
+
+            <div className="h-4 w-px bg-border/60 mx-1" aria-hidden="true" />
             
             <div 
               className="flex items-center gap-2"

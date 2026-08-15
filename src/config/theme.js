@@ -101,22 +101,41 @@ export const DARK_THEMES = [
 export const GRADIENT_THEMES = [
   { 
     name: "Sunset", 
-    value: "bg-gradient-to-br from-orange-500/20 to-rose-500/20",
-    preview: "bg-gradient-to-br from-orange-400 to-rose-400"
+    value: "bg-gradient-to-br from-orange-500/20 via-rose-500/20 to-purple-500/20 text-slate-900 dark:text-slate-100",
+    preview: "bg-gradient-to-br from-orange-400 via-rose-400 to-purple-500"
   },
   { 
-    name: "Ocean", 
-    value: "bg-gradient-to-br from-blue-500/20 to-cyan-500/20",
-    preview: "bg-gradient-to-br from-blue-400 to-cyan-400"
+    name: "Ocean Glow", 
+    value: "bg-gradient-to-br from-blue-600/20 via-cyan-500/20 to-teal-500/20 text-slate-900 dark:text-slate-100",
+    preview: "bg-gradient-to-br from-blue-500 via-cyan-400 to-teal-400"
   },
   { 
     name: "Aurora", 
-    value: "bg-gradient-to-br from-green-500/20 to-emerald-500/20",
-    preview: "bg-gradient-to-br from-green-400 to-emerald-400"
+    value: "bg-gradient-to-br from-emerald-500/20 via-teal-500/20 to-sky-500/20 text-slate-900 dark:text-slate-100",
+    preview: "bg-gradient-to-br from-emerald-400 via-teal-400 to-sky-400"
   },
   { 
-    name: "Mystic", 
-    value: "bg-gradient-to-br from-purple-500/20 to-indigo-500/20",
-    preview: "bg-gradient-to-br from-purple-400 to-indigo-400"
+    name: "Cyberpunk", 
+    value: "bg-gradient-to-br from-fuchsia-600/20 via-purple-600/20 to-pink-500/20 text-slate-900 dark:text-slate-100",
+    preview: "bg-gradient-to-br from-fuchsia-500 via-purple-500 to-pink-500"
   },
+  { 
+    name: "Emerald Isle", 
+    value: "bg-gradient-to-br from-green-600/20 via-emerald-600/20 to-lime-500/20 text-slate-900 dark:text-slate-100",
+    preview: "bg-gradient-to-br from-green-500 via-emerald-500 to-lime-400"
+  },
+  { 
+    name: "Midnight Neon", 
+    value: "bg-gradient-to-br from-slate-900 via-indigo-950 to-blue-950 text-slate-100",
+    preview: "bg-gradient-to-br from-slate-800 via-indigo-900 to-blue-900"
+  },
+];
+
+export const PHOTO_WALLPAPERS = [
+  { id: "wall-1", name: "Rừng & Núi", url: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1600&q=80" },
+  { id: "wall-2", name: "Bãi biển", url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80" },
+  { id: "wall-3", name: "Thành phố", url: "https://images.unsplash.com/photo-1514565131-fce0801e5785?auto=format&fit=crop&w=1600&q=80" },
+  { id: "wall-4", name: "Vũ trụ", url: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1600&q=80" },
+  { id: "wall-5", name: "Tối giản", url: "https://images.unsplash.com/photo-1508739773434-c26b3d09e071?auto=format&fit=crop&w=1600&q=80" },
+  { id: "wall-6", name: "Nghệ thuật", url: "https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&w=1600&q=80" },
 ];

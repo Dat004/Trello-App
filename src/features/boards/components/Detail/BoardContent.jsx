@@ -65,6 +65,9 @@ function BoardContent() {
       if (["kanban", "table", "calendar", "analytics"].includes(saved?.view)) {
         setCurrentView(saved.view);
       }
+      if (saved?.theme) {
+        setBoardTheme(saved.theme);
+      }
     } catch {
       // Ignore invalid or unavailable local storage.
     }
@@ -80,6 +83,17 @@ function BoardContent() {
       localStorage.setItem(storageKey, JSON.stringify({ ...saved, view }));
     } catch {
       // The view remains usable when storage is unavailable.
+    }
+  };
+
+  const handleThemeChange = (theme) => {
+    setBoardTheme(theme);
+    if (!storageKey) return;
+    try {
+      const saved = JSON.parse(localStorage.getItem(storageKey)) || {};
+      localStorage.setItem(storageKey, JSON.stringify({ ...saved, theme }));
+    } catch {
+      // Ignore storage error
     }
   };
 
@@ -107,20 +121,31 @@ function BoardContent() {
     }
   };
 
+  const isImageUrl = boardTheme.startsWith("http://") || boardTheme.startsWith("https://");
+
   return (
     <BoardFilterProvider storageKey={storageKey}>
       <section
         className={cn(
           "flex flex-col h-screen transition-all duration-500",
-          boardTheme,
+          !isImageUrl && boardTheme,
         )}
+        style={
+          isImageUrl
+            ? {
+                backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.25)), url("${boardTheme}")`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }
+            : {}
+        }
       >
         <section className="shrink-0">
           <BoardDetailHeader
             currentView={currentView}
             onViewChange={handleViewChange}
             currentTheme={boardTheme}
-            onThemeChange={setBoardTheme}
+            onThemeChange={handleThemeChange}
           />
         </section>
         <section className="flex-1 overflow-auto relative">

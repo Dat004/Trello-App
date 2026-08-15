@@ -1,6 +1,9 @@
 import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
   Calendar,
   MessageSquare,
   Paperclip,
@@ -10,6 +13,7 @@ import { format } from "date-fns";
 
 import { useBoardContext } from "../../context/BoardStateContext";
 import { useFilteredCards } from "../../hooks/useFilteredCards";
+import { useTableSort } from "../../hooks/useTableSort";
 import { cn } from "@/lib/utils";
 import {
   Avatar,
@@ -54,10 +58,26 @@ function BoardTableView() {
   const globalFilteredCards = useFilteredCards(allCards);
 
   // Lọc theo tìm kiếm
-  const filteredCards = globalFilteredCards.filter(card => 
-    card.title.toLowerCase().includes(search.toLowerCase()) ||
-    card.listName.toLowerCase().includes(search.toLowerCase())
-  );
+  const searchFilteredCards = useMemo(() => {
+    return globalFilteredCards.filter(card => 
+      card.title.toLowerCase().includes(search.toLowerCase()) ||
+      card.listName.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [globalFilteredCards, search]);
+
+  // Sắp xếp cột
+  const { sortColumn, sortDirection, handleSort, sortedCards: filteredCards } = useTableSort(searchFilteredCards);
+
+  const renderSortIcon = (columnKey) => {
+    if (sortColumn !== columnKey) {
+      return <ArrowUpDown className="h-3 w-3 text-muted-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity" />;
+    }
+    return sortDirection === "asc" ? (
+      <ArrowUp className="h-3 w-3 text-primary font-bold" />
+    ) : (
+      <ArrowDown className="h-3 w-3 text-primary font-bold" />
+    );
+  };
 
   const getPriorityColor = (priority) => {
     switch (priority) {
@@ -91,10 +111,42 @@ function BoardTableView() {
         <table className="w-full text-sm text-left border-collapse">
           <thead className="sticky top-0 bg-muted/50 text-muted-foreground uppercase text-[11px] font-semibold">
             <tr>
-              <th className="px-6 py-3 border-b border-border min-w-[300px]">Thẻ công việc</th>
-              <th className="px-6 py-3 border-b border-border">Danh sách</th>
-              <th className="px-6 py-3 border-b border-border">Độ ưu tiên</th>
-              <th className="px-6 py-3 border-b border-border">Hạn chót</th>
+              <th
+                onClick={() => handleSort("title")}
+                className="px-6 py-3 border-b border-border min-w-[300px] cursor-pointer hover:bg-muted/80 transition-colors group select-none"
+              >
+                <div className="flex items-center gap-1.5">
+                  <span>Thẻ công việc</span>
+                  {renderSortIcon("title")}
+                </div>
+              </th>
+              <th
+                onClick={() => handleSort("listName")}
+                className="px-6 py-3 border-b border-border cursor-pointer hover:bg-muted/80 transition-colors group select-none"
+              >
+                <div className="flex items-center gap-1.5">
+                  <span>Danh sách</span>
+                  {renderSortIcon("listName")}
+                </div>
+              </th>
+              <th
+                onClick={() => handleSort("priority")}
+                className="px-6 py-3 border-b border-border cursor-pointer hover:bg-muted/80 transition-colors group select-none"
+              >
+                <div className="flex items-center gap-1.5">
+                  <span>Độ ưu tiên</span>
+                  {renderSortIcon("priority")}
+                </div>
+              </th>
+              <th
+                onClick={() => handleSort("due_date")}
+                className="px-6 py-3 border-b border-border cursor-pointer hover:bg-muted/80 transition-colors group select-none"
+              >
+                <div className="flex items-center gap-1.5">
+                  <span>Hạn chót</span>
+                  {renderSortIcon("due_date")}
+                </div>
+              </th>
               <th className="px-6 py-3 border-b border-border">Thành viên</th>
               <th className="px-6 py-3 border-b border-border">Thống kê</th>
             </tr>

@@ -1,4 +1,4 @@
-import { Archive, Grid3x3, List, Search, Star, X } from "lucide-react";
+import { Archive, ArrowUpDown, Grid3x3, List, Search, Star, X } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { archivedBoardsPath } from "@/config/paths";
@@ -7,40 +7,42 @@ import CreateNewBoard from "@/features/boards/components/List/CreateNewBoard";
 import BoardCard from "@/features/boards/components/List/BoardCard";
 import { BoardSkeleton } from "@/Components/UI/LoadingSkeleton";
 import { useMyBoards } from "@/features/boards/api/useBoards";
-import { Button, Input } from "@/Components/UI";
+import {
+  Button,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/Components/UI";
 import { useFavoritesStore } from "@/store";
 import { cn } from "@/lib/utils";
+import { BOARD_SORT_OPTIONS } from "@/features/boards/constants/sortOptions";
+import { useBoardSort } from "@/features/boards/hooks/useBoardSort";
 
 function Boards() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filterStarred, setFilterStarred] = useState(false);
   const [viewMode, setViewMode] = useState("grid");
 
   const { data: rawBoards = [], isLoading: loading } = useMyBoards();
-  const favoriteBoards = useFavoritesStore(s => s.favoriteBoards);
+  const favoriteBoards = useFavoritesStore((s) => s.favoriteBoards);
+
+  const {
+    sortBy,
+    setSortBy,
+    searchQuery,
+    setSearchQuery,
+    filterStarred,
+    setFilterStarred,
+    sortedAndFilteredBoards: boards,
+    handleClearFilters,
+  } = useBoardSort(rawBoards, favoriteBoards);
 
   const starredCount = useMemo(() => {
-    return rawBoards.filter(board => favoriteBoards.some(fav => fav._id === board._id)).length;
+    return rawBoards.filter((board) =>
+      favoriteBoards.some((fav) => fav._id === board._id)
+    ).length;
   }, [rawBoards, favoriteBoards]);
-
-  const boards = useMemo(() => {
-    return rawBoards.map(board => ({
-      ...board,
-      is_starred: favoriteBoards.some(fav => fav._id === board._id)
-    })).filter(board => {
-       if (filterStarred && !board.is_starred) return false;
-       if (searchQuery) {
-           return board.title.toLowerCase().includes(searchQuery.toLowerCase());
-       }
-       return true;
-    });
-  }, [rawBoards, favoriteBoards, filterStarred, searchQuery]);
-
-  const handleClearFilters = () => {
-    setSearchQuery("");
-    setFilterStarred(false);
-  };
-
 
   return (
     <>
@@ -80,7 +82,24 @@ function Boards() {
               )}
             </div>
 
-            <div className="flex items-center flex-nowrap gap-2">
+            <div className="flex items-center flex-wrap sm:flex-nowrap gap-2">
+              {/* Sort Select */}
+              <div className="w-40">
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="h-10 text-xs">
+                    <ArrowUpDown className="h-3.5 w-3.5 mr-1.5 text-muted-foreground shrink-0" />
+                    <SelectValue placeholder="Sắp xếp..." />
+                  </SelectTrigger>
+                  <SelectContent align="end">
+                    {BOARD_SORT_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value} className="text-xs">
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               <Button
                 isLink
                 to={archivedBoardsPath}

@@ -9,4 +9,12 @@ export const cardSchema = z.object({
   description: z.string().optional().or(z.literal("")),
   due_date: z.date().optional().nullable(),
   priority: z.enum(["low", "medium", "high"]).default("medium").optional(),
+  cover: z
+    .object({
+      color: z.string().nullable().optional(),
+      url: z.string().nullable().optional(),
+      mode: z.enum(["full", "header"]).optional().default("header"),
+    })
+    .nullable()
+    .optional(),
 });

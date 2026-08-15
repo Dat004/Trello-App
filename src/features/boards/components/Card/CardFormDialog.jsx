@@ -1,11 +1,13 @@
 import { Loader2, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import MDEditor, { commands } from "@uiw/react-md-editor";
 
 import { useCreateCard, useUpdateCard } from "@/features/boards/api/useCards";
 import { useBoardContext } from "@/features/boards/context/BoardStateContext";
 import { toDateInputValue } from "@/helpers/formatTime";
 import { useZodForm } from "@/hooks";
 import { cardSchema } from "@/schemas/cardSchema";
+import { useUIStore } from "@/store";
 
 import {
   Badge,
@@ -23,7 +25,6 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  TextArea,
 } from "@/Components/UI";
 import { cn } from "@/lib/utils";
 
@@ -32,6 +33,32 @@ const PRIORITY_OPTIONS = [
   { value: "medium", label: "Trung bình" },
   { value: "high", label: "Cao" },
 ];
+
+// Custom essential toolbar commands (excluding HR and Title/Heading)
+const essentialCommands = [
+  commands.bold,
+  commands.italic,
+  commands.strikethrough,
+  commands.divider,
+  commands.link,
+  commands.quote,
+  commands.code,
+  commands.unorderedListCommand,
+  commands.orderedListCommand,
+  commands.checkedListCommand,
+];
+
+// Custom components to force links to open in a new tab
+const customComponents = {
+  a: ({ ...props }) => (
+    <a
+      {...props}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-primary underline hover:opacity-80 font-medium"
+    />
+  ),
+};
 
 function CardFormDialog({
   trigger,
@@ -42,6 +69,14 @@ function CardFormDialog({
 }) {
   const { boardData } = useBoardContext(false) || {};
   const boardLabels = boardData?.currentBoard?.labels || [];
+
+  const globalTheme = useUIStore((s) => s.theme);
+  const isDark =
+    globalTheme === "dark" ||
+    (globalTheme === "system" &&
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches);
+  const colorMode = isDark ? "dark" : "light";
 
   const form = useZodForm(cardSchema, {
     defaultValues: {
@@ -61,6 +96,7 @@ function CardFormDialog({
   } = form;
 
   const titleValue = watch("title");
+  const descriptionValue = watch("description") || "";
   const priority = watch("priority") ?? "medium";
 
   const [open, setOpen] = useState(false);
@@ -133,7 +169,7 @@ function CardFormDialog({
       <DialogTrigger className="w-full" asChild>
         {trigger}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[520px]" data-color-mode={colorMode}>
         <DialogHeader>
           <DialogTitle>{isEdit ? "Chỉnh sửa thẻ" : "Thêm thẻ mới"}</DialogTitle>
           <DialogDescription>
@@ -166,14 +202,19 @@ function CardFormDialog({
 
           <div className="space-y-2">
             <Label htmlFor="description">Mô tả</Label>
-            <TextArea
-              id="description"
-              placeholder="Nhập mô tả (không bắt buộc)..."
-              rows={3}
-              className="resize-none"
-              disabled={isSubmitting || isLoading}
-              {...register("description")}
-            />
+            <div className="border rounded-lg overflow-hidden shadow-xs">
+              <MDEditor
+                value={descriptionValue}
+                onChange={(val) =>
+                  setValue("description", val || "", { shouldValidate: true })
+                }
+                height={160}
+                preview="edit"
+                commands={essentialCommands}
+                extraCommands={[]}
+                components={customComponents}
+              />
+            </div>
           </div>
 
           <div className="space-y-2">

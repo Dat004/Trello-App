@@ -81,7 +81,7 @@ function CardDetailDialog({ card, listId, boardId, trigger, open: externalOpen, 
 
           <CardLabels card={card} boardId={boardId} listId={listId} />
           
-          <CardDescription card={card} locks={fieldLocks} />
+          <CardDescription card={card} locks={fieldLocks} boardId={boardId} listId={listId} />
           
           <Separator />
           

@@ -1,9 +1,10 @@
 import { useEffect, useState, useMemo } from "react";
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { Edit, GripVertical, MoreHorizontal, Plus, Trash2 } from "lucide-react";
+import { ArrowUpDown, Copy, Edit, GripVertical, MoreHorizontal, Plus, Trash2 } from "lucide-react";
 
-import { useDeleteList, useUpdateList } from "@/features/boards/api/useLists";
+import { useCreateList, useDeleteList, useUpdateList } from "@/features/boards/api/useLists";
+import { useCreateCard } from "@/features/boards/api/useCards";
 import { useBoardContext } from "@/features/boards/context/BoardStateContext";
 import { useBoardFilter } from "../../context/BoardFilterContext";
 import { useFilteredCards } from "../../hooks/useFilteredCards";
@@ -23,6 +24,9 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
   Input,
   Badge,
@@ -30,7 +34,7 @@ import {
 
 function BoardList({ listId, boardId, isOverlay = false }) {
   // Use Context
-  const { boardData } = useBoardContext();
+  const { boardData, setCardOrder } = useBoardContext();
   const { readOnly } = useBoardAccess();
   const { isFiltering } = useBoardFilter();
   const { currentBoard, lists, cards } = boardData;
@@ -57,11 +61,54 @@ function BoardList({ listId, boardId, isOverlay = false }) {
   const filteredCardIds = useMemo(() => filteredCards.map(c => c._id), [filteredCards]);
 
   // React Query Mutations
+  const { mutate: createList } = useCreateList();
+  const { mutate: createCard } = useCreateCard();
   const { mutate: updateListTitle, isLoading: isUpdating } = useUpdateList();
   const { mutate: deleteList, isLoading: isDeleting } = useDeleteList();
   const { canDelete } = usePermissions({ board: currentBoard });
   
   const isLoading = isUpdating || isDeleting;
+
+  const handleCopyList = () => {
+    if (!list) return;
+    createList(
+      { boardId, data: { title: `${list.title} (Bản sao)` } },
+      {
+        onSuccess: (res) => {
+          const newList = res.data?.data?.list;
+          if (newList && listCards.length > 0) {
+            listCards.forEach((c) => {
+              createCard({
+                boardId,
+                listId: newList._id,
+                title: c.title,
+                description: c.description || "",
+                priority: c.priority || "medium",
+                due_date: c.due_date || null,
+                labels: c.labels || [],
+                cover: c.cover || null,
+              });
+            });
+          }
+        },
+      }
+    );
+  };
+
+  const handleSortListCards = (type) => {
+    if (!setCardOrder || !listCards.length) return;
+    const sorted = [...listCards];
+    if (type === "title") {
+      sorted.sort((a, b) => (a.title || "").localeCompare(b.title || "", "vi"));
+    } else if (type === "priority") {
+      const priorityRank = { high: 3, medium: 2, low: 1 };
+      sorted.sort((a, b) => (priorityRank[b.priority] || 0) - (priorityRank[a.priority] || 0));
+    } else if (type === "dueDate") {
+      sorted.sort((a, b) => new Date(a.due_date || 0) - new Date(b.due_date || 0));
+    }
+    const sortedIds = sorted.map((c) => c._id);
+    setCardOrder({ listId, cardOrderIds: sortedIds });
+  };
 
   useEffect(() => {
     if (list) {
@@ -191,6 +238,31 @@ function BoardList({ listId, boardId, isOverlay = false }) {
                               <Edit className="mr-2 h-4 w-4" />
                               Chỉnh sửa tên
                             </DropdownMenuItem>
+
+                            <DropdownMenuItem onClick={handleCopyList}>
+                              <Copy className="mr-2 h-4 w-4" />
+                              Sao chép danh sách
+                            </DropdownMenuItem>
+
+                            <DropdownMenuSeparator />
+                            <DropdownMenuSub>
+                              <DropdownMenuSubTrigger className="text-xs">
+                                <ArrowUpDown className="mr-2 h-4 w-4" />
+                                Sắp xếp thẻ trong cột
+                              </DropdownMenuSubTrigger>
+                              <DropdownMenuSubContent>
+                                <DropdownMenuItem onClick={() => handleSortListCards("title")} className="text-xs">
+                                  Theo Tên (A - Z)
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleSortListCards("priority")} className="text-xs">
+                                  Theo Độ ưu tiên
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleSortListCards("dueDate")} className="text-xs">
+                                  Theo Hạn chót
+                                </DropdownMenuItem>
+                              </DropdownMenuSubContent>
+                            </DropdownMenuSub>
+
                             <DropdownMenuSeparator />
                             {canDelete && (
                               <DeleteDialog

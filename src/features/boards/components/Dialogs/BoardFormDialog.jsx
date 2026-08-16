@@ -21,8 +21,18 @@ import { useZodForm } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { boardSchema } from "@/schemas/boardSchema";
 
-function BoardFormDialog({ trigger, isEdit = false, boardData }) {
-  const [open, setOpen] = useState(false);
+function BoardFormDialog({
+  trigger,
+  isEdit = false,
+  boardData,
+  open: controlledOpen,
+  onOpenChange: setControlledOpen,
+}) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+  const setOpen = isControlled ? setControlledOpen : setInternalOpen;
+
   const [selectedColor, setSelectedColor] = useState(
     BACKGROUND_COLORS[0].class
   );
@@ -78,16 +88,18 @@ function BoardFormDialog({ trigger, isEdit = false, boardData }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {trigger || (
+      {trigger ? (
+        <DialogTrigger asChild>{trigger}</DialogTrigger>
+      ) : !isControlled ? (
+        <DialogTrigger asChild>
           <Button className="w-full leading-1.5 gap-2">
             <Plus className="h-4 w-4" />
             <span className="hidden sm:inline">
               {isEdit ? "Cập nhật bảng" : "Tạo bảng mới"}
             </span>
           </Button>
-        )}
-      </DialogTrigger>
+        </DialogTrigger>
+      ) : null}
       <DialogContent className="sm:max-w-[425px] animate-scale-in">
         <DialogHeader>
           <DialogTitle>{isEdit ? "Cập nhật bảng" : "Tạo bảng mới"}</DialogTitle>

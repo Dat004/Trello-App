@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { LogOut, Menu, Plus, Search, User } from "lucide-react";
+import { Keyboard, LogOut, Menu, Plus, Search, User } from "lucide-react";
 
 import BoardFormDialog from "@/features/boards/components/Dialogs/BoardFormDialog";
 import NotificationsPanel from "@/Components/NotificationsPanel";
@@ -110,6 +110,18 @@ function Header() {
               <DropdownMenuItem onClick={() => navigate("/settings/")}>
                 <User className="mr-2 h-4 w-4" />
                 <span>Hồ sơ</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  setTimeout(() => {
+                    window.dispatchEvent(
+                      new KeyboardEvent("keydown", { key: "?", bubbles: true })
+                    );
+                  }, 50);
+                }}
+              >
+                <Keyboard className="mr-2 h-4 w-4" />
+                <span>Phím tắt hệ thống (?)</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={logout}>

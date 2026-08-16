@@ -10,3 +10,4 @@ export { default as useDebounce } from "./useDebounce";
 export { default as useSocket } from "./useSocket";
 export { default as useUpdateUserSettings } from "./useUpdateUserSettings";
 export { default as useZodForm } from "./useZodForm";
+export { useKeyboardShortcuts } from "./useKeyboardShortcuts";

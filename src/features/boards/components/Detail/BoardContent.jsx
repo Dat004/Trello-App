@@ -13,6 +13,7 @@ import BoardKanbanView from "../Views/BoardKanbanView";
 import BoardTableView from "../Views/BoardTableView";
 import BoardDetailHeader from "./BoardDetailHeader";
 import { useAuthStore, useUIStore } from "@/store";
+import { addRecentBoard } from "@/utils/recentBoardsStorage";
 import { cn } from "@/lib/utils";
 
 function BoardContent() {
@@ -59,6 +60,9 @@ function BoardContent() {
   useBoardRealtime(currentBoard?._id, actions);
 
   useEffect(() => {
+    if (currentBoard?._id) {
+      addRecentBoard(currentBoard);
+    }
     if (!storageKey) return;
     try {
       const saved = JSON.parse(localStorage.getItem(storageKey));
@@ -71,7 +75,7 @@ function BoardContent() {
     } catch {
       // Ignore invalid or unavailable local storage.
     }
-  }, [storageKey]);
+  }, [storageKey, currentBoard]);
 
   if (!currentBoard) return null;
 

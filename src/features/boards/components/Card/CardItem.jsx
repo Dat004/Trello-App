@@ -2,8 +2,10 @@ import { memo } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   AlertCircle,
+  ArrowRightLeft,
   Calendar,
   CheckSquare,
+  Copy,
   Edit,
   GripVertical,
   MessageSquare,
@@ -12,13 +14,14 @@ import {
   Trash2,
 } from "lucide-react";
 
-import { useDeleteCard } from "@/features/boards/api/useCards";
+import { useCreateCard, useDeleteCard } from "@/features/boards/api/useCards";
 import { getChecklistProgress } from "@/helpers/card";
 import { formatDueDate } from "@/helpers/formatTime";
 import DeleteDialog from "@/Components/DeleteDialog";
 import SortableItem from "@/Components/SortableItem";
 import { useBoardAccess } from "../BoardAccessGuard";
 import CardFormDialog from "./CardFormDialog";
+import MoveCardDialog from "./MoveCardDialog";
 import { usePermissions } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { COVER_COLORS } from "../../constants/coverConstants";
@@ -47,6 +50,7 @@ function CardItem({ cardId, listId, boardId, isOverlay = false, card, currentBoa
     },
   });
   const { mutate: deleteCard, isLoading } = useDeleteCard();
+  const { mutate: createCard } = useCreateCard();
 
   if (!card) return null;
 
@@ -57,6 +61,19 @@ function CardItem({ cardId, listId, boardId, isOverlay = false, card, currentBoa
 
   const handleDelete = () => {
     deleteCard({ boardId, listId, id: cardId });
+  };
+
+  const handleCopyCard = () => {
+    createCard({
+      boardId,
+      listId,
+      title: `${card.title} (Bản sao)`,
+      description: card.description || "",
+      priority: card.priority || "medium",
+      due_date: card.due_date || null,
+      labels: card.labels || [],
+      cover: card.cover || null,
+    });
   };
 
   const openCard = () => {
@@ -272,6 +289,25 @@ function CardItem({ cardId, listId, boardId, isOverlay = false, card, currentBoa
                           </DropdownMenuItem>
                         }
                       />
+
+                      {/* Copy Card Option */}
+                      <DropdownMenuItem onClick={handleCopyCard}>
+                        <Copy className="mr-2 h-4 w-4" />
+                        Sao chép thẻ
+                      </DropdownMenuItem>
+
+                      {/* Move Card Option */}
+                      <MoveCardDialog
+                        card={card}
+                        currentListId={listId}
+                        trigger={
+                          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                            <ArrowRightLeft className="mr-2 h-4 w-4" />
+                            Di chuyển thẻ
+                          </DropdownMenuItem>
+                        }
+                      />
+
                       <DropdownMenuSeparator />
                       {canDelete && (
                         <DeleteDialog

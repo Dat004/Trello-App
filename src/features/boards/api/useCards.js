@@ -291,3 +291,23 @@ export function useDeleteChecklistItem() {
 
     return { ...mutation, isLoading: mutation.isPending };
 }
+
+export function useMoveCard() {
+    const { addToast } = UserToast();
+
+    const mutation = useMutation({
+        mutationFn: ({ boardId, listId, id, data }) => cardApi.move(boardId, listId, id, data),
+
+        onSuccess: (res) => {
+            if (res.data?.success !== false) {
+                addToast({ type: "success", title: "Di chuyển thẻ thành công!" });
+            }
+        },
+
+        onError: (err) => {
+            addToast({ type: "error", title: getApiErrorMessage(err, "Lỗi di chuyển thẻ") });
+        }
+    });
+
+    return { ...mutation, isLoading: mutation.isPending };
+}

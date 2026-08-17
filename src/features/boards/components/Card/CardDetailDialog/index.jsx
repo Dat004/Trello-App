@@ -20,6 +20,7 @@ import { useBoardAccess } from "../../BoardAccessGuard";
 import CardAttachments from "./CardAttachments";
 import CardChecklist from "./CardChecklist";
 import CardComments from "./CardComments";
+import CardActivities from "./CardActivities";
 import CardDescription from "./CardDescription";
 import CardHeader from "./CardHeader";
 import CardLabels from "./CardLabels";
@@ -113,6 +114,10 @@ function CardDetailDialog({ card, listId, boardId, trigger, open: externalOpen, 
           
           <CardComments card={card} boardId={boardId} board={currentBoard} />
           
+          <Separator />
+
+          <CardActivities cardId={card._id} cardTitle={card.title} boardId={boardId} />
+
           <Separator />
           
           <CardMetadata card={card} />

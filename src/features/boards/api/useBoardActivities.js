@@ -15,7 +15,8 @@ export function useBoardActivities(boardId, options = {}) {
         },
         getNextPageParam: (lastPage) => lastPage.hasMore ? lastPage.nextSkip : undefined,
         enabled: !!boardId && (options.enabled !== false), // Default true unless explicitly false
-        staleTime: 1000 * 60,
+        staleTime: 0,
+        refetchOnMount: "always",
         ...options // Allow overrides
     });
 

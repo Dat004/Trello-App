@@ -97,6 +97,14 @@ function BoardDetailHeader({ currentView, onViewChange, currentTheme, onThemeCha
     "h-8 shrink-0 gap-1.5 px-2 text-muted-foreground hover:bg-muted/80 hover:text-foreground rounded-md lg:px-2.5";
   const toolLabel = "hidden text-xs font-medium lg:inline";
 
+  const handleBack = () => {
+    if (window.history.state && window.history.state.idx > 0) {
+      navigate(-1);
+    } else {
+      navigate("/boards");
+    }
+  };
+
   return (
     <header className="border-b border-border/40 bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-3 px-3 py-3 sm:px-4 lg:px-6">
@@ -106,7 +114,7 @@ function BoardDetailHeader({ currentView, onViewChange, currentTheme, onThemeCha
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => navigate(-1)}
+              onClick={handleBack}
               className="h-8 w-8 shrink-0 text-muted-foreground hover:bg-muted"
               aria-label="Quay lại"
             >

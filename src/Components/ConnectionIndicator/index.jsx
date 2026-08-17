@@ -33,8 +33,8 @@ export default function ConnectionIndicator() {
     // 🟡 Reconnecting: Socket disconnect nhưng có mạng
     reconnecting: {
       icon: WifiOff,
-      color: 'bg-amber-500/90',
-      text: 'Đang kết nối lại...',
+      color: "bg-slate-900/90 text-slate-100 border border-slate-700/80 shadow-md",
+      text: "Đang khởi tạo kết nối máy chủ...",
       pulse: true,
       autoHide: false,
     },

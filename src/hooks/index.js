@@ -2,6 +2,7 @@ export { useAuth, useAuthInit } from "./useAuth";
 export { useFavorites, useFavoritesInit } from "./useFavorites";
 export { useGlobalRealtimeSync } from "./useGlobalRealtimeSync";
 export { useNetworkStatus } from "./useNetworkStatus";
+export { useOptimisticMutation } from "./useOptimisticMutation";
 
 export { default as useBoardDnD } from "../features/boards/hooks/useBoardDnD";
 export { default as useApiMutation } from "./useApiMutation";

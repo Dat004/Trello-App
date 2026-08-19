@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { AnimatePresence, motion as Motion } from "framer-motion";
 import {
   AlertCircle,
@@ -6,6 +6,7 @@ import {
   CheckCircle,
   Info,
   Loader2,
+  Undo2,
   X,
 } from "lucide-react";
 
@@ -14,9 +15,14 @@ import { Button } from "@/Components/UI";
 
 function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([]);
+  // Track which toast actions have already been invoked to prevent double-fires.
+  const firedActionsRef = useRef(new Set());
 
   const removeToast = useCallback((id) => {
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
+    // Clean up the fired-action tracker a tick later so the guard stays
+    // active until the toast is fully removed from state.
+    setTimeout(() => firedActionsRef.current.delete(id), 0);
   }, []);
 
   const closeToast = useCallback(
@@ -28,7 +34,7 @@ function ToastProvider({ children }) {
 
   const addToast = useCallback(
     (toast) => {
-      const id = Date.now().toString();
+      const id = Date.now().toString() + Math.random().toString(36).slice(2, 6);
 
       const newToast = {
         ...toast,
@@ -44,6 +50,18 @@ function ToastProvider({ children }) {
       }
 
       return id;
+    },
+    [closeToast]
+  );
+
+  const handleAction = useCallback(
+    (toast) => {
+      // Guard: prevent the action from firing more than once (e.g. rapid clicks).
+      if (firedActionsRef.current.has(toast.id)) return;
+      firedActionsRef.current.add(toast.id);
+
+      toast.action?.onClick?.();
+      closeToast(toast.id);
     },
     [closeToast]
   );
@@ -117,6 +135,18 @@ function ToastProvider({ children }) {
                     <p className="text-xs text-muted-foreground mt-1 leading-normal">
                       {toast.description}
                     </p>
+                  )}
+
+                  {toast.action && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-auto px-2 py-0.5 mt-1.5 text-xs font-semibold text-primary hover:text-primary hover:bg-primary/10 gap-1"
+                      onClick={() => handleAction(toast)}
+                    >
+                      <Undo2 className="h-3 w-3" />
+                      {toast.action.label || "Hoàn tác"}
+                    </Button>
                   )}
                 </div>
 

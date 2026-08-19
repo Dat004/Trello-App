@@ -15,7 +15,7 @@ import { listApi } from "@/api/list";
 import { UserToast } from "@/context/ToastContext";
 import { BOARD_KEYS } from "../api/useBoards";
 import { useBoardActions, useBoardSelector } from "../context/BoardStateContext";
-import { selectListOrder, selectLists } from "../state/boardSelectors";
+import { selectCards, selectListOrder, selectLists } from "../state/boardSelectors";
 import {
     boardDndAnnouncements,
     boardDndScreenReaderInstructions,
@@ -24,6 +24,7 @@ import {
 function useBoardDnD(boardId) {
     const lists = useBoardSelector(selectLists);
     const listOrder = useBoardSelector(selectListOrder);
+    const cards = useBoardSelector(selectCards);
     const { moveList, moveCard, updateCardPosition, setCardOrder } = useBoardActions();
     const queryClient = useQueryClient();
     const { addToast } = UserToast();
@@ -33,6 +34,9 @@ function useBoardDnD(boardId) {
     const [activeData, setActiveData] = useState(null);
     const sourceListIdRef = useRef(null);
     const lastOverListIdRef = useRef(null);
+
+    // Snapshot captured at drag start — used for undo and error rollback.
+    const dndSnapshotRef = useRef(null);
 
     // Mouse: small distance avoids accidental drags. Touch: delay so scroll still works.
     const sensors = useSensors(
@@ -92,10 +96,54 @@ function useBoardDnD(boardId) {
         });
     }, [activeType]);
 
+    /**
+     * Capture a snapshot of the board ordering state before drag starts.
+     * This snapshot is the source of truth for undo and error rollback.
+     */
+    const captureSnapshot = useCallback(() => {
+        // Deep-clone the order arrays and card listId mappings.
+        const listsSnapshot = {};
+        for (const [listId, list] of Object.entries(lists)) {
+            listsSnapshot[listId] = {
+                cardOrderIds: [...list.cardOrderIds],
+            };
+        }
+
+        const cardsSnapshot = {};
+        for (const [cardId, card] of Object.entries(cards)) {
+            cardsSnapshot[cardId] = {
+                listId: card.listId || card.list,
+                pos: card.pos,
+            };
+        }
+
+        return {
+            listOrder: [...listOrder],
+            lists: listsSnapshot,
+            cards: cardsSnapshot,
+        };
+    }, [lists, listOrder, cards]);
+
+    /**
+     * Restore board ordering state from a snapshot.
+     * Uses setCardOrder & moveList to reconcile, but for simplicity we
+     * invalidate the board query to get a clean server state.
+     */
+    const restoreFromSnapshot = useCallback(
+        async () => {
+            // The simplest, most reliable rollback: refetch from server.
+            await queryClient.invalidateQueries({ queryKey: BOARD_KEYS.detail(boardId) });
+        },
+        [queryClient, boardId]
+    );
+
     const handleDragStart = (event) => {
         const { active } = event;
         const id = active.id;
         const type = active.data.current?.type;
+
+        // Capture snapshot BEFORE any state changes.
+        dndSnapshotRef.current = captureSnapshot();
 
         setActiveId(id);
         setActiveType(type);
@@ -145,6 +193,9 @@ function useBoardDnD(boardId) {
             return;
         }
 
+        // Keep a reference to the snapshot taken at drag start.
+        const snapshot = dndSnapshotRef.current;
+
         try {
             const overType = over.data.current?.type;
             const draggedType = active.data.current?.type || activeType;
@@ -164,6 +215,34 @@ function useBoardDnD(boardId) {
                 const nextListId = newIndex < newListOrder.length - 1 ? newListOrder[newIndex + 1] : null;
 
                 await listApi.move(boardId, active.id, { prevListId, nextListId });
+
+                // Show undo toast for list move
+                const listTitle = lists[active.id]?.title || "Danh sách";
+                addToast({
+                    type: "success",
+                    title: `Đã di chuyển "${listTitle}"`,
+                    duration: 6000,
+                    action: {
+                        label: "Hoàn tác",
+                        onClick: async () => {
+                            // Undo: move list back to original position via API
+                            const origIndex = snapshot.listOrder.indexOf(active.id);
+                            const undoPrevListId = origIndex > 0 ? snapshot.listOrder[origIndex - 1] : null;
+                            const undoNextListId = origIndex < snapshot.listOrder.length - 1 ? snapshot.listOrder[origIndex + 1] : null;
+
+                            try {
+                                await listApi.move(boardId, active.id, {
+                                    prevListId: undoPrevListId,
+                                    nextListId: undoNextListId,
+                                });
+                            } catch {
+                                // Undo API failed — handled below.
+                            }
+                            // Refetch to reconcile state regardless.
+                            await restoreFromSnapshot();
+                        },
+                    },
+                });
             } else {
                 const sourceListId = sourceListIdRef.current;
                 const overListId = resolveOverListId(over) || lastOverListIdRef.current;
@@ -212,9 +291,44 @@ function useBoardDnD(boardId) {
                         moved.pos,
                     );
                 }
+
+                // Show undo toast for card move
+                const cardTitle = cards[active.id]?.title || "Thẻ";
+                const isCrossListMove = sourceListId !== overListId;
+                const toastTitle = isCrossListMove
+                    ? `Đã chuyển "${cardTitle}" sang "${lists[overListId]?.title || "danh sách khác"}"`
+                    : `Đã sắp xếp lại "${cardTitle}"`;
+
+                addToast({
+                    type: "success",
+                    title: toastTitle,
+                    duration: 6000,
+                    action: {
+                        label: "Hoàn tác",
+                        onClick: async () => {
+                            // Undo: move card back to original position
+                            const origListId = snapshot.cards[active.id]?.listId || sourceListId;
+                            const origOrder = snapshot.lists[origListId]?.cardOrderIds || [];
+                            const origIndex = origOrder.indexOf(active.id);
+
+                            try {
+                                await cardApi.move(boardId, overListId, active.id, {
+                                    prevCardId: origIndex > 0 ? origOrder[origIndex - 1] : null,
+                                    nextCardId: origIndex < origOrder.length - 1 ? origOrder[origIndex + 1] : null,
+                                    destinationListId: origListId,
+                                });
+                            } catch {
+                                // Undo API failed — handled below.
+                            }
+                            // Refetch to reconcile state regardless.
+                            await restoreFromSnapshot();
+                        },
+                    },
+                });
             }
         } catch (error) {
-            await queryClient.invalidateQueries({ queryKey: BOARD_KEYS.detail(boardId) });
+            // Rollback by refetching clean server state.
+            await restoreFromSnapshot();
             addToast({
                 type: "error",
                 title: error.response?.data?.message || "Không thể lưu vị trí mới",
@@ -235,9 +349,9 @@ function useBoardDnD(boardId) {
         handleDragOver,
         handleDragEnd,
         handleDragCancel: () => {
-            const currentListId = activeId ? findListIdByCardId(activeId) : null;
-            if (sourceListIdRef.current && currentListId !== sourceListIdRef.current) {
-                queryClient.invalidateQueries({ queryKey: BOARD_KEYS.detail(boardId) });
+            // Restore from snapshot if drag was cancelled mid-flight.
+            if (dndSnapshotRef.current) {
+                restoreFromSnapshot();
             }
             resetDragState();
         },
@@ -245,3 +359,4 @@ function useBoardDnD(boardId) {
 }
 
 export default useBoardDnD;
+

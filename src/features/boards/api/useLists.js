@@ -58,17 +58,48 @@ export function useUpdateList() {
 
 export function useDeleteList() {
     const { addToast } = UserToast();
-    const { removeList } = useBoardActions();
+    const { removeList, addList } = useBoardActions();
 
     const mutation = useMutation({
         mutationFn: ({ boardId, listId }) => listApi.delete(boardId, listId),
 
-        onSuccess: (res, variables) => {
+        onMutate: async (variables) => {
+            // Snapshot list data for undo (caller passes `listData` in variables).
+            return {
+                deletedList: variables.listData || null,
+            };
+        },
+
+        onSuccess: (res, variables, context) => {
             if (res.data?.success) {
                 // ✅ Update context by removing list
                 removeList(variables.listId);
 
-                addToast({ type: "success", title: "Đã xóa danh sách" });
+                // Show undo toast
+                const listTitle = context.deletedList?.title || "Danh sách";
+                addToast({
+                    type: "success",
+                    title: `Đã xóa "${listTitle}"`,
+                    duration: 6000,
+                    action: {
+                        label: "Hoàn tác",
+                        onClick: async () => {
+                            // Re-create the list via API
+                            try {
+                                const createRes = await listApi.create(variables.boardId, {
+                                    title: context.deletedList?.title || "Danh sách đã khôi phục",
+                                });
+                                const newList = createRes?.data?.data?.list;
+                                if (newList) {
+                                    addList(newList);
+                                    addToast({ type: "success", title: `Đã khôi phục "${listTitle}"`, duration: 3000 });
+                                }
+                            } catch {
+                                addToast({ type: "error", title: "Không thể khôi phục danh sách", duration: 3000 });
+                            }
+                        },
+                    },
+                });
             } else {
                 addToast({ type: "error", title: res.data?.message || "Lỗi xóa danh sách" });
             }

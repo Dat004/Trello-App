@@ -145,7 +145,7 @@ function BoardList({ listId, boardId, isOverlay = false }) {
   };
 
   const handleDelete = () => {
-    deleteList({ boardId, listId });
+    deleteList({ boardId, listId, listData: list });
   };
 
     return (
@@ -267,7 +267,7 @@ function BoardList({ listId, boardId, isOverlay = false }) {
                             {canDelete && (
                               <DeleteDialog
                                 title="Xóa cột này?"
-                                description={`Bạn có chắc muốn xóa cột "${list.title}"? Hành động này không thể hoàn tác.`}
+                                description={`Bạn có chắc muốn xóa cột "${list.title}"? Bạn có thể hoàn tác ngay sau khi xóa.`}
                                 onConfirm={handleDelete}
                                 trigger={
                                   <DropdownMenuItem

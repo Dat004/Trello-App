@@ -81,21 +81,76 @@ export function useUpdateCardComplete() {
     const mutation = useMutation({
         mutationFn: ({ boardId, listId, id, data }) => cardApi.updateComplete(boardId, listId, id, data),
 
-        onSuccess: (res, variables) => {
+        onMutate: async (variables) => {
+            // Cancel outgoing refetches
+            await queryClient.cancelQueries({ queryKey: CARD_KEYS.detail(variables.id) });
+
+            // Snapshot the previous value
+            const previousCard = queryClient.getQueryData(CARD_KEYS.detail(variables.id));
+
+            // Optimistically update: flip due_complete immediately
+            const optimisticComplete = variables.data?.due_complete;
+            updateCard(variables.id, { due_complete: optimisticComplete });
+
+            const currentCard = queryClient.getQueryData(CARD_KEYS.detail(variables.id));
+            if (currentCard) {
+                queryClient.setQueryData(CARD_KEYS.detail(variables.id), {
+                    ...currentCard,
+                    due_complete: optimisticComplete,
+                });
+            }
+
+            return { previousCard, optimisticComplete };
+        },
+
+        onSuccess: (res, variables, context) => {
             if (res.data?.success) {
-                // Update context with server data
+                // Reconcile with server data
                 const updatedCard = res.data.data.card;
                 updateCard(variables.id, updatedCard);
                 queryClient.setQueryData(CARD_KEYS.detail(variables.id), updatedCard);
+
+                // Show undo toast
+                const isDone = context.optimisticComplete;
+                addToast({
+                    type: "success",
+                    title: isDone ? "Đã đánh dấu hoàn thành" : "Đã bỏ đánh dấu hoàn thành",
+                    duration: 6000,
+                    action: {
+                        label: "Hoàn tác",
+                        onClick: async () => {
+                            // Reverse the toggle
+                            updateCard(variables.id, { due_complete: !isDone });
+                            try {
+                                await cardApi.updateComplete(variables.boardId, variables.listId, variables.id, {
+                                    due_complete: !isDone,
+                                });
+                            } catch {
+                                // If undo API fails, refetch to reconcile.
+                            }
+                            queryClient.invalidateQueries({ queryKey: CARD_KEYS.detail(variables.id) });
+                        },
+                    },
+                });
             } else {
+                // Rollback on API-level failure
+                if (context?.previousCard) {
+                    updateCard(variables.id, context.previousCard);
+                    queryClient.setQueryData(CARD_KEYS.detail(variables.id), context.previousCard);
+                }
                 addToast({ type: "error", title: res.data?.message || "Lỗi cập nhật trạng thái thẻ" });
             }
         },
 
-        onError: (err) => {
+        onError: (err, variables, context) => {
+            // Rollback on network error
+            if (context?.previousCard) {
+                updateCard(variables.id, context.previousCard);
+                queryClient.setQueryData(CARD_KEYS.detail(variables.id), context.previousCard);
+            }
             addToast({ type: "error", title: getApiErrorMessage(err, "Lỗi kết nối server") });
         },
-        onSettled: (data, error, variables) => {
+        onSettled: (_data, _error, variables) => {
             queryClient.invalidateQueries({ queryKey: CARD_KEYS.detail(variables.id) });
         }
     });
@@ -104,18 +159,62 @@ export function useUpdateCardComplete() {
 }
 
 export function useDeleteCard() {
+    const queryClient = useQueryClient();
     const { addToast } = UserToast();
-    const { removeCard } = useBoardActions();
+    const { removeCard, addCard } = useBoardActions();
 
     const mutation = useMutation({
         mutationFn: ({ boardId, listId, id }) => cardApi.delete(boardId, listId, id),
 
-        onSuccess: (res, variables) => {
+        onMutate: async (variables) => {
+            // Snapshot the card data before removing it so we can restore on undo.
+            // The card data lives in board context, but we can access it via query cache
+            // or the variables themselves. We'll rely on the caller passing `cardData`
+            // in the variables for the snapshot.
+            return {
+                deletedCard: variables.cardData || null,
+                listId: variables.listId,
+            };
+        },
+
+        onSuccess: (res, variables, context) => {
             if (res.data?.success) {
-                // ✅ Update context by removing card
+                // ✅ Remove card from UI (may already be removed if optimistic)
                 removeCard(variables.id);
 
-                addToast({ type: "success", title: "Đã xóa thẻ" });
+                // Show undo toast
+                const cardTitle = context.deletedCard?.title || "Thẻ";
+                addToast({
+                    type: "success",
+                    title: `Đã xóa "${cardTitle}"`,
+                    duration: 6000,
+                    action: {
+                        label: "Hoàn tác",
+                        onClick: async () => {
+                            // Re-create the card via API
+                            try {
+                                const createRes = await cardApi.create(
+                                    variables.boardId,
+                                    variables.listId,
+                                    {
+                                        title: context.deletedCard?.title || "Thẻ đã khôi phục",
+                                        description: context.deletedCard?.description || "",
+                                        priority: context.deletedCard?.priority || "medium",
+                                    }
+                                );
+                                const newCard = createRes?.data?.data?.card;
+                                if (newCard) {
+                                    addCard(newCard);
+                                    addToast({ type: "success", title: `Đã khôi phục "${cardTitle}"`, duration: 3000 });
+                                }
+                            } catch {
+                                addToast({ type: "error", title: "Không thể khôi phục thẻ", duration: 3000 });
+                            }
+                            // Refetch board to reconcile.
+                            queryClient.invalidateQueries({ queryKey: ["boards"] });
+                        },
+                    },
+                });
             } else {
                 addToast({ type: "error", title: res.data?.message || "Lỗi xóa thẻ" });
             }

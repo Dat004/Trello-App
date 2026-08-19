@@ -60,7 +60,7 @@ function CardItem({ cardId, listId, boardId, isOverlay = false, card, currentBoa
   const coverColorObj = card.cover?.color ? COVER_COLORS.find((c) => c.id === card.cover.color) : null;
 
   const handleDelete = () => {
-    deleteCard({ boardId, listId, id: cardId });
+    deleteCard({ boardId, listId, id: cardId, cardData: card });
   };
 
   const handleCopyCard = () => {

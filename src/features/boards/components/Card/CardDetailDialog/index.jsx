@@ -26,6 +26,7 @@ import CardHeader from "./CardHeader";
 import CardLabels from "./CardLabels";
 import CardMembers from "./CardMembers";
 import CardMetadata from "./CardMetadata";
+import CardReview from "./CardReview";
 
 function CardDetailDialog({ card, listId, boardId, trigger, open: externalOpen, onOpenChange: externalOnOpenChange }) {
   const [internalOpen, setInternalOpen] = useState(false);
@@ -83,6 +84,10 @@ function CardDetailDialog({ card, listId, boardId, trigger, open: externalOpen, 
           <CardLabels card={card} boardId={boardId} listId={listId} />
           
           <CardDescription card={card} locks={fieldLocks} boardId={boardId} listId={listId} />
+          
+          <Separator />
+          
+          <CardReview card={card} boardId={boardId} listId={listId} />
           
           <Separator />
           

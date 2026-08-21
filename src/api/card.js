@@ -60,4 +60,18 @@ export const cardApi = {
       `${boardsRoute}/${boardId}${listsRoute}/${listId}${cardsRoute}/${cardId}/labels/${labelId}`
     );
   },
+
+  // Review
+  async requestReview(boardId, listId, cardId, data) {
+    return await axiosClient.post(
+      `${boardsRoute}/${boardId}${listsRoute}/${listId}${cardsRoute}/${cardId}/review/request`,
+      data
+    );
+  },
+  async makeReviewDecision(boardId, listId, cardId, data) {
+    return await axiosClient.post(
+      `${boardsRoute}/${boardId}${listsRoute}/${listId}${cardsRoute}/${cardId}/review/decision`,
+      data
+    );
+  },
 };

@@ -46,6 +46,8 @@ export const SOCKET_EVENTS = {
     CARD_UPDATED: 'card-updated',
     CARD_DELETED: 'card-deleted',
     CARD_MOVED: 'card-moved',
+    CARD_REVIEW_REQUESTED: 'card-review-requested',
+    CARD_REVIEW_DECIDED: 'card-review-decided',
 
     // Attachment events
     ATTACHMENT_CREATED: 'attachment-created',

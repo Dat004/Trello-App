@@ -92,6 +92,23 @@ export const useBoardRealtime = (boardId, actions) => {
             safeCall("updateCardPosition", cardId, targetListId, data.pos);
         };
 
+        const handleCardReviewRequested = (data) => {
+            safeCall("updateCard", data.cardId, { review: data.review });
+            queryClient.invalidateQueries({ queryKey: CARD_KEYS.detail(data.cardId) });
+        };
+
+        const handleCardReviewDecided = (data) => {
+            safeCall("updateCard", data.cardId, {
+                review: data.review,
+                due_complete: data.due_complete,
+            });
+            if (data.review?.status === "approved" && data.listId) {
+                safeCall("updateCardPosition", data.cardId, data.listId, data.pos);
+                queryClient.invalidateQueries({ queryKey: ["boards"] });
+            }
+            queryClient.invalidateQueries({ queryKey: CARD_KEYS.detail(data.cardId) });
+        };
+
         const handleChecklistItemAdded = (data) => safeCall("addChecklistItem", data.cardId, data.checklist);
         const handleChecklistItemToggled = (data) => safeCall("toggleChecklistItem", data.cardId, data.checklist);
         const handleChecklistItemDeleted = (data) => safeCall("deleteChecklistItem", data.cardId, data.checklistId);
@@ -202,6 +219,8 @@ export const useBoardRealtime = (boardId, actions) => {
         socket.on(SOCKET_EVENTS.CARD_UPDATED, handleCardUpdated);
         socket.on(SOCKET_EVENTS.CARD_DELETED, handleCardDeleted);
         socket.on(SOCKET_EVENTS.CARD_MOVED, handleCardMoved);
+        socket.on(SOCKET_EVENTS.CARD_REVIEW_REQUESTED, handleCardReviewRequested);
+        socket.on(SOCKET_EVENTS.CARD_REVIEW_DECIDED, handleCardReviewDecided);
         socket.on(SOCKET_EVENTS.CHECKLIST_ITEM_ADDED, handleChecklistItemAdded);
         socket.on(SOCKET_EVENTS.CHECKLIST_ITEM_TOGGLED, handleChecklistItemToggled);
         socket.on(SOCKET_EVENTS.CHECKLIST_ITEM_DELETED, handleChecklistItemDeleted);
@@ -232,6 +251,8 @@ export const useBoardRealtime = (boardId, actions) => {
             socket.off(SOCKET_EVENTS.CARD_UPDATED, handleCardUpdated);
             socket.off(SOCKET_EVENTS.CARD_DELETED, handleCardDeleted);
             socket.off(SOCKET_EVENTS.CARD_MOVED, handleCardMoved);
+            socket.off(SOCKET_EVENTS.CARD_REVIEW_REQUESTED, handleCardReviewRequested);
+            socket.off(SOCKET_EVENTS.CARD_REVIEW_DECIDED, handleCardReviewDecided);
             socket.off(SOCKET_EVENTS.CHECKLIST_ITEM_ADDED, handleChecklistItemAdded);
             socket.off(SOCKET_EVENTS.CHECKLIST_ITEM_TOGGLED, handleChecklistItemToggled);
             socket.off(SOCKET_EVENTS.CHECKLIST_ITEM_DELETED, handleChecklistItemDeleted);

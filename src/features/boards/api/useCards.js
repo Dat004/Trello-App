@@ -410,3 +410,66 @@ export function useMoveCard() {
 
     return { ...mutation, isLoading: mutation.isPending };
 }
+
+export function useRequestReview() {
+    const queryClient = useQueryClient();
+    const { addToast } = UserToast();
+    const { updateCard } = useBoardActions();
+
+    const mutation = useMutation({
+        mutationFn: ({ boardId, listId, cardId, data }) =>
+            cardApi.requestReview(boardId, listId, cardId, data),
+
+        onSuccess: (res, variables) => {
+            if (res.data?.success) {
+                const card = res.data.data.card;
+                updateCard(variables.cardId, card);
+                queryClient.setQueryData(CARD_KEYS.detail(variables.cardId), card);
+                addToast({ type: "success", title: "Đã gửi yêu cầu phê duyệt thẻ!" });
+            } else {
+                addToast({ type: "error", title: res.data?.message || "Lỗi gửi yêu cầu phê duyệt" });
+            }
+        },
+
+        onError: (err) => {
+            addToast({ type: "error", title: getApiErrorMessage(err, "Lỗi kết nối server") });
+        }
+    });
+
+    return { ...mutation, isLoading: mutation.isPending };
+}
+
+export function useMakeReviewDecision() {
+    const queryClient = useQueryClient();
+    const { addToast } = UserToast();
+    const { updateCard } = useBoardActions();
+
+    const mutation = useMutation({
+        mutationFn: ({ boardId, listId, cardId, data }) =>
+            cardApi.makeReviewDecision(boardId, listId, cardId, data),
+
+        onSuccess: (res, variables) => {
+            if (res.data?.success) {
+                const card = res.data.data.card;
+                updateCard(variables.cardId, card);
+                queryClient.setQueryData(CARD_KEYS.detail(variables.cardId), card);
+
+                const msg = variables.data.decision === "approved" ? "Đã phê duyệt công việc!" : "Yêu cầu chỉnh sửa đã gửi!";
+                addToast({ type: "success", title: msg });
+
+                // If approved, trigger board invalidate because the card might have moved lists automatically
+                if (variables.data.decision === "approved") {
+                    queryClient.invalidateQueries({ queryKey: ["boards"] });
+                }
+            } else {
+                addToast({ type: "error", title: res.data?.message || "Lỗi gửi quyết định phê duyệt" });
+            }
+        },
+
+        onError: (err) => {
+            addToast({ type: "error", title: getApiErrorMessage(err, "Lỗi kết nối server") });
+        }
+    });
+
+    return { ...mutation, isLoading: mutation.isPending };
+}

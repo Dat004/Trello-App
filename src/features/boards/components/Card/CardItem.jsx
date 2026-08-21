@@ -12,6 +12,8 @@ import {
   MoreHorizontal,
   Paperclip,
   Trash2,
+  CheckCircle2,
+  Clock,
 } from "lucide-react";
 
 import { useCreateCard, useDeleteCard } from "@/features/boards/api/useCards";
@@ -227,6 +229,27 @@ function CardItem({ cardId, listId, boardId, isOverlay = false, card, currentBoa
                           <div className="flex items-center gap-1 text-xs text-gray-400">
                             <Paperclip className="h-3 w-3" />
                             <span>{card.attachment_count}</span>
+                          </div>
+                        )}
+
+                        {card.review?.status === "pending" && (
+                          <div className="flex items-center gap-1 text-xs text-yellow-600 dark:text-yellow-500 font-medium" title="Đang chờ phê duyệt">
+                            <Clock className="h-3 w-3 animate-pulse" />
+                            <span>Chờ duyệt</span>
+                          </div>
+                        )}
+
+                        {card.review?.status === "approved" && (
+                          <div className="flex items-center gap-1 text-xs text-green-600 dark:text-green-500 font-medium" title="Đã duyệt hoàn thành">
+                            <CheckCircle2 className="h-3 w-3" />
+                            <span>Đã duyệt</span>
+                          </div>
+                        )}
+
+                        {card.review?.status === "changes_requested" && (
+                          <div className="flex items-center gap-1 text-xs text-red-600 dark:text-red-500 font-medium" title="Cần chỉnh sửa lại">
+                            <AlertCircle className="h-3 w-3" />
+                            <span>Cần sửa</span>
                           </div>
                         )}
                       </div>
